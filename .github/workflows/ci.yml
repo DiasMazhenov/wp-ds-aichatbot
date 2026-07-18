@@ -34,10 +34,24 @@ jobs:
       - name: Elementor widget smoke test
         run: npm run test:elementor
 
+  coding-standards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+      - name: Install coding standards
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: WordPress Coding Standards
+        run: composer lint
+
   package:
     needs:
       - php-lint
       - integration
+      - coding-standards
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
