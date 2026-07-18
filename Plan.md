@@ -141,4 +141,4 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Проверить и закоммитить multi-provider версию `0.4.0`. После CI нужен smoke test каждого доступного провайдера; WordPress AI Client проверяется отдельно на WordPress 7.0 с настроенным AI Connector. Следующий engineering-срез — защита от параллельных запросов и бюджетные ограничения; затем installable ZIP и расширенный WordPress/Elementor test gate.
+Multi-provider версия `0.4.0` прошла CI на PHP 7.4, 8.1 и 8.3. Теперь нужен smoke test каждого доступного провайдера; WordPress AI Client проверяется отдельно на WordPress 7.0 с настроенным AI Connector. Следующий engineering-срез — защита от параллельных запросов и бюджетные ограничения; затем installable ZIP и расширенный WordPress/Elementor test gate.
