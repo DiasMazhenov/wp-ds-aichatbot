@@ -88,7 +88,7 @@
 
 ### 7. Дополнительные модули
 
-- [ ] FAQ.
+- [x] Ручной FAQ через приватный WordPress admin UI с автоматической индексацией.
 - [x] Хранилище фрагментов базы знаний вне `wp_options`.
 - [x] Knowledge/RAG по страницам и записям WordPress с локальным keyword ranking.
 - [ ] Опциональный semantic embeddings adapter.
@@ -152,6 +152,6 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.3` добавляет отдельную таблицу knowledge chunks, автоматическую синхронизацию опубликованных страниц/записей, защищённую ручную переиндексацию и provider-agnostic RAG-контекст. Локальный keyword ranking не требует embedding API и работает с любым выбранным провайдером. Следующий срез — ручной FAQ и semantic embeddings adapter; затем PDF и WooCommerce. Отдельные gates — Elementor editor iframe и provider-by-provider smoke test с реальными credentials.
+Версия `0.5.4` добавляет приватные administrator-managed `AI FAQs` в меню «Инструменты» и автоматически синхронизирует опубликованные FAQ с общим RAG repository. Следующий срез — semantic embeddings adapter; затем PDF и WooCommerce. Отдельные gates — Elementor editor iframe и provider-by-provider smoke test с реальными credentials.
 
 Локальные `node_modules` и `vendor` являются только воспроизводимой тестовой средой, не попадают в Git или installable ZIP и будут удалены перед финальной передачей. До завершения активной разработки они сохраняются для быстрых повторных проверок.

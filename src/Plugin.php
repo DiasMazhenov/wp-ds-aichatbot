@@ -27,6 +27,7 @@ use DiasMazhenov\WPDsAiChatbot\Chat\Shortcode;
 use DiasMazhenov\WPDsAiChatbot\Elementor\Integration;
 use DiasMazhenov\WPDsAiChatbot\Lifecycle\Migrator;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker;
+use DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\PostIndexer;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Repository;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Retriever;
@@ -96,6 +97,7 @@ final class Plugin {
 		$providers->register_hooks();
 		$post_indexer->register_hooks();
 		$retriever->register_hooks();
+		( new FaqPostType() )->register_hooks();
 		( new Shortcode( $renderer ) )->register_hooks();
 		( new Integration( $renderer ) )->register_hooks();
 

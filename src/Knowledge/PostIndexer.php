@@ -1,6 +1,6 @@
 <?php
 /**
- * WordPress post and page knowledge source.
+ * WordPress post, page, and FAQ knowledge source.
  *
  * @package WPDsAiChatbot
  */
@@ -82,6 +82,7 @@ final class PostIndexer {
 	 */
 	public function delete_post( int $post_id ): void {
 		$this->repository->delete_source( 'post', $post_id );
+		$this->repository->delete_source( 'faq', $post_id );
 	}
 
 	/**
@@ -125,13 +126,15 @@ final class PostIndexer {
 	 * @return int Number of stored chunks.
 	 */
 	public function index_post( \WP_Post $post ): int {
-		$content = $post->post_title . "\n\n" . $post->post_excerpt . "\n\n" . $post->post_content;
+		$content     = $post->post_title . "\n\n" . $post->post_excerpt . "\n\n" . $post->post_content;
+		$source_type = FaqPostType::POST_TYPE === $post->post_type ? 'faq' : 'post';
+		$source_url  = 'faq' === $source_type ? '' : (string) get_permalink( $post );
 
 		return $this->repository->replace_source(
-			'post',
+			$source_type,
 			(int) $post->ID,
 			$post->post_title,
-			(string) get_permalink( $post ),
+			$source_url,
 			$this->chunker->split( $content )
 		);
 	}
@@ -153,8 +156,9 @@ final class PostIndexer {
 	 * @return array<int, string>
 	 */
 	private function post_types(): array {
-		$types = apply_filters( 'wpdsac_knowledge_post_types', array( 'page', 'post' ) );
-		$types = is_array( $types ) ? array_map( 'sanitize_key', $types ) : array( 'page', 'post' );
+		$defaults = array( 'page', 'post', FaqPostType::POST_TYPE );
+		$types    = apply_filters( 'wpdsac_knowledge_post_types', $defaults );
+		$types    = is_array( $types ) ? array_map( 'sanitize_key', $types ) : $defaults;
 
 		return array_values( array_filter( array_unique( $types ) ) );
 	}

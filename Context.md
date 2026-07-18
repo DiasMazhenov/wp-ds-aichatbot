@@ -157,5 +157,9 @@
 - `Knowledge\Repository` хранит данные вне `wp_options` и выполняет bounded keyword retrieval по максимум восьми словам и 80 кандидатам.
 - `Knowledge\Retriever` помечает найденный контекст как недоверенный reference material и подключается через общий `wpdsac_ai_message`, поэтому работает со всеми AI providers.
 - Core runtime test подтверждает миграцию таблицы, индексацию WordPress page, поиск фрагмента и RAG augmentation без внешнего API key.
-- Следующий Knowledge-срез: ручной FAQ и optional semantic embeddings; затем PDF и WooCommerce.
 - Правило версий: до отдельного решения остаёмся в ветке `0.5.x` и увеличиваем только третью цифру (`0.5.3`, `0.5.4`, ...).
+- Версия `0.5.4`: зарегистрирован приватный CPT `wpdsac_faq` с нативным WordPress UI в `Инструменты → AI FAQs`; все CRUD capabilities привязаны к `manage_options`.
+- FAQ не имеет публичного URL и не появляется в frontend search/archive, но опубликованные записи автоматически индексируются `PostIndexer` с source type `faq`.
+- Общая переиндексация теперь включает pages, posts и AI FAQs; Retriever не добавляет пустой URL для приватного FAQ.
+- Runtime probe подтверждает регистрацию FAQ post type и автоматическую индексацию опубликованного FAQ при включённом knowledge retrieval.
+- Следующий Knowledge-срез: optional semantic embeddings; затем PDF и WooCommerce.

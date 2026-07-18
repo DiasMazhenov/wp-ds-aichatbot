@@ -143,6 +143,8 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$knowledge_indexed = false;
 	$knowledge_retrieved = false;
 	$knowledge_augmented = false;
+	$faq_registered = post_type_exists( \DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType::POST_TYPE );
+	$faq_indexed = false;
 
 	if ( ! is_wp_error( $knowledge_post_id ) ) {
 		$knowledge_repository = new \DiasMazhenov\WPDsAiChatbot\Knowledge\Repository();
@@ -173,6 +175,22 @@ function wpdsac_test_probe(): WP_REST_Response {
 			$knowledge_augmented = false !== strpos( $augmented, '<knowledge>' )
 				&& false !== strpos( $augmented, 'thirty calendar days' )
 				&& false !== strpos( $augmented, 'Visitor question:' );
+
+			$faq_id = wp_insert_post(
+				array(
+					'post_title'   => 'Battery warranty',
+					'post_content' => 'The battery warranty lasts twenty-four months from delivery.',
+					'post_status'  => 'publish',
+					'post_type'    => \DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType::POST_TYPE,
+				),
+				true
+			);
+
+			if ( ! is_wp_error( $faq_id ) ) {
+				$faq_matches = $knowledge_repository->search( 'How long is the battery warranty?', 2 );
+				$faq_indexed = isset( $faq_matches[0]['content'] )
+					&& false !== stripos( $faq_matches[0]['content'], 'twenty-four months' );
+			}
 
 			update_option( 'wpdsac_settings', $settings, false );
 		}
@@ -213,6 +231,8 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'knowledge_indexed'           => $knowledge_indexed,
 			'knowledge_retrieved'         => $knowledge_retrieved,
 			'knowledge_augmented'         => $knowledge_augmented,
+			'faq_registered'              => $faq_registered,
+			'faq_indexed'                 => $faq_indexed,
 			'elementor_loaded'            => $elementor_loaded,
 			'elementor_widget_registered' => $elementor_widget_registered,
 			'elementor_frontend_url'      => $elementor_frontend_url,

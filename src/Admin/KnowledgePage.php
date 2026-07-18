@@ -96,7 +96,7 @@ final class KnowledgePage {
 				</p></div>
 			<?php endif; ?>
 			<p>
-				<?php esc_html_e( 'Published pages and posts are split into bounded fragments and stored in a dedicated non-autoloaded table.', 'wp-ds-aichatbot' ); ?>
+				<?php esc_html_e( 'Published pages, posts, and AI FAQs are split into bounded fragments and stored in a dedicated non-autoloaded table.', 'wp-ds-aichatbot' ); ?>
 			</p>
 			<p>
 				<strong><?php esc_html_e( 'Stored fragments:', 'wp-ds-aichatbot' ); ?></strong>
@@ -109,7 +109,7 @@ final class KnowledgePage {
 			<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
 				<input type="hidden" name="action" value="wpdsac_reindex_knowledge">
 				<?php wp_nonce_field( 'wpdsac_reindex_knowledge' ); ?>
-				<?php submit_button( __( 'Reindex pages and posts', 'wp-ds-aichatbot' ), 'primary', 'submit', false ); ?>
+				<?php submit_button( __( 'Reindex pages, posts, and FAQs', 'wp-ds-aichatbot' ), 'primary', 'submit', false ); ?>
 			</form>
 		</div>
 		<?php

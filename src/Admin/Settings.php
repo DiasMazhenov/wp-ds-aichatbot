@@ -294,7 +294,7 @@ final class Settings {
 
 		if ( 'checkbox' === $args['type'] ) {
 			$description = 'knowledge_enabled' === $key
-				? __( 'Add relevant indexed pages and posts to AI requests.', 'wp-ds-aichatbot' )
+				? __( 'Add relevant indexed pages, posts, and AI FAQs to AI requests.', 'wp-ds-aichatbot' )
 				: __( 'Show the chatbot globally in the site footer.', 'wp-ds-aichatbot' );
 
 			printf(
