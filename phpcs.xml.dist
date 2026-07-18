@@ -15,7 +15,11 @@
 	<config name="minimum_supported_wp_version" value="6.6"/>
 	<config name="testVersion" value="7.4-"/>
 
-	<rule ref="WordPress"/>
+	<rule ref="WordPress">
+		<!-- The plugin uses PSR-4 class names and paths instead of class-*.php files. -->
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
+	</rule>
 	<rule ref="PHPCompatibilityWP"/>
 	<rule ref="WordPress.WP.I18n">
 		<properties>
@@ -25,4 +29,3 @@
 		</properties>
 	</rule>
 </ruleset>
-

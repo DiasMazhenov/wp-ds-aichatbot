@@ -11,22 +11,47 @@ use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Validate, limit and dispatch public chat requests.
+ */
 final class ChatController {
 
 	private const REST_NAMESPACE = 'wp-ds-aichatbot/v1';
 
+	/**
+	 * Session token service.
+	 *
+	 * @var SessionToken
+	 */
 	private $tokens;
 
+	/**
+	 * Atomic request limiter.
+	 *
+	 * @var RateLimiter
+	 */
 	private $limiter;
 
+	/**
+	 * In-flight request lock.
+	 *
+	 * @var RequestLock
+	 */
 	private $request_lock;
 
+	/**
+	 * Verified session UUID for the current request.
+	 *
+	 * @var string
+	 */
 	private $session_id = '';
 
 	/**
+	 * Store REST endpoint dependencies.
+	 *
 	 * @param SessionToken $tokens       Session token service.
-	 * @param RateLimiter $limiter      Atomic request limiter.
-	 * @param RequestLock $request_lock In-flight request lock.
+	 * @param RateLimiter  $limiter      Atomic request limiter.
+	 * @param RequestLock  $request_lock In-flight request lock.
 	 */
 	public function __construct( SessionToken $tokens, RateLimiter $limiter, RequestLock $request_lock ) {
 		$this->tokens       = $tokens;

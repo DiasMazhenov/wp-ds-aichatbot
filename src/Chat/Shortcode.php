@@ -9,11 +9,21 @@ namespace DiasMazhenov\WPDsAiChatbot\Chat;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Expose the shared renderer through a shortcode.
+ */
 final class Shortcode {
 
+	/**
+	 * Shared chatbot renderer.
+	 *
+	 * @var Renderer
+	 */
 	private $renderer;
 
 	/**
+	 * Store the shared renderer.
+	 *
 	 * @param Renderer $renderer Shared chatbot renderer.
 	 */
 	public function __construct( Renderer $renderer ) {
@@ -45,7 +55,7 @@ final class Shortcode {
 			'ds_ai_chatbot'
 		);
 
-		$attributes = array_filter(
+		$attributes             = array_filter(
 			$attributes,
 			static function ( $value ): bool {
 				return '' !== $value;
@@ -56,4 +66,3 @@ final class Shortcode {
 		return $this->renderer->render( $attributes );
 	}
 }
-

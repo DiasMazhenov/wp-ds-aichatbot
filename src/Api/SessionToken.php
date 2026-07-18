@@ -9,6 +9,9 @@ namespace DiasMazhenov\WPDsAiChatbot\Api;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Issue and validate signed stateless session tokens.
+ */
 final class SessionToken {
 
 	private const LIFETIME = DAY_IN_SECONDS;
@@ -91,7 +94,8 @@ final class SessionToken {
 	 * @return string
 	 */
 	private function base64url_encode( string $value ): string {
-		return rtrim( strtr( base64_encode( $value ), '+/', '-_' ), '=' );
+		// Base64url is the transport encoding for the signed token payload.
+		return rtrim( strtr( base64_encode( $value ), '+/', '-_' ), '=' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 	}
 
 	/**
@@ -106,7 +110,7 @@ final class SessionToken {
 			$value .= str_repeat( '=', 4 - $padding );
 		}
 
-		return base64_decode( strtr( $value, '-_', '+/' ), true );
+		// Strict decoding rejects malformed token bytes before JSON parsing.
+		return base64_decode( strtr( $value, '-_', '+/' ), true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
 	}
 }
-

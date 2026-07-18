@@ -11,11 +11,21 @@ use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Render the shared chatbot template for every integration surface.
+ */
 final class Renderer {
 
+	/**
+	 * Frontend asset service.
+	 *
+	 * @var Assets
+	 */
 	private $assets;
 
 	/**
+	 * Store the frontend asset service.
+	 *
 	 * @param Assets $assets Frontend assets service.
 	 */
 	public function __construct( Assets $assets ) {
@@ -61,4 +71,3 @@ final class Renderer {
 		echo $this->render(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }
-

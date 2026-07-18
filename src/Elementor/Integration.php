@@ -11,13 +11,23 @@ use DiasMazhenov\WPDsAiChatbot\Chat\Renderer;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Register the chatbot widget when Elementor is compatible.
+ */
 final class Integration {
 
 	private const MINIMUM_VERSION = '3.19.0';
 
+	/**
+	 * Shared chatbot renderer.
+	 *
+	 * @var Renderer
+	 */
 	private $renderer;
 
 	/**
+	 * Store the shared renderer.
+	 *
 	 * @param Renderer $renderer Shared chatbot renderer.
 	 */
 	public function __construct( Renderer $renderer ) {

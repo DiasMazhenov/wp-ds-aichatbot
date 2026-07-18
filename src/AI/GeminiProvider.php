@@ -9,14 +9,23 @@ namespace DiasMazhenov\WPDsAiChatbot\AI;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Generate replies through the Google Gemini Interactions API.
+ */
 final class GeminiProvider extends AbstractHttpProvider {
 
-	/** @return string */
+	/**
+	 * Return the provider identifier.
+	 *
+	 * @return string
+	 */
 	protected function provider_id(): string {
 		return 'gemini';
 	}
 
 	/**
+	 * Return the Gemini Interactions endpoint.
+	 *
 	 * @param array<string, mixed> $options Plugin settings.
 	 * @return string
 	 */
@@ -25,6 +34,8 @@ final class GeminiProvider extends AbstractHttpProvider {
 	}
 
 	/**
+	 * Build a Gemini Interactions request body.
+	 *
 	 * @param string               $message    Visitor message.
 	 * @param string               $session_id Session UUID.
 	 * @param array<string, mixed> $options    Plugin settings.
@@ -43,6 +54,8 @@ final class GeminiProvider extends AbstractHttpProvider {
 	}
 
 	/**
+	 * Build Gemini authentication headers.
+	 *
 	 * @param string $api_key Provider API key.
 	 * @return array<string, string>
 	 */
@@ -54,6 +67,8 @@ final class GeminiProvider extends AbstractHttpProvider {
 	}
 
 	/**
+	 * Extract model output text from a Gemini interaction.
+	 *
 	 * @param array<string, mixed> $response Decoded response.
 	 * @return string
 	 */

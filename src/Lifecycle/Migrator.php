@@ -9,6 +9,9 @@ namespace DiasMazhenov\WPDsAiChatbot\Lifecycle;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Maintain versioned plugin database tables.
+ */
 final class Migrator {
 
 	public const DB_VERSION = '2';
@@ -38,8 +41,8 @@ final class Migrator {
 
 		$rate_limit_table   = self::rate_limit_table();
 		$request_lock_table = self::request_lock_table();
-		$charset_collate   = $wpdb->get_charset_collate();
-		$rate_limit_sql    = "CREATE TABLE {$rate_limit_table} (
+		$charset_collate    = $wpdb->get_charset_collate();
+		$rate_limit_sql     = "CREATE TABLE {$rate_limit_table} (
 			bucket_hash char(64) NOT NULL,
 			request_count int(10) unsigned NOT NULL DEFAULT 0,
 			expires_at bigint(20) unsigned NOT NULL,

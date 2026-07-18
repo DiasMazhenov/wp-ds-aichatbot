@@ -9,13 +9,35 @@ namespace DiasMazhenov\WPDsAiChatbot\AI;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Implement the common OpenResponses request and response format.
+ */
 class ResponsesApiProvider extends AbstractHttpProvider {
 
+	/**
+	 * Provider identifier.
+	 *
+	 * @var string
+	 */
 	private $id;
+
+	/**
+	 * Provider API endpoint.
+	 *
+	 * @var string
+	 */
 	private $api_endpoint;
+
+	/**
+	 * Settings key containing the selected model.
+	 *
+	 * @var string
+	 */
 	private $model_option;
 
 	/**
+	 * Configure an OpenResponses-compatible provider.
+	 *
 	 * @param CredentialResolver $credentials  Credential resolver.
 	 * @param string             $id           Provider ID.
 	 * @param string             $api_endpoint Fixed HTTPS endpoint.
@@ -28,12 +50,18 @@ class ResponsesApiProvider extends AbstractHttpProvider {
 		$this->model_option = $model_option;
 	}
 
-	/** @return string */
+	/**
+	 * Return the provider identifier.
+	 *
+	 * @return string
+	 */
 	protected function provider_id(): string {
 		return $this->id;
 	}
 
 	/**
+	 * Return the configured API endpoint.
+	 *
 	 * @param array<string, mixed> $options Plugin settings.
 	 * @return string
 	 */
@@ -42,6 +70,8 @@ class ResponsesApiProvider extends AbstractHttpProvider {
 	}
 
 	/**
+	 * Build an OpenResponses-compatible request body.
+	 *
 	 * @param string               $message    Visitor message.
 	 * @param string               $session_id Session UUID.
 	 * @param array<string, mixed> $options    Plugin settings.
@@ -58,6 +88,8 @@ class ResponsesApiProvider extends AbstractHttpProvider {
 	}
 
 	/**
+	 * Extract text from an OpenResponses-compatible response.
+	 *
 	 * @param array<string, mixed> $response Decoded response.
 	 * @return string
 	 */

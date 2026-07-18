@@ -9,9 +9,14 @@ namespace DiasMazhenov\WPDsAiChatbot\AI;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Generate replies through the OpenRouter OpenResponses API.
+ */
 final class OpenRouterProvider extends ResponsesApiProvider {
 
 	/**
+	 * Configure the OpenRouter endpoint and model setting.
+	 *
 	 * @param CredentialResolver $credentials Credential resolver.
 	 */
 	public function __construct( CredentialResolver $credentials ) {
@@ -19,6 +24,8 @@ final class OpenRouterProvider extends ResponsesApiProvider {
 	}
 
 	/**
+	 * Add OpenRouter attribution headers.
+	 *
 	 * @param string $api_key Provider API key.
 	 * @return array<string, string>
 	 */

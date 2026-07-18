@@ -11,11 +11,21 @@ use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Base implementation for direct JSON-over-HTTPS AI providers.
+ */
 abstract class AbstractHttpProvider implements ProviderInterface {
 
+	/**
+	 * Server-side credential resolver.
+	 *
+	 * @var CredentialResolver
+	 */
 	protected $credentials;
 
 	/**
+	 * Store the credential resolver.
+	 *
 	 * @param CredentialResolver $credentials Credential resolver.
 	 */
 	public function __construct( CredentialResolver $credentials ) {
@@ -124,16 +134,24 @@ abstract class AbstractHttpProvider implements ProviderInterface {
 		return $output;
 	}
 
-	/** @return string */
+	/**
+	 * Return the provider identifier.
+	 *
+	 * @return string
+	 */
 	abstract protected function provider_id(): string;
 
 	/**
+	 * Return the provider endpoint.
+	 *
 	 * @param array<string, mixed> $options Plugin settings.
 	 * @return string
 	 */
 	abstract protected function endpoint( array $options ): string;
 
 	/**
+	 * Build the provider request body.
+	 *
 	 * @param string               $message    Visitor message.
 	 * @param string               $session_id Session UUID.
 	 * @param array<string, mixed> $options    Plugin settings.
@@ -142,6 +160,8 @@ abstract class AbstractHttpProvider implements ProviderInterface {
 	abstract protected function request_body( string $message, string $session_id, array $options ): array;
 
 	/**
+	 * Extract displayable text from a decoded provider response.
+	 *
 	 * @param array<string, mixed> $response Decoded provider response.
 	 * @return string
 	 */
@@ -221,7 +241,11 @@ abstract class AbstractHttpProvider implements ProviderInterface {
 		}
 	}
 
-	/** @return \WP_Error */
+	/**
+	 * Build the generic public provider error.
+	 *
+	 * @return \WP_Error
+	 */
 	private function unavailable_error(): \WP_Error {
 		return new \WP_Error(
 			'wpdsac_provider_unavailable',

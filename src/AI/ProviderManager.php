@@ -11,11 +11,21 @@ use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Select and invoke the configured AI provider.
+ */
 final class ProviderManager {
 
+	/**
+	 * Registered providers keyed by ID.
+	 *
+	 * @var array<string, ProviderInterface>
+	 */
 	private $providers;
 
 	/**
+	 * Store the provider registry.
+	 *
 	 * @param array<string, ProviderInterface> $providers Registered providers by ID.
 	 */
 	public function __construct( array $providers ) {

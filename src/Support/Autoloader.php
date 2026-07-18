@@ -9,6 +9,9 @@ namespace DiasMazhenov\WPDsAiChatbot\Support;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Load plugin classes from the PSR-4 namespace tree.
+ */
 final class Autoloader {
 
 	private const PREFIX = 'DiasMazhenov\\WPDsAiChatbot\\';
@@ -25,15 +28,15 @@ final class Autoloader {
 	/**
 	 * Load one plugin class.
 	 *
-	 * @param string $class Fully-qualified class name.
+	 * @param string $class_name Fully-qualified class name.
 	 * @return void
 	 */
-	private static function load( string $class ): void {
-		if ( 0 !== strpos( $class, self::PREFIX ) ) {
+	private static function load( string $class_name ): void {
+		if ( 0 !== strpos( $class_name, self::PREFIX ) ) {
 			return;
 		}
 
-		$relative_class = substr( $class, strlen( self::PREFIX ) );
+		$relative_class = substr( $class_name, strlen( self::PREFIX ) );
 		$relative_path  = str_replace( '\\', DIRECTORY_SEPARATOR, $relative_class ) . '.php';
 		$file           = dirname( __DIR__ ) . DIRECTORY_SEPARATOR . $relative_path;
 
@@ -42,4 +45,3 @@ final class Autoloader {
 		}
 	}
 }
-

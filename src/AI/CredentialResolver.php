@@ -9,22 +9,25 @@ namespace DiasMazhenov\WPDsAiChatbot\AI;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Resolve provider credentials from server-side sources.
+ */
 final class CredentialResolver {
 
 	public const OPTION_NAME = 'wpdsac_openai_api_key';
 
 	private const PROVIDERS = array(
-		'openai'    => array(
+		'openai'     => array(
 			'constant'    => 'WPDSAC_OPENAI_API_KEY',
 			'environment' => 'WPDSAC_OPENAI_API_KEY',
 			'option'      => 'wpdsac_openai_api_key',
 		),
-		'anthropic' => array(
+		'anthropic'  => array(
 			'constant'    => 'WPDSAC_ANTHROPIC_API_KEY',
 			'environment' => 'WPDSAC_ANTHROPIC_API_KEY',
 			'option'      => 'wpdsac_anthropic_api_key',
 		),
-		'gemini'    => array(
+		'gemini'     => array(
 			'constant'    => 'WPDSAC_GEMINI_API_KEY',
 			'environment' => 'WPDSAC_GEMINI_API_KEY',
 			'option'      => 'wpdsac_gemini_api_key',
@@ -37,6 +40,8 @@ final class CredentialResolver {
 	);
 
 	/**
+	 * Return configuration for one supported provider.
+	 *
 	 * Resolve the API key without exposing it to public output.
 	 *
 	 * Priority: wp-config.php constant, environment, non-autoloaded option.
@@ -122,6 +127,8 @@ final class CredentialResolver {
 	}
 
 	/**
+	 * Return configuration for one supported provider.
+	 *
 	 * @param string $provider Provider ID.
 	 * @return array<string, string>
 	 */

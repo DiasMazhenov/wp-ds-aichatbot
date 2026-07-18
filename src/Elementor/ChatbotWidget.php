@@ -11,8 +11,16 @@ use DiasMazhenov\WPDsAiChatbot\Chat\Renderer;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Render the chatbot as a native Elementor widget.
+ */
 final class ChatbotWidget extends \Elementor\Widget_Base {
 
+	/**
+	 * Shared chatbot renderer.
+	 *
+	 * @var Renderer|null
+	 */
 	private static $chatbot_renderer;
 
 	/**
@@ -25,26 +33,56 @@ final class ChatbotWidget extends \Elementor\Widget_Base {
 		self::$chatbot_renderer = $renderer;
 	}
 
+	/**
+	 * Return the internal Elementor widget name.
+	 *
+	 * @return string
+	 */
 	public function get_name(): string {
 		return 'wpdsac-chatbot';
 	}
 
+	/**
+	 * Return the widget title shown in Elementor.
+	 *
+	 * @return string
+	 */
 	public function get_title(): string {
 		return esc_html__( 'DS AI Chatbot', 'wp-ds-aichatbot' );
 	}
 
+	/**
+	 * Return the Elementor icon identifier.
+	 *
+	 * @return string
+	 */
 	public function get_icon(): string {
 		return 'eicon-comments';
 	}
 
+	/**
+	 * Return the Elementor widget categories.
+	 *
+	 * @return array<int, string>
+	 */
 	public function get_categories(): array {
 		return array( 'general' );
 	}
 
+	/**
+	 * Return required frontend script handles.
+	 *
+	 * @return array<int, string>
+	 */
 	public function get_script_depends(): array {
 		return array( 'wpdsac-chat' );
 	}
 
+	/**
+	 * Return required frontend style handles.
+	 *
+	 * @return array<int, string>
+	 */
 	public function get_style_depends(): array {
 		return array( 'wpdsac-chat' );
 	}

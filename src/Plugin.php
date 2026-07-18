@@ -28,8 +28,16 @@ use DiasMazhenov\WPDsAiChatbot\Lifecycle\Migrator;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Compose plugin services and register their WordPress hooks.
+ */
 final class Plugin {
 
+	/**
+	 * Singleton coordinator instance.
+	 *
+	 * @var self|null
+	 */
 	private static $instance;
 
 	/**
@@ -61,10 +69,10 @@ final class Plugin {
 		$credentials  = new CredentialResolver();
 		$providers    = new ProviderManager(
 			array(
-				'openai'      => new OpenAIProvider( $credentials ),
-				'anthropic'   => new AnthropicProvider( $credentials ),
-				'gemini'      => new GeminiProvider( $credentials ),
-				'openrouter'  => new OpenRouterProvider( $credentials ),
+				'openai'       => new OpenAIProvider( $credentials ),
+				'anthropic'    => new AnthropicProvider( $credentials ),
+				'gemini'       => new GeminiProvider( $credentials ),
+				'openrouter'   => new OpenRouterProvider( $credentials ),
 				'wordpress_ai' => new WordPressAiClientProvider(),
 			)
 		);
@@ -98,5 +106,8 @@ final class Plugin {
 		);
 	}
 
+	/**
+	 * Prevent direct construction of the coordinator.
+	 */
 	private function __construct() {}
 }

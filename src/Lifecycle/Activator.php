@@ -12,6 +12,9 @@ use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Initialize persistent plugin state during activation.
+ */
 final class Activator {
 
 	/**

@@ -96,7 +96,7 @@
 ### 8. Проверка и релиз
 
 - [x] PHP syntax lint в CI на PHP 7.4, 8.1 и 8.3.
-- [ ] WordPress Coding Standards.
+- [x] WordPress Coding Standards и PHPCompatibilityWP как обязательный CI gate.
 - [ ] Unit tests.
 - [x] Integration smoke tests на чистом WordPress и с актуальным Elementor.
 - [x] Проверка активации и миграций в чистой WordPress-инсталляции.
@@ -147,4 +147,4 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.0` проходит автоматические smoke tests в реальном WordPress Playground: активация, миграции, shortcode/global renderer, REST и регистрация widget с актуальным Elementor. После прохождения обновлённого CI следующий gate — browser test Elementor frontend/editor и provider-by-provider smoke test с реальными credentials. WordPress AI Client проверяется отдельно на WordPress 7.0 с настроенным AI Connector.
+Версия `0.5.1` проходит WPCS/PHPCompatibilityWP и автоматические smoke tests в реальном WordPress Playground: активация, миграции, shortcode/global renderer, REST и регистрация widget с актуальным Elementor. Следующий gate — browser test Elementor frontend/editor и provider-by-provider smoke test с реальными credentials. WordPress AI Client проверяется отдельно на WordPress 7.0 с настроенным AI Connector.

@@ -11,6 +11,9 @@ use DiasMazhenov\WPDsAiChatbot\Lifecycle\Migrator;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Enforce atomic session, IP and site-wide request budgets.
+ */
 final class RateLimiter {
 
 	/**
@@ -76,9 +79,11 @@ final class RateLimiter {
 		global $wpdb;
 
 		$table = Migrator::rate_limit_table();
-		$wpdb->query(
+		// Direct writes are required for atomic counters and cannot use object caching.
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$table} WHERE expires_at <= %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'DELETE FROM %i WHERE expires_at <= %d',
+				$table,
 				time()
 			)
 		);
@@ -100,11 +105,12 @@ final class RateLimiter {
 		$table      = Migrator::rate_limit_table();
 		$hash       = hash_hmac( 'sha256', $bucket, wp_salt( 'nonce' ) );
 		$query      = $wpdb->prepare(
-			"INSERT INTO {$table} (bucket_hash, request_count, expires_at)
+			'INSERT INTO %i (bucket_hash, request_count, expires_at)
 			VALUES (%s, 1, %d)
 			ON DUPLICATE KEY UPDATE
 			request_count = IF(expires_at <= %d, 1, request_count + 1),
-			expires_at = IF(expires_at <= %d, %d, expires_at)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			expires_at = IF(expires_at <= %d, %d, expires_at)',
+			$table,
 			$hash,
 			$expires_at,
 			$now,
@@ -112,7 +118,8 @@ final class RateLimiter {
 			$expires_at
 		);
 
-		if ( false === $wpdb->query( $query ) ) {
+		// The statement is prepared immediately above; the write must remain atomic.
+		if ( false === $wpdb->query( $query ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 			return array(
 				'allowed'     => false,
 				'remaining'   => 0,
@@ -120,9 +127,11 @@ final class RateLimiter {
 			);
 		}
 
-		$row = $wpdb->get_row(
+		// Read the authoritative counter written by the atomic upsert above.
+		$row = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT request_count, expires_at FROM {$table} WHERE bucket_hash = %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'SELECT request_count, expires_at FROM %i WHERE bucket_hash = %s',
+				$table,
 				$hash
 			),
 			ARRAY_A
@@ -151,7 +160,7 @@ final class RateLimiter {
 	 * @return string
 	 */
 	private function client_ip(): string {
-		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? wp_unslash( $_SERVER['REMOTE_ADDR'] ) : '';
+		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 		$ip = apply_filters( 'wpdsac_client_ip', $ip );
 
 		return is_string( $ip ) && filter_var( $ip, FILTER_VALIDATE_IP ) ? $ip : 'unknown';

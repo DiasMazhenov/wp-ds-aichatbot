@@ -9,14 +9,23 @@ namespace DiasMazhenov\WPDsAiChatbot\AI;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Generate replies through the Anthropic Messages API.
+ */
 final class AnthropicProvider extends AbstractHttpProvider {
 
-	/** @return string */
+	/**
+	 * Return the provider identifier.
+	 *
+	 * @return string
+	 */
 	protected function provider_id(): string {
 		return 'anthropic';
 	}
 
 	/**
+	 * Return the Anthropic Messages endpoint.
+	 *
 	 * @param array<string, mixed> $options Plugin settings.
 	 * @return string
 	 */
@@ -25,6 +34,8 @@ final class AnthropicProvider extends AbstractHttpProvider {
 	}
 
 	/**
+	 * Build an Anthropic Messages request body.
+	 *
 	 * @param string               $message    Visitor message.
 	 * @param string               $session_id Session UUID.
 	 * @param array<string, mixed> $options    Plugin settings.
@@ -45,6 +56,8 @@ final class AnthropicProvider extends AbstractHttpProvider {
 	}
 
 	/**
+	 * Build Anthropic authentication headers.
+	 *
 	 * @param string $api_key Provider API key.
 	 * @return array<string, string>
 	 */
@@ -57,6 +70,8 @@ final class AnthropicProvider extends AbstractHttpProvider {
 	}
 
 	/**
+	 * Extract text blocks from an Anthropic response.
+	 *
 	 * @param array<string, mixed> $response Decoded response.
 	 * @return string
 	 */

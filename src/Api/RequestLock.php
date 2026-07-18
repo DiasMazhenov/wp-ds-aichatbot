@@ -11,6 +11,9 @@ use DiasMazhenov\WPDsAiChatbot\Lifecycle\Migrator;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Serialize provider calls for each verified chat session.
+ */
 final class RequestLock {
 
 	/**
@@ -38,11 +41,12 @@ final class RequestLock {
 		$lock_hash  = hash_hmac( 'sha256', 'session:' . $session_id, wp_salt( 'nonce' ) );
 		$lock_token = wp_generate_password( 64, false, false );
 		$query      = $wpdb->prepare(
-			"INSERT INTO {$table} (lock_hash, lock_token, expires_at)
+			'INSERT INTO %i (lock_hash, lock_token, expires_at)
 			VALUES (%s, %s, %d)
 			ON DUPLICATE KEY UPDATE
 			lock_token = IF(expires_at <= %d, VALUES(lock_token), lock_token),
-			expires_at = IF(expires_at <= %d, VALUES(expires_at), expires_at)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			expires_at = IF(expires_at <= %d, VALUES(expires_at), expires_at)',
+			$table,
 			$lock_hash,
 			$lock_token,
 			$expires_at,
@@ -50,13 +54,16 @@ final class RequestLock {
 			$now
 		);
 
-		if ( false === $wpdb->query( $query ) ) {
+		// The statement is prepared immediately above; the write must remain atomic.
+		if ( false === $wpdb->query( $query ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 			return false;
 		}
 
-		$stored_token = $wpdb->get_var(
+		// Read the authoritative ownership token written by the atomic upsert.
+		$stored_token = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"SELECT lock_token FROM {$table} WHERE lock_hash = %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'SELECT lock_token FROM %i WHERE lock_hash = %s',
+				$table,
 				$lock_hash
 			)
 		);
@@ -77,9 +84,11 @@ final class RequestLock {
 		$table     = Migrator::request_lock_table();
 		$lock_hash = hash_hmac( 'sha256', 'session:' . $session_id, wp_salt( 'nonce' ) );
 
-		$wpdb->query(
+		// Ownership-checked deletion must reach the lock table immediately.
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$table} WHERE lock_hash = %s AND lock_token = %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'DELETE FROM %i WHERE lock_hash = %s AND lock_token = %s',
+				$table,
 				$lock_hash,
 				$lock_token
 			)
@@ -96,9 +105,11 @@ final class RequestLock {
 
 		$table = Migrator::request_lock_table();
 
-		$wpdb->query(
+		// Expired locks are transient coordination data and bypass object caching.
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
-				"DELETE FROM {$table} WHERE expires_at <= %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'DELETE FROM %i WHERE expires_at <= %d',
+				$table,
 				time()
 			)
 		);

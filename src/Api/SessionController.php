@@ -9,13 +9,23 @@ namespace DiasMazhenov\WPDsAiChatbot\Api;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Issue signed stateless chat sessions over REST.
+ */
 final class SessionController {
 
 	private const REST_NAMESPACE = 'wp-ds-aichatbot/v1';
 
+	/**
+	 * Session token service.
+	 *
+	 * @var SessionToken
+	 */
 	private $tokens;
 
 	/**
+	 * Store the session token service.
+	 *
 	 * @param SessionToken $tokens Session token service.
 	 */
 	public function __construct( SessionToken $tokens ) {
@@ -60,4 +70,3 @@ final class SessionController {
 		return $response;
 	}
 }
-

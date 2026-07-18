@@ -9,8 +9,16 @@ namespace DiasMazhenov\WPDsAiChatbot\Chat;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Register and conditionally enqueue the frontend bundle.
+ */
 final class Assets {
 
+	/**
+	 * Whether frontend configuration has been localized.
+	 *
+	 * @var bool
+	 */
 	private $localized = false;
 
 	/**

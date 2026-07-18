@@ -27,7 +27,7 @@ if ! grep -qx 'wp-ds-aichatbot/readme.txt' <<< "${archive_entries}"; then
 	exit 1
 fi
 
-if grep -Eq '^wp-ds-aichatbot/(\.github|scripts|tests|Context\.md|Plan\.md|composer\.json|package(-lock)?\.json|phpcs\.xml\.dist)' <<< "${archive_entries}"; then
+if grep -Eq '^wp-ds-aichatbot/(\.github|scripts|tests|Context\.md|Plan\.md|composer\.(json|lock)|package(-lock)?\.json|phpcs\.xml\.dist)' <<< "${archive_entries}"; then
 	echo 'Package validation failed: development files are present.' >&2
 	exit 1
 fi

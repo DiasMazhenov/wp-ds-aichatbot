@@ -11,6 +11,9 @@ use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Register and sanitize plugin settings.
+ */
 final class Settings {
 
 	public const OPTION_NAME = 'wpdsac_settings';
@@ -32,19 +35,19 @@ final class Settings {
 	 */
 	public static function defaults(): array {
 		return array(
-			'global_enabled'           => false,
-			'title'                    => __( 'AI Assistant', 'wp-ds-aichatbot' ),
-			'welcome_message'          => __( 'Hello! How can I help you?', 'wp-ds-aichatbot' ),
-			'rate_limit_requests'      => 10,
-			'rate_limit_window'        => 60,
-			'daily_request_limit'      => 500,
-			'ai_provider'              => 'openai',
-			'ai_instructions'          => __( 'You are a concise and helpful website support assistant. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
-			'ai_max_output_tokens'     => 1200,
-			'openai_model'             => 'gpt-5.6-sol',
-			'anthropic_model'          => 'claude-sonnet-4-6',
-			'gemini_model'             => 'gemini-3.5-flash',
-			'openrouter_model'         => 'openai/gpt-5.6-luna',
+			'global_enabled'       => false,
+			'title'                => __( 'AI Assistant', 'wp-ds-aichatbot' ),
+			'welcome_message'      => __( 'Hello! How can I help you?', 'wp-ds-aichatbot' ),
+			'rate_limit_requests'  => 10,
+			'rate_limit_window'    => 60,
+			'daily_request_limit'  => 500,
+			'ai_provider'          => 'openai',
+			'ai_instructions'      => __( 'You are a concise and helpful website support assistant. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
+			'ai_max_output_tokens' => 1200,
+			'openai_model'         => 'gpt-5.6-sol',
+			'anthropic_model'      => 'claude-sonnet-4-6',
+			'gemini_model'         => 'gemini-3.5-flash',
+			'openrouter_model'     => 'openai/gpt-5.6-luna',
 		);
 	}
 
@@ -148,19 +151,19 @@ final class Settings {
 		$provider  = in_array( $provider, $providers, true ) ? $provider : 'openai';
 
 		return array(
-			'global_enabled'           => ! empty( $input['global_enabled'] ),
-			'title'                    => sanitize_text_field( $input['title'] ?? '' ),
-			'welcome_message'          => sanitize_textarea_field( $input['welcome_message'] ?? '' ),
-			'rate_limit_requests'      => min( 100, max( 1, absint( $input['rate_limit_requests'] ?? 10 ) ) ),
-			'rate_limit_window'        => min( HOUR_IN_SECONDS, max( 10, absint( $input['rate_limit_window'] ?? 60 ) ) ),
-			'daily_request_limit'      => min( 100000, absint( $input['daily_request_limit'] ?? 500 ) ),
-			'ai_provider'              => $provider,
-			'ai_instructions'          => sanitize_textarea_field( $input['ai_instructions'] ?? '' ),
-			'ai_max_output_tokens'     => min( 8000, max( 100, absint( $input['ai_max_output_tokens'] ?? 1200 ) ) ),
-			'openai_model'             => $this->sanitize_model_id( $input['openai_model'] ?? '', 'gpt-5.6-sol' ),
-			'anthropic_model'          => $this->sanitize_model_id( $input['anthropic_model'] ?? '', 'claude-sonnet-4-6' ),
-			'gemini_model'             => $this->sanitize_model_id( $input['gemini_model'] ?? '', 'gemini-3.5-flash' ),
-			'openrouter_model'         => $this->sanitize_model_id( $input['openrouter_model'] ?? '', 'openai/gpt-5.6-luna' ),
+			'global_enabled'       => ! empty( $input['global_enabled'] ),
+			'title'                => sanitize_text_field( $input['title'] ?? '' ),
+			'welcome_message'      => sanitize_textarea_field( $input['welcome_message'] ?? '' ),
+			'rate_limit_requests'  => min( 100, max( 1, absint( $input['rate_limit_requests'] ?? 10 ) ) ),
+			'rate_limit_window'    => min( HOUR_IN_SECONDS, max( 10, absint( $input['rate_limit_window'] ?? 60 ) ) ),
+			'daily_request_limit'  => min( 100000, absint( $input['daily_request_limit'] ?? 500 ) ),
+			'ai_provider'          => $provider,
+			'ai_instructions'      => sanitize_textarea_field( $input['ai_instructions'] ?? '' ),
+			'ai_max_output_tokens' => min( 8000, max( 100, absint( $input['ai_max_output_tokens'] ?? 1200 ) ) ),
+			'openai_model'         => $this->sanitize_model_id( $input['openai_model'] ?? '', 'gpt-5.6-sol' ),
+			'anthropic_model'      => $this->sanitize_model_id( $input['anthropic_model'] ?? '', 'claude-sonnet-4-6' ),
+			'gemini_model'         => $this->sanitize_model_id( $input['gemini_model'] ?? '', 'gemini-3.5-flash' ),
+			'openrouter_model'     => $this->sanitize_model_id( $input['openrouter_model'] ?? '', 'openai/gpt-5.6-luna' ),
 		);
 	}
 
@@ -277,7 +280,7 @@ final class Settings {
 
 			printf(
 				'<input class="small-text" type="number" min="%1$d" step="1" name="%2$s" value="%3$d">',
-				$minimum,
+				absint( $minimum ),
 				esc_attr( $name ),
 				(int) $options[ $key ]
 			);
@@ -319,6 +322,7 @@ final class Settings {
 	/**
 	 * Render a write-only API key input and its active source.
 	 *
+	 * @param string $provider Provider ID.
 	 * @return void
 	 */
 	private function render_api_key_field( string $provider ): void {
@@ -355,10 +359,10 @@ final class Settings {
 	 */
 	private function render_provider_select( string $name, string $current ): void {
 		$providers = array(
-			'openai'      => __( 'OpenAI', 'wp-ds-aichatbot' ),
-			'anthropic'   => __( 'Anthropic Claude', 'wp-ds-aichatbot' ),
-			'gemini'      => __( 'Google Gemini', 'wp-ds-aichatbot' ),
-			'openrouter'  => __( 'OpenRouter', 'wp-ds-aichatbot' ),
+			'openai'       => __( 'OpenAI', 'wp-ds-aichatbot' ),
+			'anthropic'    => __( 'Anthropic Claude', 'wp-ds-aichatbot' ),
+			'gemini'       => __( 'Google Gemini', 'wp-ds-aichatbot' ),
+			'openrouter'   => __( 'OpenRouter', 'wp-ds-aichatbot' ),
 			'wordpress_ai' => __( 'WordPress AI Client (WordPress 7.0+)', 'wp-ds-aichatbot' ),
 		);
 

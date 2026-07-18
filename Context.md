@@ -139,4 +139,7 @@
 - Core smoke test подтверждает активацию, DB version `2`, обе таблицы, non-autoload settings, shortcode/global rendering, escaping, session REST, malformed-token rejection и безопасный HTTP 503 без credentials.
 - Elementor smoke test устанавливает актуальный Elementor из WordPress.org и подтверждает загрузку Elementor и регистрацию widget `wpdsac-chatbot`.
 - GitHub Actions собирает artifact только после PHP lint и обоих WordPress Playground smoke tests.
+- Версия `0.5.1`: включён обязательный WPCS/PHPCompatibilityWP gate, зависимости зафиксированы в `composer.lock`, а PSR-4 filenames имеют узкое documented исключение из WordPress filename sniff.
+- PHPCBF исправил форматирование; для внутренних таблиц SQL использует `%i`, прямые атомарные DB operations документированы точечными PHPCS annotations, а base64 используется только как base64url transport encoding подписанных session tokens.
+- После WPCS/SQL правок core и Elementor smoke tests повторно прошли локально.
 - Следующий gate: browser test Elementor frontend/editor и provider-by-provider smoke test с реальными server-side credentials.

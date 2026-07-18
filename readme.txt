@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.0
+Stable tag: 0.5.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,6 +25,11 @@ API keys remain server-side. Public requests use signed sessions, atomic rate li
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.1 =
+* Added enforced WordPress Coding Standards and PHP compatibility checks.
+* Added reproducible WordPress and Elementor integration tests.
+* Prepared internal database table identifiers with WordPress `%i` placeholders.
 
 = 0.5.0 =
 * Added multi-provider AI support.

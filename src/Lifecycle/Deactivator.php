@@ -9,6 +9,9 @@ namespace DiasMazhenov\WPDsAiChatbot\Lifecycle;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Remove temporary scheduled state during deactivation.
+ */
 final class Deactivator {
 
 	/**

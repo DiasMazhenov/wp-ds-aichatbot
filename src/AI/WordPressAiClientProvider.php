@@ -11,6 +11,9 @@ use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Generate replies through the WordPress provider-agnostic AI Client.
+ */
 final class WordPressAiClientProvider implements ProviderInterface {
 
 	/**
