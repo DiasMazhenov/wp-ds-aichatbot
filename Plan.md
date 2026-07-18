@@ -136,4 +136,4 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-После проверки и commit версии `0.3.0` можно проводить первый функциональный smoke test на WordPress: активация, сохранение/override API key, shortcode, глобальный режим и Elementor widget. Следующий engineering-срез — защита от параллельных запросов и бюджетные ограничения; затем installable ZIP и расширенный WordPress/Elementor test gate.
+Версия `0.3.0` прошла CI на PHP 7.4, 8.1 и 8.3. Уже можно проводить первый функциональный smoke test на WordPress: активация, сохранение/override API key, shortcode, глобальный режим и Elementor widget. Следующий engineering-срез — защита от параллельных запросов и бюджетные ограничения; затем installable ZIP и расширенный WordPress/Elementor test gate.

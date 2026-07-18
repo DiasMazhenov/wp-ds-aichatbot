@@ -114,6 +114,7 @@
 - Альтернативный provider подключается через `wpdsac_ai_provider`, а request body — через `wpdsac_openai_request_body`.
 - JavaScript и `composer.json` прошли локальную синтаксическую проверку.
 - GitHub Actions CI успешно выполнил PHP syntax lint на PHP 7.4, 8.1 и 8.3 для commits `ebf6388`, `11ea7f1` и REST/security-среза `3d95513`.
+- GitHub Actions CI также успешно завершился для OpenAI provider commit `1ba8c49` на PHP 7.4, 8.1 и 8.3.
 - Локальный PHP/WordPress runtime отсутствует; проверка реальной активации и Elementor editor остаётся отдельным quality gate.
-- Первый функциональный тест становится возможен после прохождения CI для `0.3.0` и установки плагина на WordPress с API key.
+- Версия `0.3.0` прошла CI и уже готова к первому функциональному smoke test после установки на WordPress с API key.
 - Следующий срез: защита от параллельных запросов, более строгие бюджетные ограничения и installable ZIP.
