@@ -119,6 +119,7 @@
 5. Shortcode, Elementor и глобальный режим используют один renderer и один frontend bundle.
 6. Большие embeddings и журналы не хранятся в autoloaded options.
 7. Каждый завершённый срез проверяется, коммитится и отправляется в GitHub; время коммита фиксируется в чате.
+8. До отдельного решения о minor/major release версия остаётся в ветке `0.5.x`; каждый релиз повышает только третью цифру.
 
 ## Предлагаемая структура
 
@@ -151,6 +152,6 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.7.0` добавляет отдельную таблицу knowledge chunks, автоматическую синхронизацию опубликованных страниц/записей, защищённую ручную переиндексацию и provider-agnostic RAG-контекст. Локальный keyword ranking не требует embedding API и работает с любым выбранным провайдером. Следующий срез — ручной FAQ и semantic embeddings adapter; затем PDF и WooCommerce. Отдельные gates — Elementor editor iframe и provider-by-provider smoke test с реальными credentials.
+Версия `0.5.3` добавляет отдельную таблицу knowledge chunks, автоматическую синхронизацию опубликованных страниц/записей, защищённую ручную переиндексацию и provider-agnostic RAG-контекст. Локальный keyword ranking не требует embedding API и работает с любым выбранным провайдером. Следующий срез — ручной FAQ и semantic embeddings adapter; затем PDF и WooCommerce. Отдельные gates — Elementor editor iframe и provider-by-provider smoke test с реальными credentials.
 
 Локальные `node_modules` и `vendor` являются только воспроизводимой тестовой средой, не попадают в Git или installable ZIP и будут удалены перед финальной передачей. До завершения активной разработки они сохраняются для быстрых повторных проверок.

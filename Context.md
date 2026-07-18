@@ -145,12 +145,12 @@
 - Elementor integration smoke test теперь публикует временную страницу с реальным `wpdsac-chatbot` widget и проверяет frontend markup, escaping пользовательских значений, CSS, JavaScript и локализованную REST-конфигурацию.
 - Core и расширенный Elementor frontend smoke tests успешно прошли локально 2026-07-19 без добавления браузерных npm-зависимостей.
 - `node_modules` (WordPress Playground/PHP-WASM) и `vendor` нужны только для разработки, исключены из Git и installable ZIP и будут удалены перед финальной передачей.
-- Версия `0.6.0`: добавлен отдельный `Chat\Appearance` со схемой визуальных defaults, whitelist позиции и ограниченными числовыми диапазонами.
+- Версия `0.5.2`: добавлен отдельный `Chat\Appearance` со схемой визуальных defaults, whitelist позиции и ограниченными числовыми диапазонами.
 - В `Настройки → DS AI Chatbot` доступны цвета акцента/панели/текста/сообщений/границ, ширина, размер шрифта, скругление, позиция глобального виджета и отступы.
 - Административный live preview работает без сторонних UI-библиотек; его CSS/JS загружаются только на странице настроек плагина.
 - Визуальные значения передаются через экранированные CSS custom properties общему renderer и одинаково работают для global, shortcode и Elementor.
 - Интеграционные проверки подтверждают custom appearance, левую позицию, fallback невалидного цвета и ограничения ширины/скругления/шрифта в core и Elementor режимах.
-- Версия `0.7.0`: схема БД обновлена до `3`, добавлена таблица `{prefix}wpdsac_knowledge_chunks` с уникальным source/chunk index и hash содержимого.
+- Версия `0.5.3`: схема БД обновлена до `3`, добавлена таблица `{prefix}wpdsac_knowledge_chunks` с уникальным source/chunk index и hash содержимого.
 - `Knowledge\Chunker` удаляет shortcode/HTML, нормализует пробелы и создаёт ограниченные текстовые фрагменты; в одной индексации источник ограничен 200 chunks.
 - `Knowledge\PostIndexer` индексирует только опубликованные `page`/`post`, автоматически синхронизирует изменения и удаление; список post types расширяется фильтром `wpdsac_knowledge_post_types`.
 - `Инструменты → DS AI Knowledge` показывает количество фрагментов и запускает capability/nonce-protected переиндексацию до 200 последних изменённых источников за один запрос.
@@ -158,3 +158,4 @@
 - `Knowledge\Retriever` помечает найденный контекст как недоверенный reference material и подключается через общий `wpdsac_ai_message`, поэтому работает со всеми AI providers.
 - Core runtime test подтверждает миграцию таблицы, индексацию WordPress page, поиск фрагмента и RAG augmentation без внешнего API key.
 - Следующий Knowledge-срез: ручной FAQ и optional semantic embeddings; затем PDF и WooCommerce.
+- Правило версий: до отдельного решения остаёмся в ветке `0.5.x` и увеличиваем только третью цифру (`0.5.3`, `0.5.4`, ...).

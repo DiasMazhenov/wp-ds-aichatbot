@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.7.0
+Stable tag: 0.5.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,12 +30,12 @@ An optional knowledge layer indexes published WordPress pages and posts into a d
 
 == Changelog ==
 
-= 0.7.0 =
+= 0.5.3 =
 * Added a provider-agnostic Knowledge/RAG pipeline for WordPress pages and posts.
 * Added automatic source synchronization and a protected manual reindex tool.
 * Added a dedicated knowledge fragment table outside WordPress options.
 
-= 0.6.0 =
+= 0.5.2 =
 * Added visual chat settings with a live admin preview.
 * Added shared colors, width, font size, corner radius, position, and offset controls.
 
