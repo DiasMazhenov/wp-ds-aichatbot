@@ -107,6 +107,6 @@
 - Frontend запрашивает сессию в REST, хранит token только в `sessionStorage` и блокирует повторную отправку формы во время запроса.
 - `wpdsac_chat_reply` является extension point для следующего AI provider; без провайдера `/chat` возвращает ожидаемый HTTP 503.
 - JavaScript и `composer.json` прошли локальную синтаксическую проверку.
-- GitHub Actions CI успешно выполнил PHP syntax lint на PHP 7.4, 8.1 и 8.3 для commit `ebf6388`.
+- GitHub Actions CI успешно выполнил PHP syntax lint на PHP 7.4, 8.1 и 8.3 для commits `ebf6388`, `11ea7f1` и REST/security-среза `3d95513`.
 - Локальный PHP/WordPress runtime отсутствует; проверка реальной активации и Elementor editor остаётся отдельным quality gate.
 - Следующий срез: `ProviderInterface`, OpenAI Responses API и безопасное серверное хранение API key.

@@ -87,7 +87,7 @@
 
 ### 8. Проверка и релиз
 
-- [ ] PHP syntax lint.
+- [x] PHP syntax lint в CI на PHP 7.4, 8.1 и 8.3.
 - [ ] WordPress Coding Standards.
 - [ ] Unit и integration tests.
 - [ ] Проверка активации/деактивации/удаления.
