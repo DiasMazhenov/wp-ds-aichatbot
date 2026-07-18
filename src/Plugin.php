@@ -17,6 +17,7 @@ use DiasMazhenov\WPDsAiChatbot\AI\ProviderManager;
 use DiasMazhenov\WPDsAiChatbot\AI\WordPressAiClientProvider;
 use DiasMazhenov\WPDsAiChatbot\Api\ChatController;
 use DiasMazhenov\WPDsAiChatbot\Api\RateLimiter;
+use DiasMazhenov\WPDsAiChatbot\Api\RequestLock;
 use DiasMazhenov\WPDsAiChatbot\Api\SessionController;
 use DiasMazhenov\WPDsAiChatbot\Api\SessionToken;
 use DiasMazhenov\WPDsAiChatbot\Chat\Assets;
@@ -54,7 +55,8 @@ final class Plugin {
 		$renderer     = new Renderer( $assets );
 		$tokens       = new SessionToken();
 		$rate_limiter = new RateLimiter();
-		$chat_api     = new ChatController( $tokens, $rate_limiter );
+		$request_lock = new RequestLock();
+		$chat_api     = new ChatController( $tokens, $rate_limiter, $request_lock );
 		$session_api  = new SessionController( $tokens );
 		$credentials  = new CredentialResolver();
 		$providers    = new ProviderManager(
@@ -72,6 +74,7 @@ final class Plugin {
 		( new Settings() )->register_hooks();
 		$assets->register_hooks();
 		$rate_limiter->register_hooks();
+		$request_lock->register_hooks();
 		$chat_api->register_hooks();
 		$session_api->register_hooks();
 		$providers->register_hooks();

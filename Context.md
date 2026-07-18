@@ -124,4 +124,9 @@
 - Multi-provider commit `e5689f3` успешно прошёл GitHub Actions PHP syntax lint на PHP 7.4, 8.1 и 8.3.
 - Локальный PHP/WordPress runtime отсутствует; проверка реальной активации и Elementor editor остаётся отдельным quality gate.
 - Версия `0.4.0` прошла CI и готова к provider-by-provider smoke test после установки на WordPress с соответствующими API keys.
+- Версия `0.5.0`: добавлена таблица `{prefix}wpdsac_request_locks`, схема БД обновлена до версии `2`.
+- Один session UUID может иметь только один активный provider request; lock создаётся атомарно, имеет TTL 45 секунд и удаляется только владельцем matching token.
+- Добавлен атомарный site-wide rolling budget `daily_request_limit` на 24 часа, по умолчанию 500 provider calls; `0` отключает бюджет.
+- REST возвращает HTTP 409 для параллельного request и HTTP 429 + `Retry-After` при исчерпании session/IP или site budget.
+- WP-Cron очищает истёкшие rate-limit buckets и request locks; uninstall удаляет обе plugin tables.
 - Следующий срез: защита от параллельных запросов, более строгие бюджетные ограничения и installable ZIP.

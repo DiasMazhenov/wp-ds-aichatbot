@@ -19,5 +19,7 @@ delete_option( 'wpdsac_db_version' );
 wp_clear_scheduled_hook( 'wpdsac_cleanup_logs' );
 wp_clear_scheduled_hook( 'wpdsac_cleanup_rate_limits' );
 
-$rate_limit_table = $wpdb->prefix . 'wpdsac_rate_limits';
+$rate_limit_table   = $wpdb->prefix . 'wpdsac_rate_limits';
+$request_lock_table = $wpdb->prefix . 'wpdsac_request_locks';
 $wpdb->query( "DROP TABLE IF EXISTS {$rate_limit_table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.SchemaChange
+$wpdb->query( "DROP TABLE IF EXISTS {$request_lock_table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.SchemaChange

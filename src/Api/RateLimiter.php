@@ -50,6 +50,24 @@ final class RateLimiter {
 	}
 
 	/**
+	 * Consume the site-wide rolling 24-hour request budget.
+	 *
+	 * @param int $limit Maximum provider calls, or zero to disable the budget.
+	 * @return array<string, bool|int>
+	 */
+	public function consume_daily_budget( int $limit ): array {
+		if ( $limit <= 0 ) {
+			return array(
+				'allowed'     => true,
+				'remaining'   => -1,
+				'retry_after' => 0,
+			);
+		}
+
+		return $this->consume( 'budget:site', $limit, DAY_IN_SECONDS );
+	}
+
+	/**
 	 * Delete expired buckets.
 	 *
 	 * @return void

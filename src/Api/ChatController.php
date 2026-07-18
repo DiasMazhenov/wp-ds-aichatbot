@@ -19,15 +19,19 @@ final class ChatController {
 
 	private $limiter;
 
+	private $request_lock;
+
 	private $session_id = '';
 
 	/**
-	 * @param SessionToken $tokens  Session token service.
-	 * @param RateLimiter $limiter Atomic request limiter.
+	 * @param SessionToken $tokens       Session token service.
+	 * @param RateLimiter $limiter      Atomic request limiter.
+	 * @param RequestLock $request_lock In-flight request lock.
 	 */
-	public function __construct( SessionToken $tokens, RateLimiter $limiter ) {
-		$this->tokens  = $tokens;
-		$this->limiter = $limiter;
+	public function __construct( SessionToken $tokens, RateLimiter $limiter, RequestLock $request_lock ) {
+		$this->tokens       = $tokens;
+		$this->limiter      = $limiter;
+		$this->request_lock = $request_lock;
 	}
 
 	/**
@@ -121,51 +125,102 @@ final class ChatController {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function respond( \WP_REST_Request $request ) {
-		$options = Settings::get();
-		$limit   = $this->limiter->consume_request(
-			$this->session_id,
-			(int) $options['rate_limit_requests'],
-			(int) $options['rate_limit_window']
-		);
+		$lock_ttl   = min( 120, max( 10, absint( apply_filters( 'wpdsac_request_lock_ttl', 45 ) ) ) );
+		$lock_token = $this->request_lock->acquire( $this->session_id, $lock_ttl );
 
-		if ( ! $limit['allowed'] ) {
+		if ( ! is_string( $lock_token ) ) {
 			$response = new \WP_REST_Response(
 				array(
-					'code'    => 'wpdsac_rate_limited',
-					'message' => __( 'Too many chat requests. Please try again later.', 'wp-ds-aichatbot' ),
+					'code'    => 'wpdsac_request_in_progress',
+					'message' => __( 'A chat request is already in progress. Please wait.', 'wp-ds-aichatbot' ),
 				),
-				429
+				409
 			);
-			$response->header( 'Retry-After', (string) $limit['retry_after'] );
-			$response->header( 'X-RateLimit-Remaining', '0' );
+			$response->header( 'Retry-After', '3' );
 
 			return $response;
 		}
 
-		$message = (string) $request->get_param( 'message' );
-		$reply   = apply_filters( 'wpdsac_chat_reply', null, $message, $this->session_id, $request );
-
-		if ( is_wp_error( $reply ) ) {
-			return $reply;
-		}
-
-		if ( ! is_string( $reply ) || '' === trim( $reply ) ) {
-			return new \WP_Error(
-				'wpdsac_provider_unavailable',
-				__( 'The AI provider is not configured yet.', 'wp-ds-aichatbot' ),
-				array( 'status' => 503 )
+		try {
+			$options = Settings::get();
+			$limit   = $this->limiter->consume_request(
+				$this->session_id,
+				(int) $options['rate_limit_requests'],
+				(int) $options['rate_limit_window']
 			);
-		}
 
+			if ( ! $limit['allowed'] ) {
+				return $this->limit_response(
+					'wpdsac_rate_limited',
+					__( 'Too many chat requests. Please try again later.', 'wp-ds-aichatbot' ),
+					(int) $limit['retry_after'],
+					'X-RateLimit-Remaining'
+				);
+			}
+
+			$budget = $this->limiter->consume_daily_budget( (int) $options['daily_request_limit'] );
+
+			if ( ! $budget['allowed'] ) {
+				return $this->limit_response(
+					'wpdsac_daily_budget_exhausted',
+					__( 'The daily AI request budget has been reached. Please try again later.', 'wp-ds-aichatbot' ),
+					(int) $budget['retry_after'],
+					'X-Daily-Budget-Remaining'
+				);
+			}
+
+			$message = (string) $request->get_param( 'message' );
+			$reply   = apply_filters( 'wpdsac_chat_reply', null, $message, $this->session_id, $request );
+
+			if ( is_wp_error( $reply ) ) {
+				return $reply;
+			}
+
+			if ( ! is_string( $reply ) || '' === trim( $reply ) ) {
+				return new \WP_Error(
+					'wpdsac_provider_unavailable',
+					__( 'The AI provider is not configured yet.', 'wp-ds-aichatbot' ),
+					array( 'status' => 503 )
+				);
+			}
+
+			$response = new \WP_REST_Response(
+				array(
+					'reply'           => sanitize_textarea_field( $reply ),
+					'remaining'       => (int) $limit['remaining'],
+					'daily_remaining' => (int) $budget['remaining'],
+				),
+				200
+			);
+			$response->header( 'X-RateLimit-Remaining', (string) $limit['remaining'] );
+			$response->header( 'X-Daily-Budget-Remaining', (string) $budget['remaining'] );
+			$response->header( 'Cache-Control', 'no-store' );
+
+			return $response;
+		} finally {
+			$this->request_lock->release( $this->session_id, $lock_token );
+		}
+	}
+
+	/**
+	 * Build a consistent HTTP 429 response.
+	 *
+	 * @param string $code        Public error code.
+	 * @param string $message     Public error message.
+	 * @param int    $retry_after Retry delay in seconds.
+	 * @param string $header      Remaining-budget header name.
+	 * @return \WP_REST_Response
+	 */
+	private function limit_response( string $code, string $message, int $retry_after, string $header ): \WP_REST_Response {
 		$response = new \WP_REST_Response(
 			array(
-				'reply'     => sanitize_textarea_field( $reply ),
-				'remaining' => (int) $limit['remaining'],
+				'code'    => $code,
+				'message' => $message,
 			),
-			200
+			429
 		);
-		$response->header( 'X-RateLimit-Remaining', (string) $limit['remaining'] );
-		$response->header( 'Cache-Control', 'no-store' );
+		$response->header( 'Retry-After', (string) $retry_after );
+		$response->header( $header, '0' );
 
 		return $response;
 	}

@@ -37,6 +37,7 @@ final class Settings {
 			'welcome_message'          => __( 'Hello! How can I help you?', 'wp-ds-aichatbot' ),
 			'rate_limit_requests'      => 10,
 			'rate_limit_window'        => 60,
+			'daily_request_limit'      => 500,
 			'ai_provider'              => 'openai',
 			'ai_instructions'          => __( 'You are a concise and helpful website support assistant. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
 			'ai_max_output_tokens'     => 1200,
@@ -120,6 +121,7 @@ final class Settings {
 		$this->add_field( 'welcome_message', __( 'Welcome message', 'wp-ds-aichatbot' ), 'textarea' );
 		$this->add_field( 'rate_limit_requests', __( 'Requests per window', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'rate_limit_window', __( 'Rate-limit window (seconds)', 'wp-ds-aichatbot' ), 'number' );
+		$this->add_field( 'daily_request_limit', __( 'AI requests per 24 hours', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'ai_provider', __( 'Provider', 'wp-ds-aichatbot' ), 'provider_select', 'wpdsac_ai' );
 		$this->add_field( 'ai_instructions', __( 'Assistant instructions', 'wp-ds-aichatbot' ), 'textarea', 'wpdsac_ai' );
 		$this->add_field( 'ai_max_output_tokens', __( 'Maximum output tokens', 'wp-ds-aichatbot' ), 'number', 'wpdsac_ai' );
@@ -151,6 +153,7 @@ final class Settings {
 			'welcome_message'          => sanitize_textarea_field( $input['welcome_message'] ?? '' ),
 			'rate_limit_requests'      => min( 100, max( 1, absint( $input['rate_limit_requests'] ?? 10 ) ) ),
 			'rate_limit_window'        => min( HOUR_IN_SECONDS, max( 10, absint( $input['rate_limit_window'] ?? 60 ) ) ),
+			'daily_request_limit'      => min( 100000, absint( $input['daily_request_limit'] ?? 500 ) ),
 			'ai_provider'              => $provider,
 			'ai_instructions'          => sanitize_textarea_field( $input['ai_instructions'] ?? '' ),
 			'ai_max_output_tokens'     => min( 8000, max( 100, absint( $input['ai_max_output_tokens'] ?? 1200 ) ) ),
@@ -171,8 +174,8 @@ final class Settings {
 	public function sanitize_api_key( $input, string $provider = 'openai' ): string {
 		$resolver = new CredentialResolver();
 		$option   = $resolver->option_name( $provider );
-		$current = get_option( $option, '' );
-		$value   = is_string( $input ) ? trim( $input ) : '';
+		$current  = get_option( $option, '' );
+		$value    = is_string( $input ) ? trim( $input ) : '';
 
 		if ( '' === $value ) {
 			return is_string( $current ) ? $current : '';
@@ -270,8 +273,11 @@ final class Settings {
 		}
 
 		if ( 'number' === $args['type'] ) {
+			$minimum = 'daily_request_limit' === $key ? 0 : 1;
+
 			printf(
-				'<input class="small-text" type="number" min="1" step="1" name="%1$s" value="%2$d">',
+				'<input class="small-text" type="number" min="%1$d" step="1" name="%2$s" value="%3$d">',
+				$minimum,
 				esc_attr( $name ),
 				(int) $options[ $key ]
 			);

@@ -59,3 +59,13 @@ define( 'WPDSAC_OPENROUTER_API_KEY', 'ваш-ключ' );
 Прямые запросы выполняются через WordPress HTTP API с запретом redirects. OpenAI, OpenRouter и Gemini получают `store: false`. Registry расширяется через `wpdsac_ai_providers`, выбор — через `wpdsac_ai_provider_id`/`wpdsac_ai_provider`, request body — через общий `wpdsac_ai_request_body` и provider-specific фильтры вида `wpdsac_gemini_request_body`. Sanitized diagnostics ошибок передаются в `wpdsac_ai_provider_error`; прежние OpenAI-интеграции сохраняют `wpdsac_openai_error`.
 
 Без ключа выбранного direct provider или настроенного WordPress AI Connector endpoint чата ожидаемо возвращает HTTP 503.
+
+## Защита бюджета
+
+- session/IP rate limit хранится в атомарных database buckets;
+- одновременно разрешён только один provider request на подписанную сессию;
+- глобальный rolling-лимит `AI requests per 24 hours` по умолчанию равен `500`; значение `0` отключает его;
+- максимальный размер ответа ограничивается общей настройкой `Maximum output tokens`;
+- истёкшие rate-limit buckets и брошенные locks удаляются WP-Cron.
+
+Параллельный запрос получает HTTP 409, исчерпанный локальный или глобальный лимит — HTTP 429 с `Retry-After`.

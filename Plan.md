@@ -57,7 +57,8 @@
 - [x] Строгая схема аргументов и ограничения длины.
 - [x] Серверный session UUID; запрет пользовательских option names.
 - [x] Rate limit с атомарным счётчиком.
-- [ ] Защита от параллельных запросов и ограничения расходов.
+- [x] Атомарная защита от параллельных запросов одной сессии с TTL и ownership token.
+- [x] Глобальный rolling request budget на 24 часа и максимальный output token limit.
 - [ ] Безопасный streaming без прямого PHP endpoint и ручного `wp-load.php`.
 
 ### 5. AI provider
@@ -141,4 +142,4 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Multi-provider версия `0.4.0` прошла CI на PHP 7.4, 8.1 и 8.3. Теперь нужен smoke test каждого доступного провайдера; WordPress AI Client проверяется отдельно на WordPress 7.0 с настроенным AI Connector. Следующий engineering-срез — защита от параллельных запросов и бюджетные ограничения; затем installable ZIP и расширенный WordPress/Elementor test gate.
+Проверить и закоммитить security/budget версию `0.5.0`. После CI следующий срез — installable ZIP и расширенный WordPress/Elementor test gate. Provider-by-provider smoke test требует реального WordPress и соответствующих API keys; WordPress AI Client проверяется отдельно на WordPress 7.0 с настроенным AI Connector.
