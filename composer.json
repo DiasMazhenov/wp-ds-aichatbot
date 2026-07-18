@@ -1,0 +1,30 @@
+{
+  "name": "diasmazhenov/wp-ds-aichatbot",
+  "description": "Extensible AI chatbot plugin for WordPress and Elementor.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "require": {
+    "php": ">=7.4"
+  },
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+    "phpcompatibility/php-compatibility": "^9.3",
+    "wp-coding-standards/wpcs": "^3.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "DiasMazhenov\\WPDsAiChatbot\\": "src/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    },
+    "sort-packages": true
+  },
+  "scripts": {
+    "lint": "phpcs -q",
+    "format": "phpcbf"
+  }
+}
+

@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<ruleset name="WP DS AI Chatbot">
+	<description>WordPress Coding Standards for WP DS AI Chatbot.</description>
+
+	<file>wp-ds-aichatbot.php</file>
+	<file>src</file>
+	<file>templates</file>
+	<exclude-pattern>vendor/*</exclude-pattern>
+
+	<arg name="basepath" value="."/>
+	<arg name="colors"/>
+	<arg name="extensions" value="php"/>
+	<arg name="parallel" value="4"/>
+
+	<config name="minimum_supported_wp_version" value="6.6"/>
+	<config name="testVersion" value="7.4-"/>
+
+	<rule ref="WordPress"/>
+	<rule ref="PHPCompatibilityWP"/>
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="wp-ds-aichatbot"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>
+

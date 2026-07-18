@@ -1,0 +1,23 @@
+<?php
+/**
+ * Plugin deactivation routine.
+ *
+ * @package WPDsAiChatbot
+ */
+
+namespace DiasMazhenov\WPDsAiChatbot\Lifecycle;
+
+defined( 'ABSPATH' ) || exit;
+
+final class Deactivator {
+
+	/**
+	 * Clear temporary plugin state while preserving user data.
+	 *
+	 * @return void
+	 */
+	public static function deactivate(): void {
+		wp_clear_scheduled_hook( 'wpdsac_cleanup_logs' );
+	}
+}
+
