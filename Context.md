@@ -101,5 +101,6 @@
 - Первый срез: bootstrap, autoload, lifecycle, Settings API, общий renderer, shortcode, глобальный режим и Elementor widget реализованы.
 - Assets загружаются только при фактическом render чатбота.
 - JavaScript и `composer.json` прошли локальную синтаксическую проверку.
-- Локальный PHP runtime отсутствует; PHP syntax lint выполняет добавленный GitHub Actions CI. До live-проверки нужен WordPress runtime с PHP.
+- GitHub Actions CI успешно выполнил PHP syntax lint на PHP 7.4, 8.1 и 8.3 для commit `ebf6388`.
+- Локальный PHP/WordPress runtime отсутствует; проверка реальной активации и Elementor editor остаётся отдельным quality gate.
 - Следующий срез: REST endpoint, безопасная session model и rate limiter без OpenAI-вызова.
