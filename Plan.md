@@ -99,7 +99,8 @@
 - [ ] Проверка активации/деактивации/удаления.
 - [ ] Проверка прав доступа, REST и rate limiting.
 - [ ] Проверка WordPress и Elementor frontend/editor.
-- [ ] Сборка installable ZIP.
+- [x] Воспроизводимая сборка и валидация installable ZIP.
+- [x] Публикация ZIP как GitHub Actions artifact после PHP lint.
 
 ## Архитектурные правила
 
@@ -142,4 +143,4 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Проверить и закоммитить security/budget версию `0.5.0`. После CI следующий срез — installable ZIP и расширенный WordPress/Elementor test gate. Provider-by-provider smoke test требует реального WordPress и соответствующих API keys; WordPress AI Client проверяется отдельно на WordPress 7.0 с настроенным AI Connector.
+Проверить installable ZIP в CI и скачать artifact версии `0.5.0`. После этого следующий gate — реальная активация/миграция на WordPress, shortcode/global/Elementor frontend/editor и provider-by-provider smoke test. WordPress AI Client проверяется отдельно на WordPress 7.0 с настроенным AI Connector.

@@ -129,4 +129,6 @@
 - Добавлен атомарный site-wide rolling budget `daily_request_limit` на 24 часа, по умолчанию 500 provider calls; `0` отключает бюджет.
 - REST возвращает HTTP 409 для параллельного request и HTTP 429 + `Retry-After` при исчерпании session/IP или site budget.
 - WP-Cron очищает истёкшие rate-limit buckets и request locks; uninstall удаляет обе plugin tables.
+- Добавлены `.gitattributes`, `scripts/build-zip.sh` и WordPress-style `readme.txt`; package имеет корень `wp-ds-aichatbot/` и исключает dev/CI/context files.
+- GitHub Actions после успешного PHP lint собирает и публикует `dist/wp-ds-aichatbot.zip` как artifact на 14 дней.
 - Следующий срез: защита от параллельных запросов, более строгие бюджетные ограничения и installable ZIP.

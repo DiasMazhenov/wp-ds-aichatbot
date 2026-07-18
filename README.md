@@ -30,6 +30,14 @@ composer install
 composer lint
 ```
 
+## Installable ZIP
+
+```bash
+bash scripts/build-zip.sh
+```
+
+Архив создаётся как `dist/wp-ds-aichatbot.zip`, содержит корневую папку `wp-ds-aichatbot/` и не включает CI, планы, dev-зависимости и build scripts. GitHub Actions публикует такой же ZIP как artifact каждого успешного commit.
+
 ## REST API
 
 - `POST /wp-json/wp-ds-aichatbot/v1/session` — выдаёт подписанную сессию на 24 часа.
