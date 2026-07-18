@@ -188,3 +188,5 @@
 - В конце каждого isolated smoke run production `uninstall.php` удаляет все шесть plugin tables, options и schedules; результат проверяется до уничтожения Playground runtime.
 - Package job зависит от PHPUnit, WPCS, PHP lint и обоих integration modes; ZIP продолжает включать только production Composer dependencies.
 - Основные реализуемые этапы завершены. Внешние ручные gates: Elementor editor iframe на реальном сайте и provider smoke с секретами владельца сайта.
+- Первый CI run `0.5.8` выявил две environment-разницы: integration checkout не имел production PDF vendor, а Composer на PHP 8.5 выбрал `doctrine/instantiator 2.1`, несовместимый с PHP 7.4/8.3.
+- Версия `0.5.9` добавляет `config.platform.php=7.4.0`, фиксирует `doctrine/instantiator ^1.5` и устанавливает `composer install --no-dev` перед Playground integration; локальный PHPUnit дополнительно прошёл через PHP-WASM 7.4.

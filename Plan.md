@@ -152,6 +152,6 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.8` добавляет PHPUnit на PHP 7.4/8.3 и runtime-проверки session/lead rate limits, deactivation/rescheduling и полного uninstall таблиц/options/cron. После CI остаются только внешние ручные проверки: Elementor editor iframe на установленном сайте и реальный provider smoke с пользовательскими API credentials.
+Версия `0.5.9` фиксирует Composer platform на минимальном PHP 7.4 и устанавливает production PDF runtime перед Playground tests в CI. После зелёного CI остаются только внешние ручные проверки: Elementor editor iframe на установленном сайте и реальный provider smoke с пользовательскими API credentials.
 
 Локальные `node_modules` и dev-пакеты в `vendor` используются только для разработки и не попадают в Git. Installable ZIP содержит только production Composer runtime PDF parser; dev-зависимости и `vendor/bin` исключены. Локальные тяжёлые каталоги будут удалены перед финальной передачей.
