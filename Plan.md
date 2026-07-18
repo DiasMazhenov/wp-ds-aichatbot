@@ -1,6 +1,6 @@
 # WP DS AI Chatbot — план разработки
 
-Последнее обновление: 2026-07-18
+Последнее обновление: 2026-07-19
 
 ## Цель
 
@@ -50,7 +50,8 @@
 - [x] Widget с базовыми контентными контролами (выбор профиля добавится вместе с профилями AI).
 - [x] Использование общего renderer без дублирования логики.
 - [x] Runtime-проверка загрузки Elementor и регистрации widget через WordPress Playground.
-- [ ] Проверка frontend и editor iframe.
+- [x] Проверка Elementor frontend: реальная опубликованная страница, widget markup, escaping и assets.
+- [ ] Проверка Elementor editor iframe.
 
 ### 4. API и безопасность
 
@@ -147,4 +148,6 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.1` проходит WPCS/PHPCompatibilityWP и автоматические smoke tests в реальном WordPress Playground: активация, миграции, shortcode/global renderer, REST и регистрация widget с актуальным Elementor. Следующий gate — browser test Elementor frontend/editor и provider-by-provider smoke test с реальными credentials. WordPress AI Client проверяется отдельно на WordPress 7.0 с настроенным AI Connector.
+Версия `0.5.1` проходит WPCS/PHPCompatibilityWP и автоматические smoke tests в реальном WordPress Playground: активация, миграции, shortcode/global renderer, REST, регистрация widget и рендер опубликованной Elementor-страницы с CSS/JS. Следующий gate — Elementor editor iframe и provider-by-provider smoke test с реальными credentials. WordPress AI Client проверяется отдельно на WordPress 7.0 с настроенным AI Connector.
+
+Локальные `node_modules` и `vendor` являются только воспроизводимой тестовой средой, не попадают в Git или installable ZIP и будут удалены перед финальной передачей. До завершения активной разработки они сохраняются для быстрых повторных проверок.

@@ -61,6 +61,31 @@ try {
     );
   }
 
+  if (withElementor) {
+    assert.equal(
+      typeof probe.body.elementor_frontend_url,
+      'string',
+      'The Elementor probe must publish a frontend fixture page'
+    );
+
+    const frontendUrl = probe.body.elementor_frontend_url.replace(
+      '127.0.0.1',
+      'localhost'
+    );
+    const frontend = await fetch(frontendUrl, {
+      signal: AbortSignal.timeout(15000),
+    });
+    const frontendHtml = await frontend.text();
+
+    assert.equal(frontend.status, 200, 'The Elementor page must be public');
+    assert.match(frontendHtml, /data-wpdsac-chat/);
+    assert.match(frontendHtml, /Elementor Smoke &amp; Test/);
+    assert.doesNotMatch(frontendHtml, /<script>alert\(1\)<\/script>/i);
+    assert.match(frontendHtml, /assets\/build\/chat\.css\?ver=/);
+    assert.match(frontendHtml, /assets\/build\/chat\.js\?ver=/);
+    assert.match(frontendHtml, /wpdsacChatConfig/);
+  }
+
   const session = await requestJson('/wp-json/wp-ds-aichatbot/v1/session', {
     method: 'POST',
   });

@@ -1,6 +1,6 @@
 # WP DS AI Chatbot — рабочий контекст
 
-Последнее обновление: 2026-07-18
+Последнее обновление: 2026-07-19
 
 ## Запрос пользователя
 
@@ -142,4 +142,7 @@
 - Версия `0.5.1`: включён обязательный WPCS/PHPCompatibilityWP gate, зависимости зафиксированы в `composer.lock`, а PSR-4 filenames имеют узкое documented исключение из WordPress filename sniff.
 - PHPCBF исправил форматирование; для внутренних таблиц SQL использует `%i`, прямые атомарные DB operations документированы точечными PHPCS annotations, а base64 используется только как base64url transport encoding подписанных session tokens.
 - После WPCS/SQL правок core и Elementor smoke tests повторно прошли локально.
-- Следующий gate: browser test Elementor frontend/editor и provider-by-provider smoke test с реальными server-side credentials.
+- Elementor integration smoke test теперь публикует временную страницу с реальным `wpdsac-chatbot` widget и проверяет frontend markup, escaping пользовательских значений, CSS, JavaScript и локализованную REST-конфигурацию.
+- Core и расширенный Elementor frontend smoke tests успешно прошли локально 2026-07-19 без добавления браузерных npm-зависимостей.
+- `node_modules` (WordPress Playground/PHP-WASM) и `vendor` нужны только для разработки, исключены из Git и installable ZIP и будут удалены перед финальной передачей.
+- Следующий gate: Elementor editor iframe и provider-by-provider smoke test с реальными server-side credentials.

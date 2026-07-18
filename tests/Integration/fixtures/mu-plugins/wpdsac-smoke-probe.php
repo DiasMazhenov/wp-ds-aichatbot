@@ -27,6 +27,63 @@ function wpdsac_test_table_exists( string $table_name ): bool {
 }
 
 /**
+ * Create a temporary Elementor page containing the chatbot widget.
+ *
+ * The WordPress Playground site is ephemeral, so the fixture does not need
+ * persistent cleanup.
+ *
+ * @return string|null Published page URL, or null when Elementor is unavailable.
+ */
+function wpdsac_test_create_elementor_page(): ?string {
+	if ( ! class_exists( '\\Elementor\\Plugin' ) || ! defined( 'ELEMENTOR_VERSION' ) ) {
+		return null;
+	}
+
+	$post_id = wp_insert_post(
+		array(
+			'post_title'   => 'WPDSAC Elementor Smoke Page',
+			'post_status'  => 'publish',
+			'post_type'    => 'page',
+			'post_content' => '',
+		),
+		true
+	);
+
+	if ( is_wp_error( $post_id ) ) {
+		return null;
+	}
+
+	$elementor_data = array(
+		array(
+			'id'       => 'wpdsac01',
+			'elType'   => 'container',
+			'settings' => array(),
+			'elements' => array(
+				array(
+					'id'         => 'wpdsac02',
+					'elType'     => 'widget',
+					'widgetType' => 'wpdsac-chatbot',
+					'settings'   => array(
+						'title'           => 'Elementor Smoke & Test',
+						'welcome_message' => '<script>alert(1)</script>',
+					),
+					'elements'   => array(),
+				),
+			),
+		),
+	);
+
+	update_post_meta( $post_id, '_elementor_edit_mode', 'builder' );
+	update_post_meta( $post_id, '_elementor_template_type', 'wp-page' );
+	update_post_meta( $post_id, '_elementor_version', ELEMENTOR_VERSION );
+	update_post_meta( $post_id, '_elementor_data', wp_slash( wp_json_encode( $elementor_data ) ) );
+
+	$permalink = get_permalink( $post_id );
+
+	return is_string( $permalink ) ? $permalink : null;
+}
+
+/**
  * Collect runtime assertions that require access to WordPress internals.
  *
  * @return WP_REST_Response
@@ -53,10 +110,15 @@ function wpdsac_test_probe(): WP_REST_Response {
 
 	$elementor_loaded            = did_action( 'elementor/loaded' ) > 0;
 	$elementor_widget_registered = false;
+	$elementor_frontend_url      = null;
 
 	if ( class_exists( '\\Elementor\\Plugin' ) ) {
 		$widgets = \Elementor\Plugin::instance()->widgets_manager->get_widget_types();
 		$elementor_widget_registered = isset( $widgets['wpdsac-chatbot'] );
+
+		if ( $elementor_widget_registered ) {
+			$elementor_frontend_url = wpdsac_test_create_elementor_page();
+		}
 	}
 
 	return new WP_REST_Response(
@@ -74,6 +136,7 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'global_widget_rendered'      => false !== strpos( $global_html, 'wpdsac-chat' ),
 			'elementor_loaded'            => $elementor_loaded,
 			'elementor_widget_registered' => $elementor_widget_registered,
+			'elementor_frontend_url'      => $elementor_frontend_url,
 		),
 		200
 	);
