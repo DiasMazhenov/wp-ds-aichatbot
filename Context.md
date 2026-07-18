@@ -190,3 +190,6 @@
 - Основные реализуемые этапы завершены. Внешние ручные gates: Elementor editor iframe на реальном сайте и provider smoke с секретами владельца сайта.
 - Первый CI run `0.5.8` выявил две environment-разницы: integration checkout не имел production PDF vendor, а Composer на PHP 8.5 выбрал `doctrine/instantiator 2.1`, несовместимый с PHP 7.4/8.3.
 - Версия `0.5.9` добавляет `config.platform.php=7.4.0`, фиксирует `doctrine/instantiator ^1.5` и устанавливает `composer install --no-dev` перед Playground integration; локальный PHPUnit дополнительно прошёл через PHP-WASM 7.4.
+- GitHub Actions run `29664260145` для commit `aaf3120` завершился успешно во всех jobs; artifact ID `8435277185`, имя `wp-ds-aichatbot-aaf3120a3d0f4fe5e5f0a877651514e77e231ec7`, размер 202 840 bytes.
+- Финальный локальный `dist/wp-ds-aichatbot.zip` версии `0.5.9` прошёл `unzip -t`, весит около 232 КБ и не содержит tests, CI, `node_modules`, dev dependencies или `vendor/bin`.
+- После проверки локальные `node_modules` и dev-`vendor` удалены; рабочий каталог вместе с ZIP занимает около 3.1 МБ и остаётся clean.

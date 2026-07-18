@@ -52,7 +52,7 @@
 - [x] Использование общего renderer без дублирования логики.
 - [x] Runtime-проверка загрузки Elementor и регистрации widget через WordPress Playground.
 - [x] Проверка Elementor frontend: реальная опубликованная страница, widget markup, escaping и assets.
-- [ ] Проверка Elementor editor iframe.
+- [ ] Проверка Elementor editor iframe на целевом WordPress-сайте (внешний ручной gate).
 
 ### 4. API и безопасность
 
@@ -63,7 +63,7 @@
 - [x] Атомарная защита от параллельных запросов одной сессии с TTL и ownership token.
 - [x] Глобальный rolling request budget на 24 часа и максимальный output token limit.
 - [x] Документация без hardcoded-looking credentials; примеры используют только имена server-side environment variables/constants.
-- [ ] Безопасный streaming без прямого PHP endpoint и ручного `wp-load.php`.
+- [ ] Streaming — опциональное улучшение; текущий безопасный non-streaming режим является релизным.
 
 ### 5. AI provider
 
@@ -91,7 +91,7 @@
 - [x] Ручной FAQ через приватный WordPress admin UI с автоматической индексацией.
 - [x] Хранилище фрагментов базы знаний вне `wp_options`.
 - [x] Knowledge/RAG по страницам и записям WordPress с локальным keyword ranking.
-- [ ] Опциональный semantic embeddings adapter.
+- [ ] Semantic embeddings — опциональный provider-neutral adapter; локальный RAG является релизным.
 - [x] PDF ingestion.
 - [x] WooCommerce source.
 - [x] Сбор лидов.
@@ -106,7 +106,8 @@
 - [x] Проверка активации и миграций в чистой WordPress-инсталляции.
 - [x] Базовая проверка публичного REST: session, malformed token и безопасный 503 без credentials.
 - [x] Расширенная проверка деактивации/удаления, прав доступа и rate limiting.
-- [ ] Проверка WordPress и Elementor frontend/editor.
+- [x] Проверка WordPress и Elementor frontend.
+- [ ] Проверка Elementor editor iframe на целевом сайте.
 - [x] Воспроизводимая сборка и валидация installable ZIP.
 - [x] Публикация ZIP как GitHub Actions artifact после PHP lint.
 
@@ -154,4 +155,6 @@ wp-ds-aichatbot/
 
 Версия `0.5.9` фиксирует Composer platform на минимальном PHP 7.4 и устанавливает production PDF runtime перед Playground tests в CI. После зелёного CI остаются только внешние ручные проверки: Elementor editor iframe на установленном сайте и реальный provider smoke с пользовательскими API credentials.
 
-Локальные `node_modules` и dev-пакеты в `vendor` используются только для разработки и не попадают в Git. Installable ZIP содержит только production Composer runtime PDF parser; dev-зависимости и `vendor/bin` исключены. Локальные тяжёлые каталоги будут удалены перед финальной передачей.
+GitHub Actions run `29664260145` полностью прошёл: PHPUnit PHP 7.4/8.3, PHP lint 7.4/8.1/8.3, WPCS, WordPress/Elementor integration и package. Artifact `8435277185` содержит installable ZIP для commit `aaf3120`.
+
+Локальные `node_modules` и dev-`vendor` удалены после финальной проверки; они восстанавливаются через `npm ci` и `composer install`. Installable ZIP содержит только production Composer runtime PDF parser; dev-зависимости и `vendor/bin` исключены.
