@@ -134,4 +134,5 @@
 - Security/budget commit `f827942` прошёл PHP lint на PHP 7.4, 8.1 и 8.3.
 - Package commit `e7bb7be` прошёл полный workflow; artifact `wp-ds-aichatbot-e7bb7be49e36eee3ed12448a4ab480293d77194b` создан с ID `8432407203`, размером 32 587 байт и не expired.
 - Локальный ZIP проверен через `unzip -t`; entrypoint и `readme.txt` присутствуют, dev-файлы отсутствуют.
+- GitGuardian incident для commit `1ba8c49` вызван документационным placeholder `ваш-ключ`, а не реальным credential; README переведён на примеры без статических значений ключей.
 - Следующий gate: установить ZIP на реальный WordPress, проверить активацию/миграцию, shortcode, global widget, Elementor frontend/editor и smoke test каждого AI provider.

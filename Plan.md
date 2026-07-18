@@ -59,6 +59,7 @@
 - [x] Rate limit с атомарным счётчиком.
 - [x] Атомарная защита от параллельных запросов одной сессии с TTL и ownership token.
 - [x] Глобальный rolling request budget на 24 часа и максимальный output token limit.
+- [x] Документация без hardcoded-looking credentials; примеры используют только имена server-side environment variables/constants.
 - [ ] Безопасный streaming без прямого PHP endpoint и ручного `wp-load.php`.
 
 ### 5. AI provider

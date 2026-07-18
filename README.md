@@ -53,16 +53,14 @@ bash scripts/build-zip.sh
 - OpenRouter — OpenResponses API, включая модели разных производителей;
 - WordPress AI Client — provider-agnostic режим WordPress 7.0+, использующий настроенный в WordPress AI-коннектор.
 
-Рекомендуемый способ — задать нужные ключи только на сервере в `wp-config.php`:
+Рекомендуемый способ — задать нужные ключи как environment variables в панели хостинга или secret manager:
 
-```php
-define( 'WPDSAC_OPENAI_API_KEY', 'ваш-ключ' );
-define( 'WPDSAC_ANTHROPIC_API_KEY', 'ваш-ключ' );
-define( 'WPDSAC_GEMINI_API_KEY', 'ваш-ключ' );
-define( 'WPDSAC_OPENROUTER_API_KEY', 'ваш-ключ' );
-```
+- `WPDSAC_OPENAI_API_KEY`;
+- `WPDSAC_ANTHROPIC_API_KEY`;
+- `WPDSAC_GEMINI_API_KEY`;
+- `WPDSAC_OPENROUTER_API_KEY`.
 
-Для каждого constant поддерживается одноимённая environment variable. В крайнем случае ключ можно сохранить через страницу настроек: поля write-only, сохранённые значения обратно не отображаются. Модели, общие инструкции и максимальный ответ настраиваются там же.
+Плагин также читает одноимённые PHP constants, заданные сервером. Не добавляйте значения ключей в отслеживаемые Git файлы. В крайнем случае ключ можно сохранить через страницу настроек: поля write-only, сохранённые значения обратно не отображаются. Модели, общие инструкции и максимальный ответ настраиваются там же.
 
 Прямые запросы выполняются через WordPress HTTP API с запретом redirects. OpenAI, OpenRouter и Gemini получают `store: false`. Registry расширяется через `wpdsac_ai_providers`, выбор — через `wpdsac_ai_provider_id`/`wpdsac_ai_provider`, request body — через общий `wpdsac_ai_request_body` и provider-specific фильтры вида `wpdsac_gemini_request_body`. Sanitized diagnostics ошибок передаются в `wpdsac_ai_provider_error`; прежние OpenAI-интеграции сохраняют `wpdsac_openai_error`.
 
