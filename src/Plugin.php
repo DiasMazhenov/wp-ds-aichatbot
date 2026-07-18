@@ -8,6 +8,7 @@
 namespace DiasMazhenov\WPDsAiChatbot;
 
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
+use DiasMazhenov\WPDsAiChatbot\Admin\KnowledgePage;
 use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
 use DiasMazhenov\WPDsAiChatbot\AI\AnthropicProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\GeminiProvider;
@@ -25,6 +26,10 @@ use DiasMazhenov\WPDsAiChatbot\Chat\Renderer;
 use DiasMazhenov\WPDsAiChatbot\Chat\Shortcode;
 use DiasMazhenov\WPDsAiChatbot\Elementor\Integration;
 use DiasMazhenov\WPDsAiChatbot\Lifecycle\Migrator;
+use DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker;
+use DiasMazhenov\WPDsAiChatbot\Knowledge\PostIndexer;
+use DiasMazhenov\WPDsAiChatbot\Knowledge\Repository;
+use DiasMazhenov\WPDsAiChatbot\Knowledge\Retriever;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -67,6 +72,9 @@ final class Plugin {
 		$chat_api     = new ChatController( $tokens, $rate_limiter, $request_lock );
 		$session_api  = new SessionController( $tokens );
 		$credentials  = new CredentialResolver();
+		$knowledge    = new Repository();
+		$post_indexer = new PostIndexer( $knowledge, new Chunker() );
+		$retriever    = new Retriever( $knowledge );
 		$providers    = new ProviderManager(
 			array(
 				'openai'       => new OpenAIProvider( $credentials ),
@@ -86,8 +94,14 @@ final class Plugin {
 		$chat_api->register_hooks();
 		$session_api->register_hooks();
 		$providers->register_hooks();
+		$post_indexer->register_hooks();
+		$retriever->register_hooks();
 		( new Shortcode( $renderer ) )->register_hooks();
 		( new Integration( $renderer ) )->register_hooks();
+
+		if ( is_admin() ) {
+			( new KnowledgePage( $post_indexer, $knowledge ) )->register_hooks();
+		}
 
 		add_action( 'init', array( $this, 'load_textdomain' ) );
 		add_action( 'wp_footer', array( $renderer, 'render_global' ) );

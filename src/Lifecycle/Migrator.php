@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Migrator {
 
-	public const DB_VERSION = '2';
+	public const DB_VERSION = '3';
 
 	private const VERSION_OPTION = 'wpdsac_db_version';
 
@@ -41,6 +41,7 @@ final class Migrator {
 
 		$rate_limit_table   = self::rate_limit_table();
 		$request_lock_table = self::request_lock_table();
+		$knowledge_table    = self::knowledge_table();
 		$charset_collate    = $wpdb->get_charset_collate();
 		$rate_limit_sql     = "CREATE TABLE {$rate_limit_table} (
 			bucket_hash char(64) NOT NULL,
@@ -56,10 +57,26 @@ final class Migrator {
 			PRIMARY KEY  (lock_hash),
 			KEY expires_at (expires_at)
 		) {$charset_collate};";
+		$knowledge_sql      = "CREATE TABLE {$knowledge_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			source_type varchar(32) NOT NULL,
+			source_id bigint(20) unsigned NOT NULL,
+			chunk_index smallint(5) unsigned NOT NULL,
+			title text NOT NULL,
+			source_url text NOT NULL,
+			content longtext NOT NULL,
+			content_hash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+			updated_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY source_chunk (source_type, source_id, chunk_index),
+			KEY source_lookup (source_type, source_id),
+			KEY content_hash (content_hash)
+		) {$charset_collate};";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $rate_limit_sql );
 		dbDelta( $request_lock_sql );
+		dbDelta( $knowledge_sql );
 
 		update_option( self::VERSION_OPTION, self::DB_VERSION, false );
 	}
@@ -84,5 +101,16 @@ final class Migrator {
 		global $wpdb;
 
 		return $wpdb->prefix . 'wpdsac_request_locks';
+	}
+
+	/**
+	 * Return the prefixed knowledge chunks table name.
+	 *
+	 * @return string
+	 */
+	public static function knowledge_table(): string {
+		global $wpdb;
+
+		return $wpdb->prefix . 'wpdsac_knowledge_chunks';
 	}
 }

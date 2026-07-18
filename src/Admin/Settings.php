@@ -58,6 +58,8 @@ final class Settings {
 				'rate_limit_requests'  => 10,
 				'rate_limit_window'    => 60,
 				'daily_request_limit'  => 500,
+				'knowledge_enabled'    => false,
+				'knowledge_max_chunks' => 4,
 				'ai_provider'          => 'openai',
 				'ai_instructions'      => __( 'You are a concise and helpful website support assistant. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
 				'ai_max_output_tokens' => 1200,
@@ -138,12 +140,21 @@ final class Settings {
 			'wpdsac-settings'
 		);
 
+		add_settings_section(
+			'wpdsac_knowledge',
+			esc_html__( 'Knowledge base', 'wp-ds-aichatbot' ),
+			'__return_empty_string',
+			'wpdsac-settings'
+		);
+
 		$this->add_field( 'global_enabled', __( 'Global chatbot', 'wp-ds-aichatbot' ), 'checkbox' );
 		$this->add_field( 'title', __( 'Title', 'wp-ds-aichatbot' ), 'text' );
 		$this->add_field( 'welcome_message', __( 'Welcome message', 'wp-ds-aichatbot' ), 'textarea' );
 		$this->add_field( 'rate_limit_requests', __( 'Requests per window', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'rate_limit_window', __( 'Rate-limit window (seconds)', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'daily_request_limit', __( 'AI requests per 24 hours', 'wp-ds-aichatbot' ), 'number' );
+		$this->add_field( 'knowledge_enabled', __( 'Use website knowledge', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_knowledge' );
+		$this->add_field( 'knowledge_max_chunks', __( 'Knowledge fragments per answer', 'wp-ds-aichatbot' ), 'number', 'wpdsac_knowledge' );
 		$this->appearance->register_fields();
 		$this->add_field( 'ai_provider', __( 'Provider', 'wp-ds-aichatbot' ), 'provider_select', 'wpdsac_ai' );
 		$this->add_field( 'ai_instructions', __( 'Assistant instructions', 'wp-ds-aichatbot' ), 'textarea', 'wpdsac_ai' );
@@ -177,6 +188,8 @@ final class Settings {
 			'rate_limit_requests'  => min( 100, max( 1, absint( $input['rate_limit_requests'] ?? 10 ) ) ),
 			'rate_limit_window'    => min( HOUR_IN_SECONDS, max( 10, absint( $input['rate_limit_window'] ?? 60 ) ) ),
 			'daily_request_limit'  => min( 100000, absint( $input['daily_request_limit'] ?? 500 ) ),
+			'knowledge_enabled'    => ! empty( $input['knowledge_enabled'] ),
+			'knowledge_max_chunks' => min( 8, max( 1, absint( $input['knowledge_max_chunks'] ?? 4 ) ) ),
 			'ai_provider'          => $provider,
 			'ai_instructions'      => sanitize_textarea_field( $input['ai_instructions'] ?? '' ),
 			'ai_max_output_tokens' => min( 8000, max( 100, absint( $input['ai_max_output_tokens'] ?? 1200 ) ) ),
@@ -280,11 +293,15 @@ final class Settings {
 		}
 
 		if ( 'checkbox' === $args['type'] ) {
+			$description = 'knowledge_enabled' === $key
+				? __( 'Add relevant indexed pages and posts to AI requests.', 'wp-ds-aichatbot' )
+				: __( 'Show the chatbot globally in the site footer.', 'wp-ds-aichatbot' );
+
 			printf(
 				'<label><input type="checkbox" name="%1$s" value="1" %2$s> %3$s</label>',
 				esc_attr( $name ),
 				checked( ! empty( $options[ $key ] ), true, false ),
-				esc_html__( 'Show the chatbot globally in the site footer.', 'wp-ds-aichatbot' )
+				esc_html( $description )
 			);
 			return;
 		}

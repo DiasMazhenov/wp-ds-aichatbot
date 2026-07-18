@@ -131,6 +131,53 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$admin_preview_assets = wp_style_is( 'wpdsac-admin', 'enqueued' )
 		&& wp_script_is( 'wpdsac-admin', 'enqueued' );
 
+	$knowledge_post_id = wp_insert_post(
+		array(
+			'post_title'   => 'Refund Policy',
+			'post_content' => 'Customers may request a refund within thirty calendar days of purchase.',
+			'post_status'  => 'publish',
+			'post_type'    => 'page',
+		),
+		true
+	);
+	$knowledge_indexed = false;
+	$knowledge_retrieved = false;
+	$knowledge_augmented = false;
+
+	if ( ! is_wp_error( $knowledge_post_id ) ) {
+		$knowledge_repository = new \DiasMazhenov\WPDsAiChatbot\Knowledge\Repository();
+		$knowledge_indexer    = new \DiasMazhenov\WPDsAiChatbot\Knowledge\PostIndexer(
+			$knowledge_repository,
+			new \DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker()
+		);
+		$knowledge_post       = get_post( $knowledge_post_id );
+
+		if ( $knowledge_post instanceof WP_Post ) {
+			$knowledge_indexed = $knowledge_indexer->index_post( $knowledge_post ) > 0;
+			$matches           = $knowledge_repository->search( 'What is the refund policy?', 2 );
+			$knowledge_retrieved = isset( $matches[0]['content'] )
+				&& false !== stripos( $matches[0]['content'], 'thirty calendar days' );
+
+			$knowledge_settings                         = is_array( $settings ) ? $settings : array();
+			$knowledge_settings['knowledge_enabled']    = true;
+			$knowledge_settings['knowledge_max_chunks'] = 2;
+			update_option( 'wpdsac_settings', $knowledge_settings, false );
+
+			$retriever = new \DiasMazhenov\WPDsAiChatbot\Knowledge\Retriever( $knowledge_repository );
+			$augmented = $retriever->augment(
+				'What is the refund policy?',
+				'test-session',
+				new WP_REST_Request(),
+				'openai'
+			);
+			$knowledge_augmented = false !== strpos( $augmented, '<knowledge>' )
+				&& false !== strpos( $augmented, 'thirty calendar days' )
+				&& false !== strpos( $augmented, 'Visitor question:' );
+
+			update_option( 'wpdsac_settings', $settings, false );
+		}
+	}
+
 	$elementor_loaded            = did_action( 'elementor/loaded' ) > 0;
 	$elementor_widget_registered = false;
 	$elementor_frontend_url      = null;
@@ -152,6 +199,7 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'db_version'                  => get_option( 'wpdsac_db_version' ),
 			'rate_limit_table'            => wpdsac_test_table_exists( $wpdb->prefix . 'wpdsac_rate_limits' ),
 			'request_lock_table'          => wpdsac_test_table_exists( $wpdb->prefix . 'wpdsac_request_locks' ),
+			'knowledge_table'             => wpdsac_test_table_exists( $wpdb->prefix . 'wpdsac_knowledge_chunks' ),
 			'settings_non_autoloaded'     => ! array_key_exists( 'wpdsac_settings', $all_options ),
 			'shortcode_registered'        => shortcode_exists( 'ds_ai_chatbot' ),
 			'shortcode_rendered'          => false !== strpos( $shortcode_html, 'wpdsac-chat' ),
@@ -162,6 +210,9 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'appearance_positioned'       => false !== strpos( $global_html, 'wpdsac-position--bottom-left' ),
 			'appearance_sanitized'        => $appearance_sanitized,
 			'admin_preview_assets'        => $admin_preview_assets,
+			'knowledge_indexed'           => $knowledge_indexed,
+			'knowledge_retrieved'         => $knowledge_retrieved,
+			'knowledge_augmented'         => $knowledge_augmented,
 			'elementor_loaded'            => $elementor_loaded,
 			'elementor_widget_registered' => $elementor_widget_registered,
 			'elementor_frontend_url'      => $elementor_frontend_url,

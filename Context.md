@@ -150,4 +150,11 @@
 - Административный live preview работает без сторонних UI-библиотек; его CSS/JS загружаются только на странице настроек плагина.
 - Визуальные значения передаются через экранированные CSS custom properties общему renderer и одинаково работают для global, shortcode и Elementor.
 - Интеграционные проверки подтверждают custom appearance, левую позицию, fallback невалидного цвета и ограничения ширины/скругления/шрифта в core и Elementor режимах.
-- Следующий продуктовый срез: безопасное хранилище базы знаний и Knowledge/RAG по WordPress pages/posts. Отдельные gates: Elementor editor iframe и provider-by-provider smoke test с реальными server-side credentials.
+- Версия `0.7.0`: схема БД обновлена до `3`, добавлена таблица `{prefix}wpdsac_knowledge_chunks` с уникальным source/chunk index и hash содержимого.
+- `Knowledge\Chunker` удаляет shortcode/HTML, нормализует пробелы и создаёт ограниченные текстовые фрагменты; в одной индексации источник ограничен 200 chunks.
+- `Knowledge\PostIndexer` индексирует только опубликованные `page`/`post`, автоматически синхронизирует изменения и удаление; список post types расширяется фильтром `wpdsac_knowledge_post_types`.
+- `Инструменты → DS AI Knowledge` показывает количество фрагментов и запускает capability/nonce-protected переиндексацию до 200 последних изменённых источников за один запрос.
+- `Knowledge\Repository` хранит данные вне `wp_options` и выполняет bounded keyword retrieval по максимум восьми словам и 80 кандидатам.
+- `Knowledge\Retriever` помечает найденный контекст как недоверенный reference material и подключается через общий `wpdsac_ai_message`, поэтому работает со всеми AI providers.
+- Core runtime test подтверждает миграцию таблицы, индексацию WordPress page, поиск фрагмента и RAG augmentation без внешнего API key.
+- Следующий Knowledge-срез: ручной FAQ и optional semantic embeddings; затем PDF и WooCommerce.

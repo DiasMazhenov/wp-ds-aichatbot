@@ -78,6 +78,11 @@ final class ProviderManager {
 			);
 		}
 
-		return $provider->generate( $message, $session_id );
+		$provider_message = apply_filters( 'wpdsac_ai_message', $message, $session_id, $request, $provider_id );
+		$provider_message = is_string( $provider_message ) && '' !== trim( $provider_message )
+			? $provider_message
+			: $message;
+
+		return $provider->generate( $provider_message, $session_id );
 	}
 }

@@ -40,10 +40,11 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.6.0',
-    db_version: '2',
+    plugin_version: '0.7.0',
+    db_version: '3',
     rate_limit_table: true,
     request_lock_table: true,
+    knowledge_table: true,
     settings_non_autoloaded: true,
     shortcode_registered: true,
     shortcode_rendered: true,
@@ -53,6 +54,9 @@ try {
     appearance_positioned: true,
     appearance_sanitized: true,
     admin_preview_assets: true,
+    knowledge_indexed: true,
+    knowledge_retrieved: true,
+    knowledge_augmented: true,
     elementor_loaded: withElementor,
     elementor_widget_registered: withElementor,
   };

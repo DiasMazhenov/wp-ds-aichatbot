@@ -89,8 +89,9 @@
 ### 7. Дополнительные модули
 
 - [ ] FAQ.
-- [ ] Хранилище фрагментов базы знаний вне `wp_options`.
-- [ ] Knowledge/RAG по страницам и записям WordPress.
+- [x] Хранилище фрагментов базы знаний вне `wp_options`.
+- [x] Knowledge/RAG по страницам и записям WordPress с локальным keyword ranking.
+- [ ] Опциональный semantic embeddings adapter.
 - [ ] PDF ingestion.
 - [ ] WooCommerce source.
 - [ ] Сбор лидов.
@@ -150,6 +151,6 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.6.0` добавляет независимые от Elementor визуальные настройки с live preview. Цвета, ширина, размер шрифта, скругление, позиция и отступы проходят строгую sanitization и применяются единым renderer к global, shortcode и Elementor. Core и Elementor smoke tests подтверждают сохранение CSS-переменных, позицию и безопасные диапазоны. Следующий продуктовый срез — хранилище и WordPress-источник базы знаний для RAG; отдельные gates — Elementor editor iframe и provider-by-provider smoke test с реальными credentials.
+Версия `0.7.0` добавляет отдельную таблицу knowledge chunks, автоматическую синхронизацию опубликованных страниц/записей, защищённую ручную переиндексацию и provider-agnostic RAG-контекст. Локальный keyword ranking не требует embedding API и работает с любым выбранным провайдером. Следующий срез — ручной FAQ и semantic embeddings adapter; затем PDF и WooCommerce. Отдельные gates — Elementor editor iframe и provider-by-provider smoke test с реальными credentials.
 
 Локальные `node_modules` и `vendor` являются только воспроизводимой тестовой средой, не попадают в Git или installable ZIP и будут удалены перед финальной передачей. До завершения активной разработки они сохраняются для быстрых повторных проверок.

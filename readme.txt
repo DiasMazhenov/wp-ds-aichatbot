@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.6.0
+Stable tag: 0.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,6 +18,8 @@ API keys remain server-side. Public requests use signed sessions, atomic rate li
 
 The plugin settings include a live chat preview with shared colors, width, typography, corner radius, global position, and offsets. The same appearance applies to global, shortcode, and Elementor chatbots.
 
+An optional knowledge layer indexes published WordPress pages and posts into a dedicated table. Relevant bounded fragments are added as untrusted reference context before any configured AI provider is called.
+
 == Installation ==
 
 1. Upload the plugin ZIP through Plugins > Add New > Upload Plugin.
@@ -27,6 +29,11 @@ The plugin settings include a live chat preview with shared colors, width, typog
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.7.0 =
+* Added a provider-agnostic Knowledge/RAG pipeline for WordPress pages and posts.
+* Added automatic source synchronization and a protected manual reindex tool.
+* Added a dedicated knowledge fragment table outside WordPress options.
 
 = 0.6.0 =
 * Added visual chat settings with a live admin preview.
