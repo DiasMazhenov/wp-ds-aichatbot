@@ -6,7 +6,11 @@
 
 ## Текущий статус
 
-Реализованы plugin bootstrap, настройки, единый renderer, shortcode, Elementor widget, безопасный публичный REST-контур и multi-provider AI слой без streaming.
+Реализованы plugin bootstrap, визуальные настройки с живым предпросмотром, единый renderer, shortcode, Elementor widget, безопасный публичный REST-контур и multi-provider AI слой без streaming.
+
+## Внешний вид
+
+В `Настройки → DS AI Chatbot → Chat appearance` доступны цвета, ширина, размер текста, скругление, позиция глобального виджета и отступы. Предпросмотр обновляется до сохранения. Один дизайн применяется к глобальному режиму, shortcode и Elementor widget.
 
 Подробности: [Plan.md](Plan.md) и [Context.md](Context.md).
 

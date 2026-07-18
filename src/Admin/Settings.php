@@ -8,6 +8,7 @@
 namespace DiasMazhenov\WPDsAiChatbot\Admin;
 
 use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
+use DiasMazhenov\WPDsAiChatbot\Chat\Appearance;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,6 +20,20 @@ final class Settings {
 	public const OPTION_NAME = 'wpdsac_settings';
 
 	/**
+	 * Appearance settings module.
+	 *
+	 * @var AppearanceSettings
+	 */
+	private $appearance;
+
+	/**
+	 * Initialize settings modules.
+	 */
+	public function __construct() {
+		$this->appearance = new AppearanceSettings();
+	}
+
+	/**
 	 * Register admin hooks.
 	 *
 	 * @return void
@@ -26,6 +41,7 @@ final class Settings {
 	public function register_hooks(): void {
 		add_action( 'admin_init', array( $this, 'register' ) );
 		add_action( 'admin_menu', array( $this, 'add_page' ) );
+		add_action( 'admin_enqueue_scripts', array( $this->appearance, 'enqueue_assets' ) );
 	}
 
 	/**
@@ -34,20 +50,23 @@ final class Settings {
 	 * @return array<string, mixed>
 	 */
 	public static function defaults(): array {
-		return array(
-			'global_enabled'       => false,
-			'title'                => __( 'AI Assistant', 'wp-ds-aichatbot' ),
-			'welcome_message'      => __( 'Hello! How can I help you?', 'wp-ds-aichatbot' ),
-			'rate_limit_requests'  => 10,
-			'rate_limit_window'    => 60,
-			'daily_request_limit'  => 500,
-			'ai_provider'          => 'openai',
-			'ai_instructions'      => __( 'You are a concise and helpful website support assistant. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
-			'ai_max_output_tokens' => 1200,
-			'openai_model'         => 'gpt-5.6-sol',
-			'anthropic_model'      => 'claude-sonnet-4-6',
-			'gemini_model'         => 'gemini-3.5-flash',
-			'openrouter_model'     => 'openai/gpt-5.6-luna',
+		return array_merge(
+			array(
+				'global_enabled'       => false,
+				'title'                => __( 'AI Assistant', 'wp-ds-aichatbot' ),
+				'welcome_message'      => __( 'Hello! How can I help you?', 'wp-ds-aichatbot' ),
+				'rate_limit_requests'  => 10,
+				'rate_limit_window'    => 60,
+				'daily_request_limit'  => 500,
+				'ai_provider'          => 'openai',
+				'ai_instructions'      => __( 'You are a concise and helpful website support assistant. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
+				'ai_max_output_tokens' => 1200,
+				'openai_model'         => 'gpt-5.6-sol',
+				'anthropic_model'      => 'claude-sonnet-4-6',
+				'gemini_model'         => 'gemini-3.5-flash',
+				'openrouter_model'     => 'openai/gpt-5.6-luna',
+			),
+			Appearance::defaults()
 		);
 	}
 
@@ -125,6 +144,7 @@ final class Settings {
 		$this->add_field( 'rate_limit_requests', __( 'Requests per window', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'rate_limit_window', __( 'Rate-limit window (seconds)', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'daily_request_limit', __( 'AI requests per 24 hours', 'wp-ds-aichatbot' ), 'number' );
+		$this->appearance->register_fields();
 		$this->add_field( 'ai_provider', __( 'Provider', 'wp-ds-aichatbot' ), 'provider_select', 'wpdsac_ai' );
 		$this->add_field( 'ai_instructions', __( 'Assistant instructions', 'wp-ds-aichatbot' ), 'textarea', 'wpdsac_ai' );
 		$this->add_field( 'ai_max_output_tokens', __( 'Maximum output tokens', 'wp-ds-aichatbot' ), 'number', 'wpdsac_ai' );
@@ -150,7 +170,7 @@ final class Settings {
 		$provider  = sanitize_key( $input['ai_provider'] ?? 'openai' );
 		$provider  = in_array( $provider, $providers, true ) ? $provider : 'openai';
 
-		return array(
+		$settings = array(
 			'global_enabled'       => ! empty( $input['global_enabled'] ),
 			'title'                => sanitize_text_field( $input['title'] ?? '' ),
 			'welcome_message'      => sanitize_textarea_field( $input['welcome_message'] ?? '' ),
@@ -165,6 +185,8 @@ final class Settings {
 			'gemini_model'         => $this->sanitize_model_id( $input['gemini_model'] ?? '', 'gemini-3.5-flash' ),
 			'openrouter_model'     => $this->sanitize_model_id( $input['openrouter_model'] ?? '', 'openai/gpt-5.6-luna' ),
 		);
+
+		return array_merge( $settings, Appearance::sanitize( $input ) );
 	}
 
 	/**
@@ -228,6 +250,7 @@ final class Settings {
 				<?php
 				settings_fields( 'wpdsac_settings_group' );
 				do_settings_sections( 'wpdsac-settings' );
+				$this->appearance->render_preview();
 				submit_button();
 				?>
 			</form>
@@ -267,10 +290,15 @@ final class Settings {
 		}
 
 		if ( 'textarea' === $args['type'] ) {
+			$preview_attribute = 'welcome_message' === $key
+				? ' data-wpdsac-preview-text=".wpdsac-chat__message--bot"'
+				: '';
+
 			printf(
-				'<textarea class="large-text" rows="4" name="%1$s">%2$s</textarea>',
+				'<textarea class="large-text" rows="4" name="%1$s"%3$s>%2$s</textarea>',
 				esc_attr( $name ),
-				esc_textarea( (string) $options[ $key ] )
+				esc_textarea( (string) $options[ $key ] ),
+				$preview_attribute // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed internal attribute.
 			);
 			return;
 		}
@@ -287,10 +315,15 @@ final class Settings {
 			return;
 		}
 
+		$preview_attribute = 'title' === $key
+			? ' data-wpdsac-preview-text=".wpdsac-chat__toggle-title"'
+			: '';
+
 		printf(
-			'<input class="regular-text" type="text" name="%1$s" value="%2$s">',
+			'<input class="regular-text" type="text" name="%1$s" value="%2$s"%3$s>',
 			esc_attr( $name ),
-			esc_attr( (string) $options[ $key ] )
+			esc_attr( (string) $options[ $key ] ),
+			$preview_attribute // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed internal attribute.
 		);
 	}
 

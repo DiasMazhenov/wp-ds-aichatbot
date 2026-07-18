@@ -98,8 +98,11 @@ function wpdsac_test_probe(): WP_REST_Response {
 	);
 	$all_options    = wp_load_alloptions();
 
-	$global_settings                   = is_array( $settings ) ? $settings : array();
-	$global_settings['global_enabled'] = true;
+	$global_settings                    = is_array( $settings ) ? $settings : array();
+	$global_settings['global_enabled']  = true;
+	$global_settings['accent_color']    = '#123456';
+	$global_settings['chat_width']      = 512;
+	$global_settings['global_position'] = 'bottom_left';
 	update_option( 'wpdsac_settings', $global_settings, false );
 
 	ob_start();
@@ -107,6 +110,26 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$global_html = (string) ob_get_clean();
 
 	update_option( 'wpdsac_settings', $settings, false );
+
+	$sanitized_appearance = \DiasMazhenov\WPDsAiChatbot\Chat\Appearance::sanitize(
+		array(
+			'accent_color'       => 'not-a-color',
+			'chat_width'         => 9999,
+			'chat_border_radius' => 999,
+			'chat_font_size'     => 1,
+			'global_position'    => 'top_center',
+		)
+	);
+	$appearance_sanitized = '#2563eb' === $sanitized_appearance['accent_color']
+		&& 640 === $sanitized_appearance['chat_width']
+		&& 40 === $sanitized_appearance['chat_border_radius']
+		&& 12 === $sanitized_appearance['chat_font_size']
+		&& 'bottom_right' === $sanitized_appearance['global_position'];
+
+	$appearance_controller = new \DiasMazhenov\WPDsAiChatbot\Admin\AppearanceSettings();
+	$appearance_controller->enqueue_assets( 'settings_page_wpdsac-settings' );
+	$admin_preview_assets = wp_style_is( 'wpdsac-admin', 'enqueued' )
+		&& wp_script_is( 'wpdsac-admin', 'enqueued' );
 
 	$elementor_loaded            = did_action( 'elementor/loaded' ) > 0;
 	$elementor_widget_registered = false;
@@ -134,6 +157,11 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'shortcode_rendered'          => false !== strpos( $shortcode_html, 'wpdsac-chat' ),
 			'shortcode_escaped'           => false === stripos( $shortcode_html, '<script' ),
 			'global_widget_rendered'      => false !== strpos( $global_html, 'wpdsac-chat' ),
+			'appearance_rendered'         => false !== strpos( $global_html, '--wpdsac-accent:#123456;' )
+				&& false !== strpos( $global_html, '--wpdsac-width:512px;' ),
+			'appearance_positioned'       => false !== strpos( $global_html, 'wpdsac-position--bottom-left' ),
+			'appearance_sanitized'        => $appearance_sanitized,
+			'admin_preview_assets'        => $admin_preview_assets,
 			'elementor_loaded'            => $elementor_loaded,
 			'elementor_widget_registered' => $elementor_widget_registered,
 			'elementor_frontend_url'      => $elementor_frontend_url,

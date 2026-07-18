@@ -145,4 +145,9 @@
 - Elementor integration smoke test теперь публикует временную страницу с реальным `wpdsac-chatbot` widget и проверяет frontend markup, escaping пользовательских значений, CSS, JavaScript и локализованную REST-конфигурацию.
 - Core и расширенный Elementor frontend smoke tests успешно прошли локально 2026-07-19 без добавления браузерных npm-зависимостей.
 - `node_modules` (WordPress Playground/PHP-WASM) и `vendor` нужны только для разработки, исключены из Git и installable ZIP и будут удалены перед финальной передачей.
-- Следующий gate: Elementor editor iframe и provider-by-provider smoke test с реальными server-side credentials.
+- Версия `0.6.0`: добавлен отдельный `Chat\Appearance` со схемой визуальных defaults, whitelist позиции и ограниченными числовыми диапазонами.
+- В `Настройки → DS AI Chatbot` доступны цвета акцента/панели/текста/сообщений/границ, ширина, размер шрифта, скругление, позиция глобального виджета и отступы.
+- Административный live preview работает без сторонних UI-библиотек; его CSS/JS загружаются только на странице настроек плагина.
+- Визуальные значения передаются через экранированные CSS custom properties общему renderer и одинаково работают для global, shortcode и Elementor.
+- Интеграционные проверки подтверждают custom appearance, левую позицию, fallback невалидного цвета и ограничения ширины/скругления/шрифта в core и Elementor режимах.
+- Следующий продуктовый срез: безопасное хранилище базы знаний и Knowledge/RAG по WordPress pages/posts. Отдельные gates: Elementor editor iframe и provider-by-provider smoke test с реальными server-side credentials.

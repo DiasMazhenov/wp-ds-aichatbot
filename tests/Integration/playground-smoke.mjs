@@ -40,7 +40,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.1',
+    plugin_version: '0.6.0',
     db_version: '2',
     rate_limit_table: true,
     request_lock_table: true,
@@ -49,6 +49,10 @@ try {
     shortcode_rendered: true,
     shortcode_escaped: true,
     global_widget_rendered: true,
+    appearance_rendered: true,
+    appearance_positioned: true,
+    appearance_sanitized: true,
+    admin_preview_assets: true,
     elementor_loaded: withElementor,
     elementor_widget_registered: withElementor,
   };

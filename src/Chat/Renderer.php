@@ -45,6 +45,8 @@ final class Renderer {
 			'title'           => sanitize_text_field( (string) $options['title'] ),
 			'welcome_message' => sanitize_textarea_field( (string) $options['welcome_message'] ),
 			'expanded'        => ! empty( $options['expanded'] ),
+			'appearance'      => Appearance::inline_style( $options ),
+			'position_class'  => Appearance::position_class( $options ),
 		);
 
 		$this->assets->enqueue();

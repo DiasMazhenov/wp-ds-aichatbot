@@ -15,10 +15,13 @@ $classes  = 'wpdsac-chat';
 if ( $view['expanded'] ) {
 	$classes .= ' is-expanded';
 }
+
+$classes .= ' ' . $view['position_class'];
 ?>
 <section
 	id="<?php echo esc_attr( $view['id'] ); ?>"
 	class="<?php echo esc_attr( $classes ); ?>"
+	style="<?php echo esc_attr( $view['appearance'] ); ?>"
 	data-wpdsac-chat
 >
 	<button
@@ -27,7 +30,7 @@ if ( $view['expanded'] ) {
 		aria-expanded="<?php echo $view['expanded'] ? 'true' : 'false'; ?>"
 		aria-controls="<?php echo esc_attr( $panel_id ); ?>"
 	>
-		<span><?php echo esc_html( $view['title'] ); ?></span>
+		<span class="wpdsac-chat__toggle-title"><?php echo esc_html( $view['title'] ); ?></span>
 		<span aria-hidden="true">✦</span>
 	</button>
 

@@ -42,6 +42,7 @@
 - [x] Shortcode `[ds_ai_chatbot]`.
 - [x] Опциональный глобальный вывод через `wp_footer`.
 - [x] Настройки заголовка и приветственного сообщения.
+- [x] Общие визуальные настройки в админке: цвета, размеры, скругление, позиция и live preview.
 
 ### 3. Elementor
 
@@ -88,7 +89,8 @@
 ### 7. Дополнительные модули
 
 - [ ] FAQ.
-- [ ] Knowledge/RAG по записям WordPress.
+- [ ] Хранилище фрагментов базы знаний вне `wp_options`.
+- [ ] Knowledge/RAG по страницам и записям WordPress.
 - [ ] PDF ingestion.
 - [ ] WooCommerce source.
 - [ ] Сбор лидов.
@@ -148,6 +150,6 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.1` проходит WPCS/PHPCompatibilityWP и автоматические smoke tests в реальном WordPress Playground: активация, миграции, shortcode/global renderer, REST, регистрация widget и рендер опубликованной Elementor-страницы с CSS/JS. Следующий gate — Elementor editor iframe и provider-by-provider smoke test с реальными credentials. WordPress AI Client проверяется отдельно на WordPress 7.0 с настроенным AI Connector.
+Версия `0.6.0` добавляет независимые от Elementor визуальные настройки с live preview. Цвета, ширина, размер шрифта, скругление, позиция и отступы проходят строгую sanitization и применяются единым renderer к global, shortcode и Elementor. Core и Elementor smoke tests подтверждают сохранение CSS-переменных, позицию и безопасные диапазоны. Следующий продуктовый срез — хранилище и WordPress-источник базы знаний для RAG; отдельные gates — Elementor editor iframe и provider-by-provider smoke test с реальными credentials.
 
 Локальные `node_modules` и `vendor` являются только воспроизводимой тестовой средой, не попадают в Git или installable ZIP и будут удалены перед финальной передачей. До завершения активной разработки они сохраняются для быстрых повторных проверок.

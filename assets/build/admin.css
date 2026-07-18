@@ -1,0 +1,26 @@
+.wpdsac-admin-preview-wrap {
+	max-width: 760px;
+	margin-top: 32px;
+}
+
+.wpdsac-admin-preview-stage {
+	margin-top: 12px;
+	padding: 32px;
+	border: 1px solid #c3c4c7;
+	border-radius: 8px;
+	background: #f0f2f5;
+}
+
+.wpdsac-admin-preview-stage .wpdsac-chat {
+	margin: 0 auto;
+}
+
+.wpdsac-admin-preview-stage .wpdsac-chat__toggle {
+	pointer-events: none;
+}
+
+@media (max-width: 782px) {
+	.wpdsac-admin-preview-stage {
+		padding: 16px;
+	}
+}
