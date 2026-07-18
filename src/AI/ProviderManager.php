@@ -7,17 +7,19 @@
 
 namespace DiasMazhenov\WPDsAiChatbot\AI;
 
+use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
+
 defined( 'ABSPATH' ) || exit;
 
 final class ProviderManager {
 
-	private $default_provider;
+	private $providers;
 
 	/**
-	 * @param ProviderInterface $default_provider Default AI provider.
+	 * @param array<string, ProviderInterface> $providers Registered providers by ID.
 	 */
-	public function __construct( ProviderInterface $default_provider ) {
-		$this->default_provider = $default_provider;
+	public function __construct( array $providers ) {
+		$this->providers = $providers;
 	}
 
 	/**
@@ -43,13 +45,20 @@ final class ProviderManager {
 			return $reply;
 		}
 
+		$options     = Settings::get();
+		$provider_id = (string) apply_filters( 'wpdsac_ai_provider_id', $options['ai_provider'], $request );
+		$providers   = apply_filters( 'wpdsac_ai_providers', $this->providers );
+		$providers   = is_array( $providers ) ? $providers : $this->providers;
+		$provider    = $providers[ $provider_id ] ?? null;
+
 		/**
 		 * Filter the provider used for a chat request.
 		 *
-		 * @param ProviderInterface $provider Default provider.
-		 * @param \WP_REST_Request  $request  Current REST request.
+		 * @param ProviderInterface|null $provider    Selected provider.
+		 * @param \WP_REST_Request       $request     Current REST request.
+		 * @param string                 $provider_id Selected provider ID.
 		 */
-		$provider = apply_filters( 'wpdsac_ai_provider', $this->default_provider, $request );
+		$provider = apply_filters( 'wpdsac_ai_provider', $provider, $request, $provider_id );
 
 		if ( ! $provider instanceof ProviderInterface ) {
 			return new \WP_Error(

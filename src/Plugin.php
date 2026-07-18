@@ -9,8 +9,12 @@ namespace DiasMazhenov\WPDsAiChatbot;
 
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
+use DiasMazhenov\WPDsAiChatbot\AI\AnthropicProvider;
+use DiasMazhenov\WPDsAiChatbot\AI\GeminiProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\OpenAIProvider;
+use DiasMazhenov\WPDsAiChatbot\AI\OpenRouterProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\ProviderManager;
+use DiasMazhenov\WPDsAiChatbot\AI\WordPressAiClientProvider;
 use DiasMazhenov\WPDsAiChatbot\Api\ChatController;
 use DiasMazhenov\WPDsAiChatbot\Api\RateLimiter;
 use DiasMazhenov\WPDsAiChatbot\Api\SessionController;
@@ -52,7 +56,16 @@ final class Plugin {
 		$rate_limiter = new RateLimiter();
 		$chat_api     = new ChatController( $tokens, $rate_limiter );
 		$session_api  = new SessionController( $tokens );
-		$providers    = new ProviderManager( new OpenAIProvider( new CredentialResolver() ) );
+		$credentials  = new CredentialResolver();
+		$providers    = new ProviderManager(
+			array(
+				'openai'      => new OpenAIProvider( $credentials ),
+				'anthropic'   => new AnthropicProvider( $credentials ),
+				'gemini'      => new GeminiProvider( $credentials ),
+				'openrouter'  => new OpenRouterProvider( $credentials ),
+				'wordpress_ai' => new WordPressAiClientProvider(),
+			)
+		);
 
 		Migrator::maybe_migrate();
 

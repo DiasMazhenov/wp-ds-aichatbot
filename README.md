@@ -6,7 +6,7 @@
 
 ## Текущий статус
 
-Реализованы plugin bootstrap, настройки, единый renderer, shortcode, Elementor widget, безопасный публичный REST-контур и первый non-streaming OpenAI Responses provider.
+Реализованы plugin bootstrap, настройки, единый renderer, shortcode, Elementor widget, безопасный публичный REST-контур и multi-provider AI слой без streaming.
 
 Подробности: [Plan.md](Plan.md) и [Context.md](Context.md).
 
@@ -35,18 +35,27 @@ composer lint
 - `POST /wp-json/wp-ds-aichatbot/v1/session` — выдаёт подписанную сессию на 24 часа.
 - `POST /wp-json/wp-ds-aichatbot/v1/chat` — принимает `session` и `message` до 2000 символов и возвращает ответ провайдера.
 
-## OpenAI
+## AI-провайдеры
 
-Рекомендуемый способ — задать ключ только на сервере в `wp-config.php`:
+В `Настройки → DS AI Chatbot` можно выбрать:
+
+- OpenAI — Responses API, модель `gpt-5.6-sol` по умолчанию;
+- Anthropic Claude — Messages API, `claude-sonnet-4-6`;
+- Google Gemini — stable Interactions API v1, `gemini-3.5-flash`;
+- OpenRouter — OpenResponses API, включая модели разных производителей;
+- WordPress AI Client — provider-agnostic режим WordPress 7.0+, использующий настроенный в WordPress AI-коннектор.
+
+Рекомендуемый способ — задать нужные ключи только на сервере в `wp-config.php`:
 
 ```php
 define( 'WPDSAC_OPENAI_API_KEY', 'ваш-ключ' );
+define( 'WPDSAC_ANTHROPIC_API_KEY', 'ваш-ключ' );
+define( 'WPDSAC_GEMINI_API_KEY', 'ваш-ключ' );
+define( 'WPDSAC_OPENROUTER_API_KEY', 'ваш-ключ' );
 ```
 
-Также поддерживается environment variable `WPDSAC_OPENAI_API_KEY`. В крайнем случае ключ можно сохранить через `Настройки → DS AI Chatbot`: поле write-only, сохранённое значение обратно не отображается. Настройки модели, инструкций и максимального ответа находятся там же.
+Для каждого constant поддерживается одноимённая environment variable. В крайнем случае ключ можно сохранить через страницу настроек: поля write-only, сохранённые значения обратно не отображаются. Модели, общие инструкции и максимальный ответ настраиваются там же.
 
-Дефолтная модель — `gpt-5.6-sol`; её можно заменить в админке, если модель недоступна проекту или нужен более экономичный вариант.
+Прямые запросы выполняются через WordPress HTTP API с запретом redirects. OpenAI, OpenRouter и Gemini получают `store: false`. Registry расширяется через `wpdsac_ai_providers`, выбор — через `wpdsac_ai_provider_id`/`wpdsac_ai_provider`, request body — через общий `wpdsac_ai_request_body` и provider-specific фильтры вида `wpdsac_gemini_request_body`. Sanitized diagnostics ошибок передаются в `wpdsac_ai_provider_error`; прежние OpenAI-интеграции сохраняют `wpdsac_openai_error`.
 
-Запросы отправляются через WordPress HTTP API на OpenAI Responses API с `store: false`. Расширения доступны через фильтры `wpdsac_ai_provider` и `wpdsac_openai_request_body`; sanitized diagnostics ошибок — через action `wpdsac_openai_error`.
-
-Без настроенного API key endpoint чата ожидаемо возвращает HTTP 503.
+Без ключа выбранного direct provider или настроенного WordPress AI Connector endpoint чата ожидаемо возвращает HTTP 503.

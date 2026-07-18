@@ -31,7 +31,13 @@ final class Activator {
 		}
 
 		add_option( Settings::OPTION_NAME, Settings::defaults(), '', false );
-		add_option( CredentialResolver::OPTION_NAME, '', '', false );
+
+		$credentials = new CredentialResolver();
+
+		foreach ( CredentialResolver::provider_ids() as $provider_id ) {
+			add_option( $credentials->option_name( $provider_id ), '', '', false );
+		}
+
 		update_option( 'wpdsac_version', WPDSAC_VERSION, false );
 		Migrator::migrate();
 

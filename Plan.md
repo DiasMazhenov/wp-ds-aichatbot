@@ -67,6 +67,11 @@
 - [x] API key только на сервере; write-only option и приоритетный constant/env override.
 - [x] Обработка timeout, HTTP-кодов и request ID без утечки provider details посетителю.
 - [x] Фильтры для подключения других провайдеров и изменения request body.
+- [x] Provider registry с выбором активного провайдера в настройках.
+- [x] Anthropic Claude Messages API.
+- [x] Google Gemini Interactions API v1.
+- [x] OpenRouter OpenResponses API.
+- [x] WordPress 7.0 AI Client adapter для provider-agnostic коннекторов.
 
 ### 6. Данные и приватность
 
@@ -136,4 +141,4 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.3.0` прошла CI на PHP 7.4, 8.1 и 8.3. Уже можно проводить первый функциональный smoke test на WordPress: активация, сохранение/override API key, shortcode, глобальный режим и Elementor widget. Следующий engineering-срез — защита от параллельных запросов и бюджетные ограничения; затем installable ZIP и расширенный WordPress/Elementor test gate.
+Проверить и закоммитить multi-provider версию `0.4.0`. После CI нужен smoke test каждого доступного провайдера; WordPress AI Client проверяется отдельно на WordPress 7.0 с настроенным AI Connector. Следующий engineering-срез — защита от параллельных запросов и бюджетные ограничения; затем installable ZIP и расширенный WordPress/Elementor test gate.

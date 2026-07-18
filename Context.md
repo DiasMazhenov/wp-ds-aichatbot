@@ -112,6 +112,12 @@
 - API key разрешается в порядке `WPDSAC_OPENAI_API_KEY` constant → одноимённая environment variable → отдельная non-autoload option.
 - Поле ключа write-only: сохранённый secret не выводится в HTML; provider errors возвращаются посетителю в обобщённом виде, а status/request ID/error code доступны интеграциям через `wpdsac_openai_error`.
 - Альтернативный provider подключается через `wpdsac_ai_provider`, а request body — через `wpdsac_openai_request_body`.
+- Версия `0.4.0`: `ProviderManager` преобразован в registry с выбором `ai_provider` в настройках.
+- Из коробки доступны OpenAI Responses, Anthropic Messages, Gemini Interactions v1, OpenRouter OpenResponses и WordPress 7.0 AI Client.
+- Общий `AbstractHttpProvider` централизует HTTPS POST, JSON validation, timeout, запрет redirects, безопасные публичные ошибки и sanitized diagnostics.
+- Для Anthropic, Gemini и OpenRouter добавлены отдельные write-only credentials с constant/environment overrides: `WPDSAC_ANTHROPIC_API_KEY`, `WPDSAC_GEMINI_API_KEY`, `WPDSAC_OPENROUTER_API_KEY`.
+- Общие provider-independent настройки: `ai_instructions` и `ai_max_output_tokens`; старые `openai_*` значения читаются для миграционной совместимости.
+- Расширения request body: общий `wpdsac_ai_request_body` и provider-specific `wpdsac_{provider}_request_body`; diagnostics: `wpdsac_ai_provider_error`.
 - JavaScript и `composer.json` прошли локальную синтаксическую проверку.
 - GitHub Actions CI успешно выполнил PHP syntax lint на PHP 7.4, 8.1 и 8.3 для commits `ebf6388`, `11ea7f1` и REST/security-среза `3d95513`.
 - GitHub Actions CI также успешно завершился для OpenAI provider commit `1ba8c49` на PHP 7.4, 8.1 и 8.3.

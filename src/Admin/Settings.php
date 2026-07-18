@@ -37,9 +37,13 @@ final class Settings {
 			'welcome_message'          => __( 'Hello! How can I help you?', 'wp-ds-aichatbot' ),
 			'rate_limit_requests'      => 10,
 			'rate_limit_window'        => 60,
+			'ai_provider'              => 'openai',
+			'ai_instructions'          => __( 'You are a concise and helpful website support assistant. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
+			'ai_max_output_tokens'     => 1200,
 			'openai_model'             => 'gpt-5.6-sol',
-			'openai_instructions'      => __( 'You are a concise and helpful website support assistant. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
-			'openai_max_output_tokens' => 1200,
+			'anthropic_model'          => 'claude-sonnet-4-6',
+			'gemini_model'             => 'gemini-3.5-flash',
+			'openrouter_model'         => 'openai/gpt-5.6-luna',
 		);
 	}
 
@@ -50,8 +54,17 @@ final class Settings {
 	 */
 	public static function get(): array {
 		$value = get_option( self::OPTION_NAME, array() );
+		$value = is_array( $value ) ? $value : array();
 
-		return wp_parse_args( is_array( $value ) ? $value : array(), self::defaults() );
+		if ( ! isset( $value['ai_instructions'] ) && isset( $value['openai_instructions'] ) ) {
+			$value['ai_instructions'] = $value['openai_instructions'];
+		}
+
+		if ( ! isset( $value['ai_max_output_tokens'] ) && isset( $value['openai_max_output_tokens'] ) ) {
+			$value['ai_max_output_tokens'] = $value['openai_max_output_tokens'];
+		}
+
+		return wp_parse_args( $value, self::defaults() );
 	}
 
 	/**
@@ -70,15 +83,23 @@ final class Settings {
 			)
 		);
 
-		register_setting(
-			'wpdsac_settings_group',
-			CredentialResolver::OPTION_NAME,
-			array(
-				'type'              => 'string',
-				'default'           => '',
-				'sanitize_callback' => array( $this, 'sanitize_api_key' ),
-			)
-		);
+		$resolver = new CredentialResolver();
+
+		foreach ( CredentialResolver::provider_ids() as $provider_id ) {
+			add_option( $resolver->option_name( $provider_id ), '', '', false );
+
+			register_setting(
+				'wpdsac_settings_group',
+				$resolver->option_name( $provider_id ),
+				array(
+					'type'              => 'string',
+					'default'           => '',
+					'sanitize_callback' => function ( $input ) use ( $provider_id ) {
+						return $this->sanitize_api_key( $input, $provider_id );
+					},
+				)
+			);
+		}
 
 		add_settings_section(
 			'wpdsac_display',
@@ -88,8 +109,8 @@ final class Settings {
 		);
 
 		add_settings_section(
-			'wpdsac_openai',
-			esc_html__( 'OpenAI provider', 'wp-ds-aichatbot' ),
+			'wpdsac_ai',
+			esc_html__( 'AI provider', 'wp-ds-aichatbot' ),
 			'__return_empty_string',
 			'wpdsac-settings'
 		);
@@ -99,10 +120,17 @@ final class Settings {
 		$this->add_field( 'welcome_message', __( 'Welcome message', 'wp-ds-aichatbot' ), 'textarea' );
 		$this->add_field( 'rate_limit_requests', __( 'Requests per window', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'rate_limit_window', __( 'Rate-limit window (seconds)', 'wp-ds-aichatbot' ), 'number' );
-		$this->add_field( 'openai_api_key', __( 'OpenAI API key', 'wp-ds-aichatbot' ), 'password', 'wpdsac_openai' );
-		$this->add_field( 'openai_model', __( 'Model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_openai' );
-		$this->add_field( 'openai_instructions', __( 'Assistant instructions', 'wp-ds-aichatbot' ), 'textarea', 'wpdsac_openai' );
-		$this->add_field( 'openai_max_output_tokens', __( 'Maximum output tokens', 'wp-ds-aichatbot' ), 'number', 'wpdsac_openai' );
+		$this->add_field( 'ai_provider', __( 'Provider', 'wp-ds-aichatbot' ), 'provider_select', 'wpdsac_ai' );
+		$this->add_field( 'ai_instructions', __( 'Assistant instructions', 'wp-ds-aichatbot' ), 'textarea', 'wpdsac_ai' );
+		$this->add_field( 'ai_max_output_tokens', __( 'Maximum output tokens', 'wp-ds-aichatbot' ), 'number', 'wpdsac_ai' );
+		$this->add_field( 'openai_api_key', __( 'OpenAI API key', 'wp-ds-aichatbot' ), 'password', 'wpdsac_ai', 'openai' );
+		$this->add_field( 'openai_model', __( 'OpenAI model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_ai' );
+		$this->add_field( 'anthropic_api_key', __( 'Anthropic API key', 'wp-ds-aichatbot' ), 'password', 'wpdsac_ai', 'anthropic' );
+		$this->add_field( 'anthropic_model', __( 'Anthropic model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_ai' );
+		$this->add_field( 'gemini_api_key', __( 'Gemini API key', 'wp-ds-aichatbot' ), 'password', 'wpdsac_ai', 'gemini' );
+		$this->add_field( 'gemini_model', __( 'Gemini model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_ai' );
+		$this->add_field( 'openrouter_api_key', __( 'OpenRouter API key', 'wp-ds-aichatbot' ), 'password', 'wpdsac_ai', 'openrouter' );
+		$this->add_field( 'openrouter_model', __( 'OpenRouter model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_ai' );
 	}
 
 	/**
@@ -112,9 +140,10 @@ final class Settings {
 	 * @return array<string, mixed>
 	 */
 	public function sanitize( $input ): array {
-		$input = is_array( $input ) ? $input : array();
-		$model = sanitize_key( $input['openai_model'] ?? 'gpt-5.6-sol' );
-		$model = '' !== $model ? $model : 'gpt-5.6-sol';
+		$input     = is_array( $input ) ? $input : array();
+		$providers = array( 'openai', 'anthropic', 'gemini', 'openrouter', 'wordpress_ai' );
+		$provider  = sanitize_key( $input['ai_provider'] ?? 'openai' );
+		$provider  = in_array( $provider, $providers, true ) ? $provider : 'openai';
 
 		return array(
 			'global_enabled'           => ! empty( $input['global_enabled'] ),
@@ -122,20 +151,27 @@ final class Settings {
 			'welcome_message'          => sanitize_textarea_field( $input['welcome_message'] ?? '' ),
 			'rate_limit_requests'      => min( 100, max( 1, absint( $input['rate_limit_requests'] ?? 10 ) ) ),
 			'rate_limit_window'        => min( HOUR_IN_SECONDS, max( 10, absint( $input['rate_limit_window'] ?? 60 ) ) ),
-			'openai_model'             => $model,
-			'openai_instructions'      => sanitize_textarea_field( $input['openai_instructions'] ?? '' ),
-			'openai_max_output_tokens' => min( 8000, max( 100, absint( $input['openai_max_output_tokens'] ?? 1200 ) ) ),
+			'ai_provider'              => $provider,
+			'ai_instructions'          => sanitize_textarea_field( $input['ai_instructions'] ?? '' ),
+			'ai_max_output_tokens'     => min( 8000, max( 100, absint( $input['ai_max_output_tokens'] ?? 1200 ) ) ),
+			'openai_model'             => $this->sanitize_model_id( $input['openai_model'] ?? '', 'gpt-5.6-sol' ),
+			'anthropic_model'          => $this->sanitize_model_id( $input['anthropic_model'] ?? '', 'claude-sonnet-4-6' ),
+			'gemini_model'             => $this->sanitize_model_id( $input['gemini_model'] ?? '', 'gemini-3.5-flash' ),
+			'openrouter_model'         => $this->sanitize_model_id( $input['openrouter_model'] ?? '', 'openai/gpt-5.6-luna' ),
 		);
 	}
 
 	/**
 	 * Validate a newly submitted API key, preserving the current key when blank.
 	 *
-	 * @param mixed $input Submitted key.
+	 * @param mixed  $input    Submitted key.
+	 * @param string $provider Provider ID.
 	 * @return string
 	 */
-	public function sanitize_api_key( $input ): string {
-		$current = get_option( CredentialResolver::OPTION_NAME, '' );
+	public function sanitize_api_key( $input, string $provider = 'openai' ): string {
+		$resolver = new CredentialResolver();
+		$option   = $resolver->option_name( $provider );
+		$current = get_option( $option, '' );
 		$value   = is_string( $input ) ? trim( $input ) : '';
 
 		if ( '' === $value ) {
@@ -144,9 +180,9 @@ final class Settings {
 
 		if ( strlen( $value ) < 20 || strlen( $value ) > 512 || preg_match( '/\s/', $value ) ) {
 			add_settings_error(
-				CredentialResolver::OPTION_NAME,
-				'wpdsac_invalid_openai_api_key',
-				esc_html__( 'The OpenAI API key format is invalid.', 'wp-ds-aichatbot' )
+				$option,
+				'wpdsac_invalid_ai_api_key',
+				esc_html__( 'The AI provider API key format is invalid.', 'wp-ds-aichatbot' )
 			);
 
 			return is_string( $current ) ? $current : '';
@@ -205,7 +241,12 @@ final class Settings {
 		$name    = self::OPTION_NAME . '[' . $key . ']';
 
 		if ( 'password' === $args['type'] ) {
-			$this->render_api_key_field();
+			$this->render_api_key_field( $args['provider'] );
+			return;
+		}
+
+		if ( 'provider_select' === $args['type'] ) {
+			$this->render_provider_select( $name, (string) $options[ $key ] );
 			return;
 		}
 
@@ -247,13 +288,14 @@ final class Settings {
 	/**
 	 * Add a field with a shared callback.
 	 *
-	 * @param string $key   Setting key.
-	 * @param string $label Field label.
-	 * @param string $type  Field type.
-	 * @param string $section Settings section ID.
+	 * @param string $key      Setting key.
+	 * @param string $label    Field label.
+	 * @param string $type     Field type.
+	 * @param string $section  Settings section ID.
+	 * @param string $provider Optional provider ID.
 	 * @return void
 	 */
-	private function add_field( string $key, string $label, string $type, string $section = 'wpdsac_display' ): void {
+	private function add_field( string $key, string $label, string $type, string $section = 'wpdsac_display', string $provider = '' ): void {
 		add_settings_field(
 			'wpdsac_' . $key,
 			esc_html( $label ),
@@ -261,8 +303,9 @@ final class Settings {
 			'wpdsac-settings',
 			$section,
 			array(
-				'key'  => $key,
-				'type' => $type,
+				'key'      => $key,
+				'type'     => $type,
+				'provider' => $provider,
 			)
 		);
 	}
@@ -272,14 +315,14 @@ final class Settings {
 	 *
 	 * @return void
 	 */
-	private function render_api_key_field(): void {
+	private function render_api_key_field( string $provider ): void {
 		$resolver = new CredentialResolver();
-		$source   = $resolver->source();
+		$source   = $resolver->source( $provider );
 		$disabled = in_array( $source, array( 'constant', 'environment' ), true );
 
 		printf(
 			'<input class="regular-text" type="password" name="%1$s" value="" autocomplete="new-password" placeholder="%2$s" %3$s>',
-			esc_attr( CredentialResolver::OPTION_NAME ),
+			esc_attr( $resolver->option_name( $provider ) ),
 			esc_attr( 'missing' === $source ? '' : __( 'Configured — enter a new key to replace it', 'wp-ds-aichatbot' ) ),
 			disabled( $disabled, true, false )
 		);
@@ -292,8 +335,51 @@ final class Settings {
 		} else {
 			printf(
 				'<p class="description">%s</p>',
-				esc_html__( 'The saved key is never displayed. Prefer WPDSAC_OPENAI_API_KEY in wp-config.php or the server environment.', 'wp-ds-aichatbot' )
+				esc_html__( 'The saved key is never displayed. Prefer the provider-specific WPDSAC_*_API_KEY constant or environment variable.', 'wp-ds-aichatbot' )
 			);
 		}
+	}
+
+	/**
+	 * Render the supported provider selector.
+	 *
+	 * @param string $name    Input name.
+	 * @param string $current Selected provider ID.
+	 * @return void
+	 */
+	private function render_provider_select( string $name, string $current ): void {
+		$providers = array(
+			'openai'      => __( 'OpenAI', 'wp-ds-aichatbot' ),
+			'anthropic'   => __( 'Anthropic Claude', 'wp-ds-aichatbot' ),
+			'gemini'      => __( 'Google Gemini', 'wp-ds-aichatbot' ),
+			'openrouter'  => __( 'OpenRouter', 'wp-ds-aichatbot' ),
+			'wordpress_ai' => __( 'WordPress AI Client (WordPress 7.0+)', 'wp-ds-aichatbot' ),
+		);
+
+		printf( '<select name="%s">', esc_attr( $name ) );
+
+		foreach ( $providers as $value => $label ) {
+			printf(
+				'<option value="%1$s" %2$s>%3$s</option>',
+				esc_attr( $value ),
+				selected( $current, $value, false ),
+				esc_html( $label )
+			);
+		}
+
+		echo '</select>';
+	}
+
+	/**
+	 * Sanitize a provider model identifier without stripping namespace slashes.
+	 *
+	 * @param mixed  $value    Raw model ID.
+	 * @param string $fallback Fallback model ID.
+	 * @return string
+	 */
+	private function sanitize_model_id( $value, string $fallback ): string {
+		$value = is_string( $value ) ? trim( $value ) : '';
+
+		return '' !== $value && preg_match( '/^[a-zA-Z0-9._:\/-]{1,160}$/', $value ) ? $value : $fallback;
 	}
 }
