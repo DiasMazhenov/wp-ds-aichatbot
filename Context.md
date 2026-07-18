@@ -122,7 +122,7 @@
 - GitHub Actions CI успешно выполнил PHP syntax lint на PHP 7.4, 8.1 и 8.3 для commits `ebf6388`, `11ea7f1` и REST/security-среза `3d95513`.
 - GitHub Actions CI также успешно завершился для OpenAI provider commit `1ba8c49` на PHP 7.4, 8.1 и 8.3.
 - Multi-provider commit `e5689f3` успешно прошёл GitHub Actions PHP syntax lint на PHP 7.4, 8.1 и 8.3.
-- Локальный PHP/WordPress runtime отсутствует; проверка реальной активации и Elementor editor остаётся отдельным quality gate.
+- Нативный локальный PHP отсутствует; воспроизводимый WordPress runtime теперь предоставляет официальный WordPress Playground CLI.
 - Версия `0.4.0` прошла CI и готова к provider-by-provider smoke test после установки на WordPress с соответствующими API keys.
 - Версия `0.5.0`: добавлена таблица `{prefix}wpdsac_request_locks`, схема БД обновлена до версии `2`.
 - Один session UUID может иметь только один активный provider request; lock создаётся атомарно, имеет TTL 45 секунд и удаляется только владельцем matching token.
@@ -135,4 +135,8 @@
 - Package commit `e7bb7be` прошёл полный workflow; artifact `wp-ds-aichatbot-e7bb7be49e36eee3ed12448a4ab480293d77194b` создан с ID `8432407203`, размером 32 587 байт и не expired.
 - Локальный ZIP проверен через `unzip -t`; entrypoint и `readme.txt` присутствуют, dev-файлы отсутствуют.
 - GitGuardian incident для commit `1ba8c49` вызван документационным placeholder `ваш-ключ`, а не реальным credential; README переведён на примеры без статических значений ключей.
-- Следующий gate: установить ZIP на реальный WordPress, проверить активацию/миграцию, shortcode, global widget, Elementor frontend/editor и smoke test каждого AI provider.
+- Добавлен WordPress Playground CLI `3.1.45` и local-only MU probe, исключённый из installable ZIP.
+- Core smoke test подтверждает активацию, DB version `2`, обе таблицы, non-autoload settings, shortcode/global rendering, escaping, session REST, malformed-token rejection и безопасный HTTP 503 без credentials.
+- Elementor smoke test устанавливает актуальный Elementor из WordPress.org и подтверждает загрузку Elementor и регистрацию widget `wpdsac-chatbot`.
+- GitHub Actions собирает artifact только после PHP lint и обоих WordPress Playground smoke tests.
+- Следующий gate: browser test Elementor frontend/editor и provider-by-provider smoke test с реальными server-side credentials.

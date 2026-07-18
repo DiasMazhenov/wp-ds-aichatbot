@@ -1,0 +1,19 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "steps": [
+    {
+      "step": "installPlugin",
+      "pluginData": {
+        "resource": "wordpress.org/plugins",
+        "slug": "elementor"
+      },
+      "options": {
+        "activate": true
+      }
+    },
+    {
+      "step": "activatePlugin",
+      "pluginPath": "wp-ds-aichatbot/wp-ds-aichatbot.php"
+    }
+  ]
+}

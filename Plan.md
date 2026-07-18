@@ -49,6 +49,7 @@
 - [x] Регистрация через `elementor/widgets/register`.
 - [x] Widget с базовыми контентными контролами (выбор профиля добавится вместе с профилями AI).
 - [x] Использование общего renderer без дублирования логики.
+- [x] Runtime-проверка загрузки Elementor и регистрации widget через WordPress Playground.
 - [ ] Проверка frontend и editor iframe.
 
 ### 4. API и безопасность
@@ -96,9 +97,11 @@
 
 - [x] PHP syntax lint в CI на PHP 7.4, 8.1 и 8.3.
 - [ ] WordPress Coding Standards.
-- [ ] Unit и integration tests.
-- [ ] Проверка активации/деактивации/удаления.
-- [ ] Проверка прав доступа, REST и rate limiting.
+- [ ] Unit tests.
+- [x] Integration smoke tests на чистом WordPress и с актуальным Elementor.
+- [x] Проверка активации и миграций в чистой WordPress-инсталляции.
+- [x] Базовая проверка публичного REST: session, malformed token и безопасный 503 без credentials.
+- [ ] Расширенная проверка деактивации/удаления, прав доступа и rate limiting.
 - [ ] Проверка WordPress и Elementor frontend/editor.
 - [x] Воспроизводимая сборка и валидация installable ZIP.
 - [x] Публикация ZIP как GitHub Actions artifact после PHP lint.
@@ -144,4 +147,4 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Security/budget и installable ZIP версии `0.5.0` прошли CI. GitHub artifact создан и доступен для установки. Следующий gate — реальная активация/миграция на WordPress, shortcode/global/Elementor frontend/editor и provider-by-provider smoke test. WordPress AI Client проверяется отдельно на WordPress 7.0 с настроенным AI Connector.
+Версия `0.5.0` проходит автоматические smoke tests в реальном WordPress Playground: активация, миграции, shortcode/global renderer, REST и регистрация widget с актуальным Elementor. После прохождения обновлённого CI следующий gate — browser test Elementor frontend/editor и provider-by-provider smoke test с реальными credentials. WordPress AI Client проверяется отдельно на WordPress 7.0 с настроенным AI Connector.

@@ -28,7 +28,12 @@
 ```bash
 composer install
 composer lint
+npm ci
+npm run test:integration
+npm run test:elementor
 ```
+
+Integration tests используют WordPress Playground: первый режим проверяет чистый WordPress, второй устанавливает актуальный Elementor и подтверждает регистрацию widget. Docker, локальный PHP и MySQL не требуются.
 
 ## Installable ZIP
 
@@ -36,7 +41,7 @@ composer lint
 bash scripts/build-zip.sh
 ```
 
-Архив создаётся как `dist/wp-ds-aichatbot.zip`, содержит корневую папку `wp-ds-aichatbot/` и не включает CI, планы, dev-зависимости и build scripts. GitHub Actions публикует такой же ZIP как artifact каждого успешного commit.
+Архив создаётся как `dist/wp-ds-aichatbot.zip`, содержит корневую папку `wp-ds-aichatbot/` и не включает CI, планы, tests, dev-зависимости и build scripts. GitHub Actions публикует такой же ZIP только после успешных PHP lint и WordPress/Elementor smoke tests.
 
 ## REST API
 

@@ -1,0 +1,11 @@
+{
+  "name": "wp-ds-aichatbot-tests",
+  "private": true,
+  "scripts": {
+    "test:integration": "node tests/Integration/playground-smoke.mjs",
+    "test:elementor": "node tests/Integration/playground-smoke.mjs --elementor"
+  },
+  "devDependencies": {
+    "@wp-playground/cli": "3.1.45"
+  }
+}
