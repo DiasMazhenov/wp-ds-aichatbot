@@ -143,4 +143,4 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Проверить installable ZIP в CI и скачать artifact версии `0.5.0`. После этого следующий gate — реальная активация/миграция на WordPress, shortcode/global/Elementor frontend/editor и provider-by-provider smoke test. WordPress AI Client проверяется отдельно на WordPress 7.0 с настроенным AI Connector.
+Security/budget и installable ZIP версии `0.5.0` прошли CI. GitHub artifact создан и доступен для установки. Следующий gate — реальная активация/миграция на WordPress, shortcode/global/Elementor frontend/editor и provider-by-provider smoke test. WordPress AI Client проверяется отдельно на WordPress 7.0 с настроенным AI Connector.

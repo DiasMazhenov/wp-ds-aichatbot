@@ -131,4 +131,7 @@
 - WP-Cron очищает истёкшие rate-limit buckets и request locks; uninstall удаляет обе plugin tables.
 - Добавлены `.gitattributes`, `scripts/build-zip.sh` и WordPress-style `readme.txt`; package имеет корень `wp-ds-aichatbot/` и исключает dev/CI/context files.
 - GitHub Actions после успешного PHP lint собирает и публикует `dist/wp-ds-aichatbot.zip` как artifact на 14 дней.
-- Следующий срез: защита от параллельных запросов, более строгие бюджетные ограничения и installable ZIP.
+- Security/budget commit `f827942` прошёл PHP lint на PHP 7.4, 8.1 и 8.3.
+- Package commit `e7bb7be` прошёл полный workflow; artifact `wp-ds-aichatbot-e7bb7be49e36eee3ed12448a4ab480293d77194b` создан с ID `8432407203`, размером 32 587 байт и не expired.
+- Локальный ZIP проверен через `unzip -t`; entrypoint и `readme.txt` присутствуют, dev-файлы отсутствуют.
+- Следующий gate: установить ZIP на реальный WordPress, проверить активацию/миграцию, shortcode, global widget, Elementor frontend/editor и smoke test каждого AI provider.
