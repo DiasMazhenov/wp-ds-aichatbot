@@ -105,8 +105,15 @@
 - Rate limit хранится в `{prefix}wpdsac_rate_limits` и увеличивается атомарным SQL upsert отдельно для session и прямого IP.
 - Схема таблицы версируется через `Migrator`/`dbDelta()`; истёкшие buckets очищает WP-Cron.
 - Frontend запрашивает сессию в REST, хранит token только в `sessionStorage` и блокирует повторную отправку формы во время запроса.
-- `wpdsac_chat_reply` является extension point для следующего AI provider; без провайдера `/chat` возвращает ожидаемый HTTP 503.
+- `wpdsac_chat_reply` остаётся общим extension point; без настроенного API key `/chat` возвращает ожидаемый HTTP 503.
+- Версия `0.3.0`: добавлены `ProviderInterface`, `ProviderManager` и non-streaming `OpenAIProvider` на Responses API.
+- Актуальный рекомендуемый модельный дефолт на 2026-07-18 — `gpt-5.6-sol`; модель остаётся редактируемой из настроек.
+- OpenAI request использует `instructions`, `input`, `max_output_tokens` и `store: false`; текст извлекается из `output_text` либо `output[].content[]`.
+- API key разрешается в порядке `WPDSAC_OPENAI_API_KEY` constant → одноимённая environment variable → отдельная non-autoload option.
+- Поле ключа write-only: сохранённый secret не выводится в HTML; provider errors возвращаются посетителю в обобщённом виде, а status/request ID/error code доступны интеграциям через `wpdsac_openai_error`.
+- Альтернативный provider подключается через `wpdsac_ai_provider`, а request body — через `wpdsac_openai_request_body`.
 - JavaScript и `composer.json` прошли локальную синтаксическую проверку.
 - GitHub Actions CI успешно выполнил PHP syntax lint на PHP 7.4, 8.1 и 8.3 для commits `ebf6388`, `11ea7f1` и REST/security-среза `3d95513`.
 - Локальный PHP/WordPress runtime отсутствует; проверка реальной активации и Elementor editor остаётся отдельным quality gate.
-- Следующий срез: `ProviderInterface`, OpenAI Responses API и безопасное серверное хранение API key.
+- Первый функциональный тест становится возможен после прохождения CI для `0.3.0` и установки плагина на WordPress с API key.
+- Следующий срез: защита от параллельных запросов, более строгие бюджетные ограничения и installable ZIP.

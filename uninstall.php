@@ -10,6 +10,7 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 global $wpdb;
 
 delete_option( 'wpdsac_settings' );
+delete_option( 'wpdsac_openai_api_key' );
 delete_option( 'wpdsac_version' );
 delete_option( 'wpdsac_db_version' );
 wp_clear_scheduled_hook( 'wpdsac_cleanup_logs' );

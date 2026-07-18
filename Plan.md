@@ -62,11 +62,11 @@
 
 ### 5. AI provider
 
-- [ ] `ProviderInterface`.
-- [ ] OpenAI provider на Responses API.
-- [ ] API key только на сервере; поддержка constant/env override.
-- [ ] Обработка timeout, HTTP-кодов и request ID.
-- [ ] Фильтры для подключения других провайдеров.
+- [x] `ProviderInterface`.
+- [x] OpenAI provider на Responses API без streaming.
+- [x] API key только на сервере; write-only option и приоритетный constant/env override.
+- [x] Обработка timeout, HTTP-кодов и request ID без утечки provider details посетителю.
+- [x] Фильтры для подключения других провайдеров и изменения request body.
 
 ### 6. Данные и приватность
 
@@ -136,4 +136,4 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Проверить и закоммитить REST/security-срез. Далее реализовать `ProviderInterface` и OpenAI Responses provider без streaming; streaming добавить отдельным срезом.
+После проверки и commit версии `0.3.0` можно проводить первый функциональный smoke test на WordPress: активация, сохранение/override API key, shortcode, глобальный режим и Elementor widget. Следующий engineering-срез — защита от параллельных запросов и бюджетные ограничения; затем installable ZIP и расширенный WordPress/Elementor test gate.

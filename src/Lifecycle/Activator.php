@@ -8,6 +8,7 @@
 namespace DiasMazhenov\WPDsAiChatbot\Lifecycle;
 
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
+use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -30,6 +31,7 @@ final class Activator {
 		}
 
 		add_option( Settings::OPTION_NAME, Settings::defaults(), '', false );
+		add_option( CredentialResolver::OPTION_NAME, '', '', false );
 		update_option( 'wpdsac_version', WPDSAC_VERSION, false );
 		Migrator::migrate();
 

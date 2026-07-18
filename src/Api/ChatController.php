@@ -159,7 +159,7 @@ final class ChatController {
 
 		$response = new \WP_REST_Response(
 			array(
-				'reply'     => wp_kses_post( $reply ),
+				'reply'     => sanitize_textarea_field( $reply ),
 				'remaining' => (int) $limit['remaining'],
 			),
 			200

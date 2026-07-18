@@ -8,6 +8,9 @@
 namespace DiasMazhenov\WPDsAiChatbot;
 
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
+use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
+use DiasMazhenov\WPDsAiChatbot\AI\OpenAIProvider;
+use DiasMazhenov\WPDsAiChatbot\AI\ProviderManager;
 use DiasMazhenov\WPDsAiChatbot\Api\ChatController;
 use DiasMazhenov\WPDsAiChatbot\Api\RateLimiter;
 use DiasMazhenov\WPDsAiChatbot\Api\SessionController;
@@ -49,6 +52,7 @@ final class Plugin {
 		$rate_limiter = new RateLimiter();
 		$chat_api     = new ChatController( $tokens, $rate_limiter );
 		$session_api  = new SessionController( $tokens );
+		$providers    = new ProviderManager( new OpenAIProvider( new CredentialResolver() ) );
 
 		Migrator::maybe_migrate();
 
@@ -57,6 +61,7 @@ final class Plugin {
 		$rate_limiter->register_hooks();
 		$chat_api->register_hooks();
 		$session_api->register_hooks();
+		$providers->register_hooks();
 		( new Shortcode( $renderer ) )->register_hooks();
 		( new Integration( $renderer ) )->register_hooks();
 
