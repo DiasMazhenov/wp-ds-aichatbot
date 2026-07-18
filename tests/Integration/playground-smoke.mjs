@@ -40,7 +40,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.7',
+    plugin_version: '0.5.8',
     db_version: '5',
     rate_limit_table: true,
     request_lock_table: true,
@@ -74,6 +74,11 @@ try {
     lead_saved: true,
     lead_privacy_exported: true,
     lead_privacy_erased: true,
+    rate_limit_enforced: true,
+    lead_rate_limit_enforced: true,
+    deactivation_clean: true,
+    lifecycle_rescheduled: true,
+    lead_admin_denied: true,
     elementor_loaded: withElementor,
     elementor_widget_registered: withElementor,
   };
@@ -158,6 +163,14 @@ try {
   });
   assert.equal(unavailable.response.status, 503, 'Missing credentials must fail safely');
   assert.equal(unavailable.body.code, 'wpdsac_provider_not_configured');
+
+	const uninstall = await requestJson('/wp-json/wpdsac-test/v1/uninstall', {
+		method: 'POST',
+	});
+	assert.equal(uninstall.response.status, 200, 'Uninstall probe must respond');
+	assert.equal(uninstall.body.tables_removed, true, 'Uninstall must remove plugin tables');
+	assert.equal(uninstall.body.options_removed, true, 'Uninstall must remove plugin options');
+	assert.equal(uninstall.body.cron_removed, true, 'Uninstall must clear plugin schedules');
 
   console.log(
     `WordPress smoke test passed (${withElementor ? 'Elementor' : 'core'} mode).`

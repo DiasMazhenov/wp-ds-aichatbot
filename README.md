@@ -42,12 +42,13 @@ PDF выбираются явно на странице базы знаний и
 ```bash
 composer install
 composer lint
+composer test:unit
 npm ci
 npm run test:integration
 npm run test:elementor
 ```
 
-Integration tests используют WordPress Playground: первый режим проверяет чистый WordPress, второй устанавливает актуальный Elementor и подтверждает регистрацию widget. Docker, локальный PHP и MySQL не требуются.
+PHPUnit проверяет подпись session token, защитные границы lead form, chunking и sanitization дизайна. Integration tests используют WordPress Playground: первый режим проверяет чистый WordPress, второй устанавливает актуальный Elementor и подтверждает регистрацию widget. В отдельном завершающем шаге проверяется полный uninstall таблиц, options и cron. Docker и MySQL не требуются.
 
 ## Installable ZIP
 

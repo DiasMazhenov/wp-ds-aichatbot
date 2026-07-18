@@ -1,0 +1,76 @@
+<?php
+/**
+ * Minimal WordPress function surface for pure unit tests.
+ *
+ * @package WPDsAiChatbotTests
+ */
+
+define( 'ABSPATH', __DIR__ . '/' );
+define( 'DAY_IN_SECONDS', 86400 );
+define( 'MINUTE_IN_SECONDS', 60 );
+define( 'WPDSAC_PATH', dirname( __DIR__, 2 ) . '/' );
+
+final class WP_Error {
+
+	private $code;
+
+	public function __construct( string $code ) {
+		$this->code = $code;
+	}
+
+	public function get_error_code(): string {
+		return $this->code;
+	}
+}
+
+function __( string $text ): string {
+	return $text;
+}
+
+function wp_generate_uuid4(): string {
+	return '123e4567-e89b-42d3-a456-426614174000';
+}
+
+function wp_json_encode( $value ): string {
+	return (string) json_encode( $value );
+}
+
+function wp_salt( string $scheme = 'auth' ): string {
+	return 'unit-test-' . $scheme . '-salt';
+}
+
+function wp_is_uuid( $uuid, $version = null ): bool {
+	unset( $version );
+
+	return 1 === preg_match( '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', (string) $uuid );
+}
+
+function strip_shortcodes( string $value ): string {
+	return (string) preg_replace( '/\[[^\]]+\]/', '', $value );
+}
+
+function wp_strip_all_tags( string $value ): string {
+	return strip_tags( $value );
+}
+
+function get_bloginfo( string $key ): string {
+	unset( $key );
+
+	return 'UTF-8';
+}
+
+function sanitize_hex_color( $value ) {
+	return is_string( $value ) && 1 === preg_match( '/^#[0-9a-f]{6}$/i', $value ) ? strtolower( $value ) : null;
+}
+
+function absint( $value ): int {
+	return abs( (int) $value );
+}
+
+function sanitize_key( $value ): string {
+	return strtolower( (string) preg_replace( '/[^a-z0-9_\-]/i', '', (string) $value ) );
+}
+
+require_once WPDSAC_PATH . 'src/Support/Autoloader.php';
+
+\DiasMazhenov\WPDsAiChatbot\Support\Autoloader::register();

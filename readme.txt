@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.7
+Stable tag: 0.5.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,11 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.8 =
+* Added PHPUnit security and boundary tests on PHP 7.4 and 8.3.
+* Added runtime verification of chat/lead rate limits and lifecycle scheduling.
+* Added an isolated full uninstall test for plugin tables, options, and cron events.
 
 = 0.5.7 =
 * Added optional in-chat lead collection with explicit consent and a honeypot.

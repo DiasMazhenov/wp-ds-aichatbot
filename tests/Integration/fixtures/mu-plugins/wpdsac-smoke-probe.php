@@ -217,6 +217,11 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$lead_saved = false;
 	$lead_privacy_exported = false;
 	$lead_privacy_erased = false;
+	$rate_limit_enforced = false;
+	$lead_rate_limit_enforced = false;
+	$deactivation_clean = false;
+	$lifecycle_rescheduled = false;
+	$lead_admin_denied = false;
 
 	if ( ! is_wp_error( $knowledge_post_id ) ) {
 		$knowledge_repository = new \DiasMazhenov\WPDsAiChatbot\Knowledge\Repository();
@@ -394,6 +399,23 @@ function wpdsac_test_probe(): WP_REST_Response {
 			&& array() === $lead_privacy->export( $lead_email )['data'];
 	}
 
+	wp_set_current_user( 0 );
+	ob_start();
+	( new \DiasMazhenov\WPDsAiChatbot\Admin\LeadsPage( $lead_repository ) )->render_page();
+	$lead_admin_denied = '' === (string) ob_get_clean();
+
+	$security_limiter = new \DiasMazhenov\WPDsAiChatbot\Api\RateLimiter();
+	$security_limiter->consume_request( 'unit-rate-session', 2, 60 );
+	$security_limiter->consume_request( 'unit-rate-session', 2, 60 );
+	$rate_limit_result = $security_limiter->consume_request( 'unit-rate-session', 2, 60 );
+	$rate_limit_enforced = ! $rate_limit_result['allowed'] && 0 === $rate_limit_result['remaining'];
+
+	for ( $lead_attempt = 0; $lead_attempt < 3; ++$lead_attempt ) {
+		$security_limiter->consume_lead( 'unit-lead-rate-session' );
+	}
+	$lead_rate_result = $security_limiter->consume_lead( 'unit-lead-rate-session' );
+	$lead_rate_limit_enforced = ! $lead_rate_result['allowed'];
+
 	$elementor_loaded            = did_action( 'elementor/loaded' ) > 0;
 	$elementor_widget_registered = false;
 	$elementor_frontend_url      = null;
@@ -406,6 +428,15 @@ function wpdsac_test_probe(): WP_REST_Response {
 			$elementor_frontend_url = wpdsac_test_create_elementor_page();
 		}
 	}
+
+	\DiasMazhenov\WPDsAiChatbot\Lifecycle\Deactivator::deactivate();
+	$deactivation_clean = false === wp_next_scheduled( 'wpdsac_cleanup_rate_limits' )
+		&& false === wp_next_scheduled( 'wpdsac_cleanup_conversations' )
+		&& false === wp_next_scheduled( 'wpdsac_cleanup_leads' );
+	\DiasMazhenov\WPDsAiChatbot\Lifecycle\Activator::activate();
+	$lifecycle_rescheduled = false !== wp_next_scheduled( 'wpdsac_cleanup_rate_limits' )
+		&& false !== wp_next_scheduled( 'wpdsac_cleanup_conversations' )
+		&& false !== wp_next_scheduled( 'wpdsac_cleanup_leads' );
 
 	return new WP_REST_Response(
 		array(
@@ -446,9 +477,56 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'lead_saved'                  => $lead_saved,
 			'lead_privacy_exported'       => $lead_privacy_exported,
 			'lead_privacy_erased'         => $lead_privacy_erased,
+			'rate_limit_enforced'         => $rate_limit_enforced,
+			'lead_rate_limit_enforced'    => $lead_rate_limit_enforced,
+			'deactivation_clean'          => $deactivation_clean,
+			'lifecycle_rescheduled'       => $lifecycle_rescheduled,
+			'lead_admin_denied'           => $lead_admin_denied,
 			'elementor_loaded'            => $elementor_loaded,
 			'elementor_widget_registered' => $elementor_widget_registered,
 			'elementor_frontend_url'      => $elementor_frontend_url,
+		),
+		200
+	);
+}
+
+/**
+ * Run the production uninstall routine in the ephemeral Playground site.
+ *
+ * @return WP_REST_Response
+ */
+function wpdsac_test_uninstall(): WP_REST_Response {
+	global $wpdb;
+
+	if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+		define( 'WP_UNINSTALL_PLUGIN', 'wp-ds-aichatbot/wp-ds-aichatbot.php' );
+	}
+
+	require WPDSAC_PATH . 'uninstall.php';
+
+	$tables = array(
+		$wpdb->prefix . 'wpdsac_rate_limits',
+		$wpdb->prefix . 'wpdsac_request_locks',
+		$wpdb->prefix . 'wpdsac_knowledge_chunks',
+		$wpdb->prefix . 'wpdsac_conversations',
+		$wpdb->prefix . 'wpdsac_messages',
+		$wpdb->prefix . 'wpdsac_leads',
+	);
+	$tables_removed = true;
+
+	foreach ( $tables as $table ) {
+		$tables_removed = $tables_removed && ! wpdsac_test_table_exists( $table );
+	}
+
+	return new WP_REST_Response(
+		array(
+			'tables_removed'  => $tables_removed,
+			'options_removed' => false === get_option( 'wpdsac_settings', false )
+				&& false === get_option( 'wpdsac_pdf_attachment_ids', false )
+				&& false === get_option( 'wpdsac_db_version', false ),
+			'cron_removed'    => false === wp_next_scheduled( 'wpdsac_cleanup_rate_limits' )
+				&& false === wp_next_scheduled( 'wpdsac_cleanup_conversations' )
+				&& false === wp_next_scheduled( 'wpdsac_cleanup_leads' ),
 		),
 		200
 	);
@@ -463,6 +541,16 @@ add_action(
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => 'wpdsac_test_probe',
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			'wpdsac-test/v1',
+			'/uninstall',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => 'wpdsac_test_uninstall',
 				'permission_callback' => '__return_true',
 			)
 		);

@@ -183,3 +183,8 @@
 - Ежедневный `wpdsac_cleanup_leads` удаляет истёкшие данные; deactivation очищает schedule, uninstall удаляет table.
 - Runtime probe подтверждает migration `5`, lead table/cron, frontend consent form, persistence, privacy export/erase и REST rejection без consent.
 - Следующий основной срез: unit/security tests, lifecycle/rate-limit verification и финальный installable ZIP audit.
+- Версия `0.5.8`: добавлен PHPUnit 9.6 с CI matrix PHP 7.4/8.3; unit suite проверяет signed session round-trip/tampering, chunk bounds, appearance sanitization и lead honeypot/length limits.
+- Playground probe подтверждает session и lead rate limits, очищение cron при deactivation и повторное планирование при activation.
+- В конце каждого isolated smoke run production `uninstall.php` удаляет все шесть plugin tables, options и schedules; результат проверяется до уничтожения Playground runtime.
+- Package job зависит от PHPUnit, WPCS, PHP lint и обоих integration modes; ZIP продолжает включать только production Composer dependencies.
+- Основные реализуемые этапы завершены. Внешние ручные gates: Elementor editor iframe на реальном сайте и provider smoke с секретами владельца сайта.

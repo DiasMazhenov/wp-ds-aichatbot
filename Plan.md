@@ -101,11 +101,11 @@
 
 - [x] PHP syntax lint в CI на PHP 7.4, 8.1 и 8.3.
 - [x] WordPress Coding Standards и PHPCompatibilityWP как обязательный CI gate.
-- [ ] Unit tests.
+- [x] Unit tests.
 - [x] Integration smoke tests на чистом WordPress и с актуальным Elementor.
 - [x] Проверка активации и миграций в чистой WordPress-инсталляции.
 - [x] Базовая проверка публичного REST: session, malformed token и безопасный 503 без credentials.
-- [ ] Расширенная проверка деактивации/удаления, прав доступа и rate limiting.
+- [x] Расширенная проверка деактивации/удаления, прав доступа и rate limiting.
 - [ ] Проверка WordPress и Elementor frontend/editor.
 - [x] Воспроизводимая сборка и валидация installable ZIP.
 - [x] Публикация ZIP как GitHub Actions artifact после PHP lint.
@@ -152,6 +152,6 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.7` добавляет выключенный по умолчанию сбор имени/email прямо в чате: обязательное согласие, honeypot, отдельный rate limit, retention, WP-Cron, защищённый admin list и WordPress privacy exporter/eraser. Следующий срез — unit/security tests и расширенная проверка lifecycle/rate limiting.
+Версия `0.5.8` добавляет PHPUnit на PHP 7.4/8.3 и runtime-проверки session/lead rate limits, deactivation/rescheduling и полного uninstall таблиц/options/cron. После CI остаются только внешние ручные проверки: Elementor editor iframe на установленном сайте и реальный provider smoke с пользовательскими API credentials.
 
 Локальные `node_modules` и dev-пакеты в `vendor` используются только для разработки и не попадают в Git. Installable ZIP содержит только production Composer runtime PDF parser; dev-зависимости и `vendor/bin` исключены. Локальные тяжёлые каталоги будут удалены перед финальной передачей.

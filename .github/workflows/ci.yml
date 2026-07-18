@@ -47,11 +47,28 @@ jobs:
       - name: WordPress Coding Standards
         run: composer lint
 
+  unit-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['7.4', '8.3']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+      - name: Install test dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: PHPUnit
+        run: composer test:unit
+
   package:
     needs:
       - php-lint
       - integration
       - coding-standards
+      - unit-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
