@@ -8,6 +8,68 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
+ * Minimal WooCommerce-compatible product fixture.
+ */
+final class WPDSAC_Test_Product {
+
+	public function is_visible(): bool {
+		return true;
+	}
+
+	public function get_sku(): string {
+		return 'SOLAR-42';
+	}
+
+	public function get_price_html(): string {
+		return '<span>$49.00</span>';
+	}
+
+	public function get_stock_status(): string {
+		return 'instock';
+	}
+}
+
+if ( ! function_exists( 'wc_get_product' ) ) {
+	function wc_get_product( int $post_id ): WPDSAC_Test_Product {
+		unset( $post_id );
+
+		return new WPDSAC_Test_Product();
+	}
+}
+
+/**
+ * Build a tiny valid text PDF without a binary repository fixture.
+ *
+ * @return string
+ */
+function wpdsac_test_pdf(): string {
+	$stream  = 'BT /F1 12 Tf 72 720 Td (Solar warranty lasts ten years) Tj ET';
+	$objects = array(
+		'<< /Type /Catalog /Pages 2 0 R >>',
+		'<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+		'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',
+		'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+		'<< /Length ' . strlen( $stream ) . ">>\nstream\n" . $stream . "\nendstream",
+	);
+	$pdf     = "%PDF-1.4\n";
+	$offsets = array( 0 );
+
+	foreach ( $objects as $index => $object ) {
+		$offsets[] = strlen( $pdf );
+		$pdf      .= ( $index + 1 ) . " 0 obj\n" . $object . "\nendobj\n";
+	}
+
+	$xref = strlen( $pdf );
+	$pdf .= "xref\n0 6\n0000000000 65535 f \n";
+
+	foreach ( array_slice( $offsets, 1 ) as $offset ) {
+		$pdf .= sprintf( "%010d 00000 n \n", $offset );
+	}
+
+	return $pdf . "trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n" . $xref . "\n%%EOF\n";
+}
+
+/**
  * Determine whether a plugin table exists.
  *
  * @param string $table_name Fully-prefixed table name.
@@ -145,6 +207,9 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$knowledge_augmented = false;
 	$faq_registered = post_type_exists( \DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType::POST_TYPE );
 	$faq_indexed = false;
+	$pdf_indexed = false;
+	$pdf_option_non_autoloaded = false;
+	$woocommerce_indexed = false;
 	$conversation_logged = false;
 	$privacy_exported = false;
 	$privacy_erased = false;
@@ -193,6 +258,64 @@ function wpdsac_test_probe(): WP_REST_Response {
 				$faq_matches = $knowledge_repository->search( 'How long is the battery warranty?', 2 );
 				$faq_indexed = isset( $faq_matches[0]['content'] )
 					&& false !== stripos( $faq_matches[0]['content'], 'twenty-four months' );
+			}
+
+			$pdf_upload = wp_upload_bits( 'wpdsac-knowledge.pdf', null, wpdsac_test_pdf() );
+
+			if ( empty( $pdf_upload['error'] ) ) {
+				$pdf_attachment_id = wp_insert_attachment(
+					array(
+						'post_title'     => 'Solar Warranty PDF',
+						'post_status'    => 'inherit',
+						'post_mime_type' => 'application/pdf',
+					),
+					$pdf_upload['file']
+				);
+
+				if ( ! is_wp_error( $pdf_attachment_id ) ) {
+					update_attached_file( $pdf_attachment_id, $pdf_upload['file'] );
+					$pdf_indexer = new \DiasMazhenov\WPDsAiChatbot\Knowledge\PdfIndexer(
+						$knowledge_repository,
+						new \DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker()
+					);
+					$pdf_result  = $pdf_indexer->save_selection( array( $pdf_attachment_id ) );
+					$pdf_matches = $knowledge_repository->search( 'solar warranty years', 3 );
+					$pdf_indexed = 1 === $pdf_result['indexed']
+						&& false !== stripos( wp_json_encode( $pdf_matches ), 'ten years' );
+					$pdf_option_non_autoloaded = ! array_key_exists(
+						\DiasMazhenov\WPDsAiChatbot\Knowledge\PdfIndexer::OPTION_NAME,
+						wp_load_alloptions()
+					);
+				}
+			}
+
+			register_post_type(
+				'product',
+				array(
+					'public' => true,
+				)
+			);
+			register_taxonomy( 'product_cat', 'product' );
+			$product_id = wp_insert_post(
+				array(
+					'post_title'   => 'Solar Controller',
+					'post_content' => 'A controller for off-grid solar systems.',
+					'post_status'  => 'publish',
+					'post_type'    => 'product',
+				),
+				true
+			);
+
+			if ( ! is_wp_error( $product_id ) ) {
+				( new \DiasMazhenov\WPDsAiChatbot\Knowledge\WooCommerceSource() )->register_hooks();
+				$product_post = get_post( $product_id );
+
+				if ( $product_post instanceof WP_Post ) {
+					$knowledge_indexer->index_post( $product_post );
+					$product_matches = $knowledge_repository->search( 'SOLAR-42 stock', 3 );
+					$woocommerce_indexed = false !== stripos( wp_json_encode( $product_matches ), 'SOLAR-42' )
+						&& false !== stripos( wp_json_encode( $product_matches ), 'instock' );
+				}
 			}
 
 			update_option( 'wpdsac_settings', $settings, false );
@@ -277,6 +400,9 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'knowledge_augmented'         => $knowledge_augmented,
 			'faq_registered'              => $faq_registered,
 			'faq_indexed'                 => $faq_indexed,
+			'pdf_indexed'                 => $pdf_indexed,
+			'pdf_option_non_autoloaded'   => $pdf_option_non_autoloaded,
+			'woocommerce_indexed'         => $woocommerce_indexed,
 			'conversation_logged'         => $conversation_logged,
 			'privacy_exported'            => $privacy_exported,
 			'privacy_erased'              => $privacy_erased,

@@ -40,7 +40,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.5',
+    plugin_version: '0.5.6',
     db_version: '4',
     rate_limit_table: true,
     request_lock_table: true,
@@ -62,6 +62,9 @@ try {
     knowledge_augmented: true,
     faq_registered: true,
     faq_indexed: true,
+    pdf_indexed: true,
+    pdf_option_non_autoloaded: true,
+    woocommerce_indexed: true,
     conversation_logged: true,
     privacy_exported: true,
     privacy_erased: true,

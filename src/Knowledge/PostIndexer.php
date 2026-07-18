@@ -83,6 +83,7 @@ final class PostIndexer {
 	public function delete_post( int $post_id ): void {
 		$this->repository->delete_source( 'post', $post_id );
 		$this->repository->delete_source( 'faq', $post_id );
+		$this->repository->delete_source( 'product', $post_id );
 	}
 
 	/**
@@ -127,7 +128,9 @@ final class PostIndexer {
 	 */
 	public function index_post( \WP_Post $post ): int {
 		$content     = $post->post_title . "\n\n" . $post->post_excerpt . "\n\n" . $post->post_content;
+		$content     = (string) apply_filters( 'wpdsac_knowledge_post_content', $content, $post );
 		$source_type = FaqPostType::POST_TYPE === $post->post_type ? 'faq' : 'post';
+		$source_type = sanitize_key( (string) apply_filters( 'wpdsac_knowledge_post_source_type', $source_type, $post ) );
 		$source_url  = 'faq' === $source_type ? '' : (string) get_permalink( $post );
 
 		return $this->repository->replace_source(

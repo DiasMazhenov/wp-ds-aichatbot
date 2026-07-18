@@ -144,7 +144,7 @@
 - После WPCS/SQL правок core и Elementor smoke tests повторно прошли локально.
 - Elementor integration smoke test теперь публикует временную страницу с реальным `wpdsac-chatbot` widget и проверяет frontend markup, escaping пользовательских значений, CSS, JavaScript и локализованную REST-конфигурацию.
 - Core и расширенный Elementor frontend smoke tests успешно прошли локально 2026-07-19 без добавления браузерных npm-зависимостей.
-- `node_modules` (WordPress Playground/PHP-WASM) и `vendor` нужны только для разработки, исключены из Git и installable ZIP и будут удалены перед финальной передачей.
+- `node_modules` (WordPress Playground/PHP-WASM) и dev-пакеты `vendor` нужны только для разработки и исключены из Git; ZIP включает только production runtime PDF parser.
 - Версия `0.5.2`: добавлен отдельный `Chat\Appearance` со схемой визуальных defaults, whitelist позиции и ограниченными числовыми диапазонами.
 - В `Настройки → DS AI Chatbot` доступны цвета акцента/панели/текста/сообщений/границ, ширина, размер шрифта, скругление, позиция глобального виджета и отступы.
 - Административный live preview работает без сторонних UI-библиотек; его CSS/JS загружаются только на странице настроек плагина.
@@ -169,4 +169,9 @@
 - Для same-origin авторизованных пользователей frontend передаёт стандартный REST nonce, поэтому журнал может связать разговор с WordPress user ID.
 - `Privacy\ConversationPrivacy` регистрирует WordPress personal data exporter/eraser и suggested privacy-policy content; anonymous logs не связываются с email.
 - Runtime test подтверждает DB version `4`, обе таблицы, cron, opt-in logging, экспорт и фактическое удаление пользовательских сообщений.
-- Следующий основной срез: PDF ingestion и WooCommerce knowledge source.
+- Версия `0.5.6`: добавлен `Knowledge\PdfIndexer` с явным выбором до 50 PDF из Media Library, лимитом 10 МБ, realpath-проверкой внутри uploads и ограничением извлечённого текста.
+- PDF parser поставляется как production Composer dependency; installable ZIP исключает Composer metadata, dev dependencies и `vendor/bin`, но включает runtime autoloader и лицензии.
+- PDF без текстового слоя безопасно пропускаются; прямые URL PDF не передаются посетителю через RAG context.
+- `Knowledge\WooCommerceSource` опционально добавляет только опубликованные видимые товары через публичные WooCommerce API: описание, SKU, цена, наличие и категории.
+- Core runtime probe проверяет фактическое извлечение текста из валидного PDF, non-autoload selection option и индексирование WooCommerce-compatible product fixture.
+- Следующий основной срез: сбор лидов с consent, retention и privacy exporter/eraser.

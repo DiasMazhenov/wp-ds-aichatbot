@@ -92,8 +92,8 @@
 - [x] Хранилище фрагментов базы знаний вне `wp_options`.
 - [x] Knowledge/RAG по страницам и записям WordPress с локальным keyword ranking.
 - [ ] Опциональный semantic embeddings adapter.
-- [ ] PDF ingestion.
-- [ ] WooCommerce source.
+- [x] PDF ingestion.
+- [x] WooCommerce source.
 - [ ] Сбор лидов.
 - [ ] TTS/STT и аналитика — только при подтверждённой необходимости.
 
@@ -152,6 +152,6 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.5` добавляет opt-in conversation logging, обязательный retention, ежедневную cron-очистку и WordPress privacy exporter/eraser. Сессии журналов хранятся только как HMAC hash, IP не сохраняются. Следующий основной срез — PDF ingestion и WooCommerce knowledge source.
+Версия `0.5.6` добавляет явный выбор PDF из Media Library и адаптер публичных товаров WooCommerce. PDF ограничены 50 файлами по 10 МБ, извлекаются только из uploads и не публикуют прямую ссылку в AI-контексте. Следующий основной срез — сбор лидов с явным согласием и WordPress privacy integration.
 
-Локальные `node_modules` и `vendor` являются только воспроизводимой тестовой средой, не попадают в Git или installable ZIP и будут удалены перед финальной передачей. До завершения активной разработки они сохраняются для быстрых повторных проверок.
+Локальные `node_modules` и dev-пакеты в `vendor` используются только для разработки и не попадают в Git. Installable ZIP содержит только production Composer runtime PDF parser; dev-зависимости и `vendor/bin` исключены. Локальные тяжёлые каталоги будут удалены перед финальной передачей.

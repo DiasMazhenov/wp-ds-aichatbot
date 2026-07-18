@@ -55,6 +55,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
       - name: Build and validate installable ZIP
         run: bash scripts/build-zip.sh
       - uses: actions/upload-artifact@v7

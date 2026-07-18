@@ -3,7 +3,7 @@
  * Plugin Name:       WP DS AI Chatbot
  * Plugin URI:        https://github.com/DiasMazhenov/wp-ds-aichatbot
  * Description:       Extensible AI chatbot for WordPress and Elementor.
- * Version:           0.5.5
+ * Version:           0.5.6
  * Requires at least: 6.6
  * Requires PHP:      7.4
  * Author:            Dias Mazhenov
@@ -17,10 +17,14 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WPDSAC_VERSION', '0.5.5' );
+define( 'WPDSAC_VERSION', '0.5.6' );
 define( 'WPDSAC_FILE', __FILE__ );
 define( 'WPDSAC_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WPDSAC_URL', plugin_dir_url( __FILE__ ) );
+
+if ( is_readable( WPDSAC_PATH . 'vendor/autoload.php' ) ) {
+	require_once WPDSAC_PATH . 'vendor/autoload.php';
+}
 
 require_once WPDSAC_PATH . 'src/Support/Autoloader.php';
 

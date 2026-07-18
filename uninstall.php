@@ -16,6 +16,7 @@ delete_option( 'wpdsac_gemini_api_key' );
 delete_option( 'wpdsac_openrouter_api_key' );
 delete_option( 'wpdsac_version' );
 delete_option( 'wpdsac_db_version' );
+delete_option( 'wpdsac_pdf_attachment_ids' );
 wp_clear_scheduled_hook( 'wpdsac_cleanup_logs' );
 wp_clear_scheduled_hook( 'wpdsac_cleanup_rate_limits' );
 wp_clear_scheduled_hook( 'wpdsac_cleanup_conversations' );

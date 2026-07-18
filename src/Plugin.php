@@ -30,9 +30,11 @@ use DiasMazhenov\WPDsAiChatbot\Elementor\Integration;
 use DiasMazhenov\WPDsAiChatbot\Lifecycle\Migrator;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType;
+use DiasMazhenov\WPDsAiChatbot\Knowledge\PdfIndexer;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\PostIndexer;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Repository;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Retriever;
+use DiasMazhenov\WPDsAiChatbot\Knowledge\WooCommerceSource;
 use DiasMazhenov\WPDsAiChatbot\Privacy\ConversationPrivacy;
 
 defined( 'ABSPATH' ) || exit;
@@ -77,7 +79,9 @@ final class Plugin {
 		$session_api   = new SessionController( $tokens );
 		$credentials   = new CredentialResolver();
 		$knowledge     = new Repository();
-		$post_indexer  = new PostIndexer( $knowledge, new Chunker() );
+		$chunker       = new Chunker();
+		$post_indexer  = new PostIndexer( $knowledge, $chunker );
+		$pdf_indexer   = new PdfIndexer( $knowledge, $chunker );
 		$retriever     = new Retriever( $knowledge );
 		$conversations = new ConversationRepository();
 		$logger        = new ConversationLogger( $conversations );
@@ -101,6 +105,8 @@ final class Plugin {
 		$session_api->register_hooks();
 		$providers->register_hooks();
 		$post_indexer->register_hooks();
+		$pdf_indexer->register_hooks();
+		( new WooCommerceSource() )->register_hooks();
 		$retriever->register_hooks();
 		$logger->register_hooks();
 		( new ConversationPrivacy( $conversations ) )->register_hooks();
@@ -109,7 +115,7 @@ final class Plugin {
 		( new Integration( $renderer ) )->register_hooks();
 
 		if ( is_admin() ) {
-			( new KnowledgePage( $post_indexer, $knowledge ) )->register_hooks();
+			( new KnowledgePage( $post_indexer, $pdf_indexer, $knowledge ) )->register_hooks();
 		}
 
 		add_action( 'init', array( $this, 'load_textdomain' ) );
