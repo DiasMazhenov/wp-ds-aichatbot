@@ -163,3 +163,10 @@
 - Общая переиндексация теперь включает pages, posts и AI FAQs; Retriever не добавляет пустой URL для приватного FAQ.
 - Runtime probe подтверждает регистрацию FAQ post type и автоматическую индексацию опубликованного FAQ при включённом knowledge retrieval.
 - Следующий Knowledge-срез: optional semantic embeddings; затем PDF и WooCommerce.
+- Версия `0.5.5`: DB schema `4` добавляет отдельные таблицы `{prefix}wpdsac_conversations` и `{prefix}wpdsac_messages`; logging выключен по умолчанию.
+- Успешные exchanges записывает отдельный `Data\ConversationLogger`; raw session UUID и IP не сохраняются, session хранится как HMAC-SHA256.
+- Retention ограничен диапазоном 1–365 дней; ежедневный `wpdsac_cleanup_conversations` удаляет истёкшие conversations и child messages bounded batches.
+- Для same-origin авторизованных пользователей frontend передаёт стандартный REST nonce, поэтому журнал может связать разговор с WordPress user ID.
+- `Privacy\ConversationPrivacy` регистрирует WordPress personal data exporter/eraser и suggested privacy-policy content; anonymous logs не связываются с email.
+- Runtime test подтверждает DB version `4`, обе таблицы, cron, opt-in logging, экспорт и фактическое удаление пользовательских сообщений.
+- Следующий основной срез: PDF ingestion и WooCommerce knowledge source.

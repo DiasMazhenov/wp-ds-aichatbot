@@ -60,6 +60,8 @@ final class Settings {
 				'daily_request_limit'  => 500,
 				'knowledge_enabled'    => false,
 				'knowledge_max_chunks' => 4,
+				'logging_enabled'      => false,
+				'log_retention_days'   => 30,
 				'ai_provider'          => 'openai',
 				'ai_instructions'      => __( 'You are a concise and helpful website support assistant. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
 				'ai_max_output_tokens' => 1200,
@@ -147,6 +149,13 @@ final class Settings {
 			'wpdsac-settings'
 		);
 
+		add_settings_section(
+			'wpdsac_privacy',
+			esc_html__( 'Conversation privacy', 'wp-ds-aichatbot' ),
+			'__return_empty_string',
+			'wpdsac-settings'
+		);
+
 		$this->add_field( 'global_enabled', __( 'Global chatbot', 'wp-ds-aichatbot' ), 'checkbox' );
 		$this->add_field( 'title', __( 'Title', 'wp-ds-aichatbot' ), 'text' );
 		$this->add_field( 'welcome_message', __( 'Welcome message', 'wp-ds-aichatbot' ), 'textarea' );
@@ -155,6 +164,8 @@ final class Settings {
 		$this->add_field( 'daily_request_limit', __( 'AI requests per 24 hours', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'knowledge_enabled', __( 'Use website knowledge', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_knowledge' );
 		$this->add_field( 'knowledge_max_chunks', __( 'Knowledge fragments per answer', 'wp-ds-aichatbot' ), 'number', 'wpdsac_knowledge' );
+		$this->add_field( 'logging_enabled', __( 'Conversation logging', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_privacy' );
+		$this->add_field( 'log_retention_days', __( 'Log retention (days)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_privacy' );
 		$this->appearance->register_fields();
 		$this->add_field( 'ai_provider', __( 'Provider', 'wp-ds-aichatbot' ), 'provider_select', 'wpdsac_ai' );
 		$this->add_field( 'ai_instructions', __( 'Assistant instructions', 'wp-ds-aichatbot' ), 'textarea', 'wpdsac_ai' );
@@ -190,6 +201,8 @@ final class Settings {
 			'daily_request_limit'  => min( 100000, absint( $input['daily_request_limit'] ?? 500 ) ),
 			'knowledge_enabled'    => ! empty( $input['knowledge_enabled'] ),
 			'knowledge_max_chunks' => min( 8, max( 1, absint( $input['knowledge_max_chunks'] ?? 4 ) ) ),
+			'logging_enabled'      => ! empty( $input['logging_enabled'] ),
+			'log_retention_days'   => min( 365, max( 1, absint( $input['log_retention_days'] ?? 30 ) ) ),
 			'ai_provider'          => $provider,
 			'ai_instructions'      => sanitize_textarea_field( $input['ai_instructions'] ?? '' ),
 			'ai_max_output_tokens' => min( 8000, max( 100, absint( $input['ai_max_output_tokens'] ?? 1200 ) ) ),
@@ -293,9 +306,12 @@ final class Settings {
 		}
 
 		if ( 'checkbox' === $args['type'] ) {
-			$description = 'knowledge_enabled' === $key
-				? __( 'Add relevant indexed pages, posts, and AI FAQs to AI requests.', 'wp-ds-aichatbot' )
-				: __( 'Show the chatbot globally in the site footer.', 'wp-ds-aichatbot' );
+			$descriptions = array(
+				'global_enabled'    => __( 'Show the chatbot globally in the site footer.', 'wp-ds-aichatbot' ),
+				'knowledge_enabled' => __( 'Add relevant indexed pages, posts, and AI FAQs to AI requests.', 'wp-ds-aichatbot' ),
+				'logging_enabled'   => __( 'Store successful conversations for the configured retention period. Disabled by default.', 'wp-ds-aichatbot' ),
+			);
+			$description  = $descriptions[ $key ] ?? '';
 
 			printf(
 				'<label><input type="checkbox" name="%1$s" value="1" %2$s> %3$s</label>',

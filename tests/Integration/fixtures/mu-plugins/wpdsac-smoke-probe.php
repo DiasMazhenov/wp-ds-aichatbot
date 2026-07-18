@@ -145,6 +145,9 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$knowledge_augmented = false;
 	$faq_registered = post_type_exists( \DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType::POST_TYPE );
 	$faq_indexed = false;
+	$conversation_logged = false;
+	$privacy_exported = false;
+	$privacy_erased = false;
 
 	if ( ! is_wp_error( $knowledge_post_id ) ) {
 		$knowledge_repository = new \DiasMazhenov\WPDsAiChatbot\Knowledge\Repository();
@@ -196,6 +199,44 @@ function wpdsac_test_probe(): WP_REST_Response {
 		}
 	}
 
+	$privacy_email = 'wpdsac-privacy-' . wp_generate_password( 8, false ) . '@example.test';
+	$privacy_user_id = wp_insert_user(
+		array(
+			'user_login' => 'wpdsac_privacy_' . wp_generate_password( 8, false ),
+			'user_pass'  => wp_generate_password( 24 ),
+			'user_email' => $privacy_email,
+		)
+	);
+
+	if ( ! is_wp_error( $privacy_user_id ) ) {
+		$logging_settings                       = is_array( $settings ) ? $settings : array();
+		$logging_settings['logging_enabled']    = true;
+		$logging_settings['log_retention_days'] = 1;
+		update_option( 'wpdsac_settings', $logging_settings, false );
+		wp_set_current_user( $privacy_user_id );
+
+		do_action(
+			'wpdsac_chat_exchange',
+			'privacy-test-session',
+			'Private visitor message',
+			'Private assistant reply',
+			new WP_REST_Request()
+		);
+
+		$conversation_repository = new \DiasMazhenov\WPDsAiChatbot\Data\ConversationRepository();
+		$privacy                 = new \DiasMazhenov\WPDsAiChatbot\Privacy\ConversationPrivacy( $conversation_repository );
+		$export                  = $privacy->export( $privacy_email );
+		$conversation_logged     = isset( $export['data'] ) && 2 === count( $export['data'] );
+		$privacy_exported        = $conversation_logged
+			&& false !== strpos( $export['data'][0]['data'][1]['value'], 'Private visitor message' );
+		$erasure                 = $privacy->erase( $privacy_email );
+		$privacy_erased          = ! empty( $erasure['items_removed'] )
+			&& array() === $privacy->export( $privacy_email )['data'];
+
+		wp_set_current_user( 0 );
+		update_option( 'wpdsac_settings', $settings, false );
+	}
+
 	$elementor_loaded            = did_action( 'elementor/loaded' ) > 0;
 	$elementor_widget_registered = false;
 	$elementor_frontend_url      = null;
@@ -218,6 +259,9 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'rate_limit_table'            => wpdsac_test_table_exists( $wpdb->prefix . 'wpdsac_rate_limits' ),
 			'request_lock_table'          => wpdsac_test_table_exists( $wpdb->prefix . 'wpdsac_request_locks' ),
 			'knowledge_table'             => wpdsac_test_table_exists( $wpdb->prefix . 'wpdsac_knowledge_chunks' ),
+			'conversations_table'         => wpdsac_test_table_exists( $wpdb->prefix . 'wpdsac_conversations' ),
+			'messages_table'              => wpdsac_test_table_exists( $wpdb->prefix . 'wpdsac_messages' ),
+			'conversation_cleanup_cron'   => false !== wp_next_scheduled( 'wpdsac_cleanup_conversations' ),
 			'settings_non_autoloaded'     => ! array_key_exists( 'wpdsac_settings', $all_options ),
 			'shortcode_registered'        => shortcode_exists( 'ds_ai_chatbot' ),
 			'shortcode_rendered'          => false !== strpos( $shortcode_html, 'wpdsac-chat' ),
@@ -233,6 +277,9 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'knowledge_augmented'         => $knowledge_augmented,
 			'faq_registered'              => $faq_registered,
 			'faq_indexed'                 => $faq_indexed,
+			'conversation_logged'         => $conversation_logged,
+			'privacy_exported'            => $privacy_exported,
+			'privacy_erased'              => $privacy_erased,
 			'elementor_loaded'            => $elementor_loaded,
 			'elementor_widget_registered' => $elementor_widget_registered,
 			'elementor_frontend_url'      => $elementor_frontend_url,

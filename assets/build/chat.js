@@ -6,12 +6,18 @@
 	const sessionStorageKey = 'wpdsacSessionToken';
 
 	const request = async (path, body = {}) => {
+		const headers = {
+			'Content-Type': 'application/json',
+		};
+
+		if (config.restNonce) {
+			headers['X-WP-Nonce'] = config.restNonce;
+		}
+
 		const response = await fetch(`${config.restUrl}${path}`, {
 			method: 'POST',
 			credentials: 'same-origin',
-			headers: {
-				'Content-Type': 'application/json',
-			},
+			headers,
 			body: JSON.stringify(body),
 		});
 		const data = await response.json().catch(() => ({}));

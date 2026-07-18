@@ -81,9 +81,9 @@
 ### 6. Данные и приватность
 
 - [x] Версионируемые миграции через `dbDelta()`.
-- [ ] Отдельное хранилище для conversations/messages при включённых логах.
-- [ ] Срок хранения и cron-очистка.
-- [ ] WordPress privacy exporter/eraser.
+- [x] Отдельное хранилище для conversations/messages при включённых логах.
+- [x] Срок хранения и cron-очистка.
+- [x] WordPress privacy exporter/eraser для авторизованных пользователей.
 - [x] Безопасный `uninstall.php` для созданных на текущем этапе данных.
 
 ### 7. Дополнительные модули
@@ -152,6 +152,6 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.4` добавляет приватные administrator-managed `AI FAQs` в меню «Инструменты» и автоматически синхронизирует опубликованные FAQ с общим RAG repository. Следующий срез — semantic embeddings adapter; затем PDF и WooCommerce. Отдельные gates — Elementor editor iframe и provider-by-provider smoke test с реальными credentials.
+Версия `0.5.5` добавляет opt-in conversation logging, обязательный retention, ежедневную cron-очистку и WordPress privacy exporter/eraser. Сессии журналов хранятся только как HMAC hash, IP не сохраняются. Следующий основной срез — PDF ingestion и WooCommerce knowledge source.
 
 Локальные `node_modules` и `vendor` являются только воспроизводимой тестовой средой, не попадают в Git или installable ZIP и будут удалены перед финальной передачей. До завершения активной разработки они сохраняются для быстрых повторных проверок.

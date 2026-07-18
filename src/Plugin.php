@@ -24,6 +24,8 @@ use DiasMazhenov\WPDsAiChatbot\Api\SessionToken;
 use DiasMazhenov\WPDsAiChatbot\Chat\Assets;
 use DiasMazhenov\WPDsAiChatbot\Chat\Renderer;
 use DiasMazhenov\WPDsAiChatbot\Chat\Shortcode;
+use DiasMazhenov\WPDsAiChatbot\Data\ConversationLogger;
+use DiasMazhenov\WPDsAiChatbot\Data\ConversationRepository;
 use DiasMazhenov\WPDsAiChatbot\Elementor\Integration;
 use DiasMazhenov\WPDsAiChatbot\Lifecycle\Migrator;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker;
@@ -31,6 +33,7 @@ use DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\PostIndexer;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Repository;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Retriever;
+use DiasMazhenov\WPDsAiChatbot\Privacy\ConversationPrivacy;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -65,18 +68,20 @@ final class Plugin {
 	 * @return void
 	 */
 	public function boot(): void {
-		$assets       = new Assets();
-		$renderer     = new Renderer( $assets );
-		$tokens       = new SessionToken();
-		$rate_limiter = new RateLimiter();
-		$request_lock = new RequestLock();
-		$chat_api     = new ChatController( $tokens, $rate_limiter, $request_lock );
-		$session_api  = new SessionController( $tokens );
-		$credentials  = new CredentialResolver();
-		$knowledge    = new Repository();
-		$post_indexer = new PostIndexer( $knowledge, new Chunker() );
-		$retriever    = new Retriever( $knowledge );
-		$providers    = new ProviderManager(
+		$assets        = new Assets();
+		$renderer      = new Renderer( $assets );
+		$tokens        = new SessionToken();
+		$rate_limiter  = new RateLimiter();
+		$request_lock  = new RequestLock();
+		$chat_api      = new ChatController( $tokens, $rate_limiter, $request_lock );
+		$session_api   = new SessionController( $tokens );
+		$credentials   = new CredentialResolver();
+		$knowledge     = new Repository();
+		$post_indexer  = new PostIndexer( $knowledge, new Chunker() );
+		$retriever     = new Retriever( $knowledge );
+		$conversations = new ConversationRepository();
+		$logger        = new ConversationLogger( $conversations );
+		$providers     = new ProviderManager(
 			array(
 				'openai'       => new OpenAIProvider( $credentials ),
 				'anthropic'    => new AnthropicProvider( $credentials ),
@@ -97,6 +102,8 @@ final class Plugin {
 		$providers->register_hooks();
 		$post_indexer->register_hooks();
 		$retriever->register_hooks();
+		$logger->register_hooks();
+		( new ConversationPrivacy( $conversations ) )->register_hooks();
 		( new FaqPostType() )->register_hooks();
 		( new Shortcode( $renderer ) )->register_hooks();
 		( new Integration( $renderer ) )->register_hooks();

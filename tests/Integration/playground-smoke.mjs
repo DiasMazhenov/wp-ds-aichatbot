@@ -40,11 +40,14 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.4',
-    db_version: '3',
+    plugin_version: '0.5.5',
+    db_version: '4',
     rate_limit_table: true,
     request_lock_table: true,
     knowledge_table: true,
+    conversations_table: true,
+    messages_table: true,
+    conversation_cleanup_cron: true,
     settings_non_autoloaded: true,
     shortcode_registered: true,
     shortcode_rendered: true,
@@ -59,6 +62,9 @@ try {
     knowledge_augmented: true,
     faq_registered: true,
     faq_indexed: true,
+    conversation_logged: true,
+    privacy_exported: true,
+    privacy_erased: true,
     elementor_loaded: withElementor,
     elementor_widget_registered: withElementor,
   };
@@ -83,7 +89,7 @@ try {
       'localhost'
     );
     const frontend = await fetch(frontendUrl, {
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(30000),
     });
     const frontendHtml = await frontend.text();
 
@@ -142,7 +148,7 @@ async function getFreePort() {
 async function requestJson(path, options = {}) {
   const response = await fetch(`${baseUrl}${path}`, {
     ...options,
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(30000),
   });
   const body = await response.json();
 

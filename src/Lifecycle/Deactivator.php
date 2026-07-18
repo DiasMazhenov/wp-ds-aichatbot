@@ -22,5 +22,6 @@ final class Deactivator {
 	public static function deactivate(): void {
 		wp_clear_scheduled_hook( 'wpdsac_cleanup_logs' );
 		wp_clear_scheduled_hook( 'wpdsac_cleanup_rate_limits' );
+		wp_clear_scheduled_hook( 'wpdsac_cleanup_conversations' );
 	}
 }
