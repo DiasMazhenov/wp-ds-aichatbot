@@ -54,6 +54,13 @@ body > .wpdsac-chat {
 	background: #eff4ff;
 }
 
+.wpdsac-chat__message--user {
+	margin-left: 36px;
+	border-radius: 14px 14px 4px;
+	background: var(--wpdsac-accent);
+	color: #fff;
+}
+
 .wpdsac-chat__form {
 	display: grid;
 	grid-template-columns: 1fr auto;
@@ -72,6 +79,11 @@ body > .wpdsac-chat {
 	padding: 0 16px;
 	font: inherit;
 	font-weight: 700;
+}
+
+.wpdsac-chat__form button:disabled {
+	cursor: wait;
+	opacity: 0.65;
 }
 
 .wpdsac-chat__status {
@@ -97,4 +109,3 @@ body > .wpdsac-chat {
 		transition: none !important;
 	}
 }
-

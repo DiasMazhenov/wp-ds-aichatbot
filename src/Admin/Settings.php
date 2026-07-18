@@ -30,9 +30,11 @@ final class Settings {
 	 */
 	public static function defaults(): array {
 		return array(
-			'global_enabled' => false,
-			'title'          => __( 'AI Assistant', 'wp-ds-aichatbot' ),
+			'global_enabled'  => false,
+			'title'           => __( 'AI Assistant', 'wp-ds-aichatbot' ),
 			'welcome_message' => __( 'Hello! How can I help you?', 'wp-ds-aichatbot' ),
+			'rate_limit_requests' => 10,
+			'rate_limit_window'   => 60,
 		);
 	}
 
@@ -73,6 +75,8 @@ final class Settings {
 		$this->add_field( 'global_enabled', __( 'Global chatbot', 'wp-ds-aichatbot' ), 'checkbox' );
 		$this->add_field( 'title', __( 'Title', 'wp-ds-aichatbot' ), 'text' );
 		$this->add_field( 'welcome_message', __( 'Welcome message', 'wp-ds-aichatbot' ), 'textarea' );
+		$this->add_field( 'rate_limit_requests', __( 'Requests per window', 'wp-ds-aichatbot' ), 'number' );
+		$this->add_field( 'rate_limit_window', __( 'Rate-limit window (seconds)', 'wp-ds-aichatbot' ), 'number' );
 	}
 
 	/**
@@ -85,9 +89,11 @@ final class Settings {
 		$input = is_array( $input ) ? $input : array();
 
 		return array(
-			'global_enabled' => ! empty( $input['global_enabled'] ),
-			'title'          => sanitize_text_field( $input['title'] ?? '' ),
+			'global_enabled'  => ! empty( $input['global_enabled'] ),
+			'title'           => sanitize_text_field( $input['title'] ?? '' ),
 			'welcome_message' => sanitize_textarea_field( $input['welcome_message'] ?? '' ),
+			'rate_limit_requests' => min( 100, max( 1, absint( $input['rate_limit_requests'] ?? 10 ) ) ),
+			'rate_limit_window'   => min( HOUR_IN_SECONDS, max( 10, absint( $input['rate_limit_window'] ?? 60 ) ) ),
 		);
 	}
 
@@ -159,6 +165,15 @@ final class Settings {
 			return;
 		}
 
+		if ( 'number' === $args['type'] ) {
+			printf(
+				'<input class="small-text" type="number" min="1" step="1" name="%1$s" value="%2$d">',
+				esc_attr( $name ),
+				(int) $options[ $key ]
+			);
+			return;
+		}
+
 		printf(
 			'<input class="regular-text" type="text" name="%1$s" value="%2$s">',
 			esc_attr( $name ),
@@ -188,4 +203,3 @@ final class Settings {
 		);
 	}
 }
-

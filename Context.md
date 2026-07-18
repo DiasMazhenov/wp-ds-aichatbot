@@ -100,7 +100,13 @@
 - Документация: `Plan.md`, `Context.md`, `README.md` созданы.
 - Первый срез: bootstrap, autoload, lifecycle, Settings API, общий renderer, shortcode, глобальный режим и Elementor widget реализованы.
 - Assets загружаются только при фактическом render чатбота.
+- Версия `0.2.0`: добавлены REST `/session` и `/chat`, подписанные stateless session tokens и ограничение сообщения до 2000 символов.
+- Session token содержит только UUID/время жизни, подписан `wp_salt('auth')` и не создаёт options по пользовательскому ключу.
+- Rate limit хранится в `{prefix}wpdsac_rate_limits` и увеличивается атомарным SQL upsert отдельно для session и прямого IP.
+- Схема таблицы версируется через `Migrator`/`dbDelta()`; истёкшие buckets очищает WP-Cron.
+- Frontend запрашивает сессию в REST, хранит token только в `sessionStorage` и блокирует повторную отправку формы во время запроса.
+- `wpdsac_chat_reply` является extension point для следующего AI provider; без провайдера `/chat` возвращает ожидаемый HTTP 503.
 - JavaScript и `composer.json` прошли локальную синтаксическую проверку.
 - GitHub Actions CI успешно выполнил PHP syntax lint на PHP 7.4, 8.1 и 8.3 для commit `ebf6388`.
 - Локальный PHP/WordPress runtime отсутствует; проверка реальной активации и Elementor editor остаётся отдельным quality gate.
-- Следующий срез: REST endpoint, безопасная session model и rate limiter без OpenAI-вызова.
+- Следующий срез: `ProviderInterface`, OpenAI Responses API и безопасное серверное хранение API key.

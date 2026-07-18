@@ -8,10 +8,15 @@
 namespace DiasMazhenov\WPDsAiChatbot;
 
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
+use DiasMazhenov\WPDsAiChatbot\Api\ChatController;
+use DiasMazhenov\WPDsAiChatbot\Api\RateLimiter;
+use DiasMazhenov\WPDsAiChatbot\Api\SessionController;
+use DiasMazhenov\WPDsAiChatbot\Api\SessionToken;
 use DiasMazhenov\WPDsAiChatbot\Chat\Assets;
 use DiasMazhenov\WPDsAiChatbot\Chat\Renderer;
 use DiasMazhenov\WPDsAiChatbot\Chat\Shortcode;
 use DiasMazhenov\WPDsAiChatbot\Elementor\Integration;
+use DiasMazhenov\WPDsAiChatbot\Lifecycle\Migrator;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -38,11 +43,20 @@ final class Plugin {
 	 * @return void
 	 */
 	public function boot(): void {
-		$assets   = new Assets();
-		$renderer = new Renderer( $assets );
+		$assets       = new Assets();
+		$renderer     = new Renderer( $assets );
+		$tokens       = new SessionToken();
+		$rate_limiter = new RateLimiter();
+		$chat_api     = new ChatController( $tokens, $rate_limiter );
+		$session_api  = new SessionController( $tokens );
+
+		Migrator::maybe_migrate();
 
 		( new Settings() )->register_hooks();
 		$assets->register_hooks();
+		$rate_limiter->register_hooks();
+		$chat_api->register_hooks();
+		$session_api->register_hooks();
 		( new Shortcode( $renderer ) )->register_hooks();
 		( new Integration( $renderer ) )->register_hooks();
 
@@ -65,4 +79,3 @@ final class Plugin {
 
 	private function __construct() {}
 }
-

@@ -42,11 +42,7 @@ if ( $view['expanded'] ) {
 			</p>
 		</div>
 
-		<form
-			class="wpdsac-chat__form"
-			data-wpdsac-form
-			data-unavailable-message="<?php esc_attr_e( 'AI connection will be enabled in the next development stage.', 'wp-ds-aichatbot' ); ?>"
-		>
+		<form class="wpdsac-chat__form" data-wpdsac-form>
 			<label class="screen-reader-text" for="<?php echo esc_attr( $view['id'] ); ?>-input">
 				<?php esc_html_e( 'Message', 'wp-ds-aichatbot' ); ?>
 			</label>

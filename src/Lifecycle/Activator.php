@@ -31,6 +31,10 @@ final class Activator {
 
 		add_option( Settings::OPTION_NAME, Settings::defaults(), '', false );
 		update_option( 'wpdsac_version', WPDSAC_VERSION, false );
+		Migrator::migrate();
+
+		if ( ! wp_next_scheduled( 'wpdsac_cleanup_rate_limits' ) ) {
+			wp_schedule_event( time() + HOUR_IN_SECONDS, 'hourly', 'wpdsac_cleanup_rate_limits' );
+		}
 	}
 }
-

@@ -11,6 +11,8 @@ defined( 'ABSPATH' ) || exit;
 
 final class Assets {
 
+	private $localized = false;
+
 	/**
 	 * Register the asset hook.
 	 *
@@ -54,6 +56,24 @@ final class Assets {
 
 		wp_enqueue_style( 'wpdsac-chat' );
 		wp_enqueue_script( 'wpdsac-chat' );
+
+		if ( $this->localized ) {
+			return;
+		}
+
+		wp_localize_script(
+			'wpdsac-chat',
+			'wpdsacChatConfig',
+			array(
+				'restUrl' => esc_url_raw( rest_url( 'wp-ds-aichatbot/v1' ) ),
+				'strings' => array(
+					'connecting' => __( 'Connecting…', 'wp-ds-aichatbot' ),
+					'sending'    => __( 'Sending…', 'wp-ds-aichatbot' ),
+					'error'      => __( 'The chat request failed. Please try again.', 'wp-ds-aichatbot' ),
+				),
+			)
+		);
+
+		$this->localized = true;
 	}
 }
-

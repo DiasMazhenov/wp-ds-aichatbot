@@ -6,7 +6,7 @@
 
 ## Текущий статус
 
-Первый этап: базовый plugin bootstrap, настройки, единый renderer, shortcode и Elementor widget.
+Реализованы plugin bootstrap, настройки, единый renderer, shortcode, Elementor widget и безопасный публичный REST-контур. OpenAI provider пока не подключён.
 
 Подробности: [Plan.md](Plan.md) и [Context.md](Context.md).
 
@@ -30,3 +30,9 @@ composer install
 composer lint
 ```
 
+## REST API
+
+- `POST /wp-json/wp-ds-aichatbot/v1/session` — выдаёт подписанную сессию на 24 часа.
+- `POST /wp-json/wp-ds-aichatbot/v1/chat` — принимает `session` и `message` до 2000 символов.
+
+До подключения AI provider endpoint чата ожидаемо возвращает HTTP 503. Ответ подключается через фильтр `wpdsac_chat_reply`.
