@@ -62,6 +62,10 @@ final class Settings {
 				'knowledge_max_chunks' => 4,
 				'logging_enabled'      => false,
 				'log_retention_days'   => 30,
+				'leads_enabled'        => false,
+				'lead_prompt'          => __( 'Would you like us to contact you?', 'wp-ds-aichatbot' ),
+				'lead_consent_text'    => __( 'I agree that my contact details may be stored and used to respond to my request.', 'wp-ds-aichatbot' ),
+				'lead_retention_days'  => 90,
 				'ai_provider'          => 'openai',
 				'ai_instructions'      => __( 'You are a concise and helpful website support assistant. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
 				'ai_max_output_tokens' => 1200,
@@ -156,6 +160,13 @@ final class Settings {
 			'wpdsac-settings'
 		);
 
+		add_settings_section(
+			'wpdsac_leads',
+			esc_html__( 'Lead collection', 'wp-ds-aichatbot' ),
+			'__return_empty_string',
+			'wpdsac-settings'
+		);
+
 		$this->add_field( 'global_enabled', __( 'Global chatbot', 'wp-ds-aichatbot' ), 'checkbox' );
 		$this->add_field( 'title', __( 'Title', 'wp-ds-aichatbot' ), 'text' );
 		$this->add_field( 'welcome_message', __( 'Welcome message', 'wp-ds-aichatbot' ), 'textarea' );
@@ -166,6 +177,10 @@ final class Settings {
 		$this->add_field( 'knowledge_max_chunks', __( 'Knowledge fragments per answer', 'wp-ds-aichatbot' ), 'number', 'wpdsac_knowledge' );
 		$this->add_field( 'logging_enabled', __( 'Conversation logging', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_privacy' );
 		$this->add_field( 'log_retention_days', __( 'Log retention (days)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_privacy' );
+		$this->add_field( 'leads_enabled', __( 'Contact form in chat', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_leads' );
+		$this->add_field( 'lead_prompt', __( 'Contact prompt', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
+		$this->add_field( 'lead_consent_text', __( 'Consent text', 'wp-ds-aichatbot' ), 'textarea', 'wpdsac_leads' );
+		$this->add_field( 'lead_retention_days', __( 'Lead retention (days)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_leads' );
 		$this->appearance->register_fields();
 		$this->add_field( 'ai_provider', __( 'Provider', 'wp-ds-aichatbot' ), 'provider_select', 'wpdsac_ai' );
 		$this->add_field( 'ai_instructions', __( 'Assistant instructions', 'wp-ds-aichatbot' ), 'textarea', 'wpdsac_ai' );
@@ -187,10 +202,15 @@ final class Settings {
 	 * @return array<string, mixed>
 	 */
 	public function sanitize( $input ): array {
-		$input     = is_array( $input ) ? $input : array();
-		$providers = array( 'openai', 'anthropic', 'gemini', 'openrouter', 'wordpress_ai' );
-		$provider  = sanitize_key( $input['ai_provider'] ?? 'openai' );
-		$provider  = in_array( $provider, $providers, true ) ? $provider : 'openai';
+		$input        = is_array( $input ) ? $input : array();
+		$providers    = array( 'openai', 'anthropic', 'gemini', 'openrouter', 'wordpress_ai' );
+		$provider     = sanitize_key( $input['ai_provider'] ?? 'openai' );
+		$provider     = in_array( $provider, $providers, true ) ? $provider : 'openai';
+		$defaults     = self::defaults();
+		$lead_prompt  = sanitize_text_field( $input['lead_prompt'] ?? '' );
+		$lead_prompt  = '' !== $lead_prompt ? $lead_prompt : $defaults['lead_prompt'];
+		$lead_consent = sanitize_textarea_field( $input['lead_consent_text'] ?? '' );
+		$lead_consent = '' !== $lead_consent ? $lead_consent : $defaults['lead_consent_text'];
 
 		$settings = array(
 			'global_enabled'       => ! empty( $input['global_enabled'] ),
@@ -203,6 +223,10 @@ final class Settings {
 			'knowledge_max_chunks' => min( 8, max( 1, absint( $input['knowledge_max_chunks'] ?? 4 ) ) ),
 			'logging_enabled'      => ! empty( $input['logging_enabled'] ),
 			'log_retention_days'   => min( 365, max( 1, absint( $input['log_retention_days'] ?? 30 ) ) ),
+			'leads_enabled'        => ! empty( $input['leads_enabled'] ),
+			'lead_prompt'          => $lead_prompt,
+			'lead_consent_text'    => $lead_consent,
+			'lead_retention_days'  => min( 730, max( 1, absint( $input['lead_retention_days'] ?? 90 ) ) ),
 			'ai_provider'          => $provider,
 			'ai_instructions'      => sanitize_textarea_field( $input['ai_instructions'] ?? '' ),
 			'ai_max_output_tokens' => min( 8000, max( 100, absint( $input['ai_max_output_tokens'] ?? 1200 ) ) ),
@@ -310,6 +334,7 @@ final class Settings {
 				'global_enabled'    => __( 'Show the chatbot globally in the site footer.', 'wp-ds-aichatbot' ),
 				'knowledge_enabled' => __( 'Add relevant indexed pages, posts, and AI FAQs to AI requests.', 'wp-ds-aichatbot' ),
 				'logging_enabled'   => __( 'Store successful conversations for the configured retention period. Disabled by default.', 'wp-ds-aichatbot' ),
+				'leads_enabled'     => __( 'Show a name/email form with required consent inside the chat. Disabled by default.', 'wp-ds-aichatbot' ),
 			);
 			$description  = $descriptions[ $key ] ?? '';
 

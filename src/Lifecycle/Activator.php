@@ -51,5 +51,9 @@ final class Activator {
 		if ( ! wp_next_scheduled( 'wpdsac_cleanup_conversations' ) ) {
 			wp_schedule_event( time() + DAY_IN_SECONDS, 'daily', 'wpdsac_cleanup_conversations' );
 		}
+
+		if ( ! wp_next_scheduled( 'wpdsac_cleanup_leads' ) ) {
+			wp_schedule_event( time() + DAY_IN_SECONDS, 'daily', 'wpdsac_cleanup_leads' );
+		}
 	}
 }

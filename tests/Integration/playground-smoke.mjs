@@ -40,14 +40,16 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.6',
-    db_version: '4',
+    plugin_version: '0.5.7',
+    db_version: '5',
     rate_limit_table: true,
     request_lock_table: true,
     knowledge_table: true,
     conversations_table: true,
     messages_table: true,
+    leads_table: true,
     conversation_cleanup_cron: true,
+    lead_cleanup_cron: true,
     settings_non_autoloaded: true,
     shortcode_registered: true,
     shortcode_rendered: true,
@@ -68,6 +70,10 @@ try {
     conversation_logged: true,
     privacy_exported: true,
     privacy_erased: true,
+    lead_rendered: true,
+    lead_saved: true,
+    lead_privacy_exported: true,
+    lead_privacy_erased: true,
     elementor_loaded: withElementor,
     elementor_widget_registered: withElementor,
   };
@@ -118,6 +124,32 @@ try {
     body: JSON.stringify({ session: 'invalid', message: 'Smoke test' }),
   });
   assert.equal(malformed.response.status, 400, 'Malformed sessions must be rejected');
+
+	const missingConsent = await requestJson('/wp-json/wp-ds-aichatbot/v1/lead', {
+		method: 'POST',
+		headers: {'content-type': 'application/json'},
+		body: JSON.stringify({
+			session: session.body.token,
+			name: 'Runtime Lead',
+			email: 'runtime-lead@example.test',
+			consent: false,
+			website: '',
+		}),
+	});
+	assert.equal(missingConsent.response.status, 400, 'Lead consent must be required');
+
+	const lead = await requestJson('/wp-json/wp-ds-aichatbot/v1/lead', {
+		method: 'POST',
+		headers: {'content-type': 'application/json'},
+		body: JSON.stringify({
+			session: session.body.token,
+			name: 'Runtime Lead',
+			email: 'runtime-lead@example.test',
+			consent: true,
+			website: '',
+		}),
+	});
+	assert.equal(lead.response.status, 201, 'Consented lead must be saved');
 
   const unavailable = await requestJson('/wp-json/wp-ds-aichatbot/v1/chat', {
     method: 'POST',

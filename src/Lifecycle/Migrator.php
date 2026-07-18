@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Migrator {
 
-	public const DB_VERSION = '4';
+	public const DB_VERSION = '5';
 
 	private const VERSION_OPTION = 'wpdsac_db_version';
 
@@ -44,6 +44,7 @@ final class Migrator {
 		$knowledge_table     = self::knowledge_table();
 		$conversations_table = self::conversations_table();
 		$messages_table      = self::messages_table();
+		$leads_table         = self::leads_table();
 		$charset_collate     = $wpdb->get_charset_collate();
 		$rate_limit_sql      = "CREATE TABLE {$rate_limit_table} (
 			bucket_hash char(64) NOT NULL,
@@ -96,6 +97,20 @@ final class Migrator {
 			KEY conversation_id (conversation_id),
 			KEY created_at (created_at)
 		) {$charset_collate};";
+		$leads_sql           = "CREATE TABLE {$leads_table} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			session_hash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+			user_id bigint(20) unsigned NOT NULL DEFAULT 0,
+			name varchar(190) NOT NULL DEFAULT '',
+			email varchar(190) NOT NULL,
+			consent_text text NOT NULL,
+			created_at bigint(20) unsigned NOT NULL,
+			expires_at bigint(20) unsigned NOT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY session_hash (session_hash),
+			KEY email (email),
+			KEY expires_at (expires_at)
+		) {$charset_collate};";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $rate_limit_sql );
@@ -103,6 +118,7 @@ final class Migrator {
 		dbDelta( $knowledge_sql );
 		dbDelta( $conversations_sql );
 		dbDelta( $messages_sql );
+		dbDelta( $leads_sql );
 
 		update_option( self::VERSION_OPTION, self::DB_VERSION, false );
 	}
@@ -160,5 +176,16 @@ final class Migrator {
 		global $wpdb;
 
 		return $wpdb->prefix . 'wpdsac_messages';
+	}
+
+	/**
+	 * Return the prefixed leads table name.
+	 *
+	 * @return string
+	 */
+	public static function leads_table(): string {
+		global $wpdb;
+
+		return $wpdb->prefix . 'wpdsac_leads';
 	}
 }

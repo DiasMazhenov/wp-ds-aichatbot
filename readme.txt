@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.6
+Stable tag: 0.5.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,6 +18,8 @@ API keys remain server-side. Public requests use signed sessions, atomic rate li
 
 The plugin settings include a live chat preview with shared colors, width, typography, corner radius, global position, and offsets. The same appearance applies to global, shortcode, and Elementor chatbots.
 
+Optional lead collection adds a name/email form inside the chat with required consent, bounded retention, scheduled cleanup, rate limits, and WordPress privacy export/erasure.
+
 An optional knowledge layer indexes published WordPress pages, posts, administrator-managed FAQs, WooCommerce products, and selected text PDFs into a dedicated table. Relevant bounded fragments are added as untrusted reference context before any configured AI provider is called.
 
 == Installation ==
@@ -29,6 +31,11 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.7 =
+* Added optional in-chat lead collection with explicit consent and a honeypot.
+* Added lead retention, scheduled cleanup, protected administration, and rate limits.
+* Added WordPress personal-data export and erasure for submitted contact details.
 
 = 0.5.6 =
 * Added explicit PDF selection and bounded text extraction from the Media Library.

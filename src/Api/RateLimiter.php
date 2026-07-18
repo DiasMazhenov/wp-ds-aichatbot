@@ -71,6 +71,23 @@ final class RateLimiter {
 	}
 
 	/**
+	 * Consume conservative per-session and peer lead-submission buckets.
+	 *
+	 * @param string $session_id Server-issued session UUID.
+	 * @return array<string, bool|int>
+	 */
+	public function consume_lead( string $session_id ): array {
+		$session = $this->consume( 'lead-session:' . $session_id, 3, HOUR_IN_SECONDS );
+		$ip      = $this->consume( 'lead-ip:' . $this->client_ip(), 10, HOUR_IN_SECONDS );
+
+		return array(
+			'allowed'     => $session['allowed'] && $ip['allowed'],
+			'remaining'   => min( $session['remaining'], $ip['remaining'] ),
+			'retry_after' => max( $session['retry_after'], $ip['retry_after'] ),
+		);
+	}
+
+	/**
 	 * Delete expired buckets.
 	 *
 	 * @return void

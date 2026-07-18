@@ -101,6 +101,69 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	opacity: 0.65;
 }
 
+.wpdsac-chat__lead {
+	margin: 0 0 18px;
+	padding: 12px;
+	border: 1px solid var(--wpdsac-border);
+	border-radius: var(--wpdsac-radius);
+}
+
+.wpdsac-chat__lead p {
+	margin: 0 0 10px;
+}
+
+.wpdsac-chat__lead form {
+	display: grid;
+	gap: 10px;
+}
+
+.wpdsac-chat__lead label:not(.wpdsac-chat__consent) span {
+	display: block;
+	margin-bottom: 3px;
+	font-size: 13px;
+}
+
+.wpdsac-chat__lead input[type="text"],
+.wpdsac-chat__lead input[type="email"] {
+	box-sizing: border-box;
+	width: 100%;
+	padding: 9px 10px;
+	border: 1px solid var(--wpdsac-border);
+	border-radius: calc(var(--wpdsac-radius) / 2);
+	font: inherit;
+}
+
+.wpdsac-chat__consent {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 8px;
+	font-size: 12px;
+}
+
+.wpdsac-chat__lead button {
+	padding: 10px 14px;
+	border: 0;
+	border-radius: var(--wpdsac-radius);
+	background: var(--wpdsac-accent);
+	color: var(--wpdsac-accent-text);
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.wpdsac-chat__lead button:disabled {
+	cursor: wait;
+	opacity: 0.65;
+}
+
+.wpdsac-chat__honeypot {
+	position: absolute !important;
+	left: -10000px !important;
+	width: 1px !important;
+	height: 1px !important;
+	overflow: hidden !important;
+}
+
 .wpdsac-chat__status {
 	margin: 10px 0 0;
 	font-size: 13px;

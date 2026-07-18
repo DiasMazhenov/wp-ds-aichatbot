@@ -213,6 +213,10 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$conversation_logged = false;
 	$privacy_exported = false;
 	$privacy_erased = false;
+	$lead_rendered = false;
+	$lead_saved = false;
+	$lead_privacy_exported = false;
+	$lead_privacy_erased = false;
 
 	if ( ! is_wp_error( $knowledge_post_id ) ) {
 		$knowledge_repository = new \DiasMazhenov\WPDsAiChatbot\Knowledge\Repository();
@@ -360,6 +364,36 @@ function wpdsac_test_probe(): WP_REST_Response {
 		update_option( 'wpdsac_settings', $settings, false );
 	}
 
+	$lead_settings                        = is_array( $settings ) ? $settings : array();
+	$lead_settings['leads_enabled']       = true;
+	$lead_settings['lead_consent_text']   = 'I consent to a follow-up about my request.';
+	$lead_settings['lead_retention_days'] = 1;
+	update_option( 'wpdsac_settings', $lead_settings, false );
+
+	$lead_html     = do_shortcode( '[ds_ai_chatbot]' );
+	$lead_rendered = false !== strpos( $lead_html, 'data-wpdsac-lead-form' )
+		&& false !== strpos( $lead_html, 'I consent to a follow-up' );
+	$lead_email    = 'wpdsac-lead-' . wp_generate_password( 8, false ) . '@example.test';
+	$lead_repository = new \DiasMazhenov\WPDsAiChatbot\Data\LeadRepository();
+	$lead_saved      = $lead_repository->save(
+		'lead-privacy-session',
+		0,
+		'Lead Test',
+		$lead_email,
+		$lead_settings['lead_consent_text'],
+		1
+	);
+
+	if ( $lead_saved ) {
+		$lead_privacy          = new \DiasMazhenov\WPDsAiChatbot\Privacy\LeadPrivacy( $lead_repository );
+		$lead_export           = $lead_privacy->export( $lead_email );
+		$lead_privacy_exported = isset( $lead_export['data'][0]['data'][1]['value'] )
+			&& $lead_email === $lead_export['data'][0]['data'][1]['value'];
+		$lead_erasure          = $lead_privacy->erase( $lead_email );
+		$lead_privacy_erased   = ! empty( $lead_erasure['items_removed'] )
+			&& array() === $lead_privacy->export( $lead_email )['data'];
+	}
+
 	$elementor_loaded            = did_action( 'elementor/loaded' ) > 0;
 	$elementor_widget_registered = false;
 	$elementor_frontend_url      = null;
@@ -384,7 +418,9 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'knowledge_table'             => wpdsac_test_table_exists( $wpdb->prefix . 'wpdsac_knowledge_chunks' ),
 			'conversations_table'         => wpdsac_test_table_exists( $wpdb->prefix . 'wpdsac_conversations' ),
 			'messages_table'              => wpdsac_test_table_exists( $wpdb->prefix . 'wpdsac_messages' ),
+			'leads_table'                 => wpdsac_test_table_exists( $wpdb->prefix . 'wpdsac_leads' ),
 			'conversation_cleanup_cron'   => false !== wp_next_scheduled( 'wpdsac_cleanup_conversations' ),
+			'lead_cleanup_cron'           => false !== wp_next_scheduled( 'wpdsac_cleanup_leads' ),
 			'settings_non_autoloaded'     => ! array_key_exists( 'wpdsac_settings', $all_options ),
 			'shortcode_registered'        => shortcode_exists( 'ds_ai_chatbot' ),
 			'shortcode_rendered'          => false !== strpos( $shortcode_html, 'wpdsac-chat' ),
@@ -406,6 +442,10 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'conversation_logged'         => $conversation_logged,
 			'privacy_exported'            => $privacy_exported,
 			'privacy_erased'              => $privacy_erased,
+			'lead_rendered'               => $lead_rendered,
+			'lead_saved'                  => $lead_saved,
+			'lead_privacy_exported'       => $lead_privacy_exported,
+			'lead_privacy_erased'         => $lead_privacy_erased,
 			'elementor_loaded'            => $elementor_loaded,
 			'elementor_widget_registered' => $elementor_widget_registered,
 			'elementor_frontend_url'      => $elementor_frontend_url,

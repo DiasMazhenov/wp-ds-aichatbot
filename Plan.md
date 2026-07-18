@@ -94,7 +94,7 @@
 - [ ] Опциональный semantic embeddings adapter.
 - [x] PDF ingestion.
 - [x] WooCommerce source.
-- [ ] Сбор лидов.
+- [x] Сбор лидов.
 - [ ] TTS/STT и аналитика — только при подтверждённой необходимости.
 
 ### 8. Проверка и релиз
@@ -152,6 +152,6 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.6` добавляет явный выбор PDF из Media Library и адаптер публичных товаров WooCommerce. PDF ограничены 50 файлами по 10 МБ, извлекаются только из uploads и не публикуют прямую ссылку в AI-контексте. Следующий основной срез — сбор лидов с явным согласием и WordPress privacy integration.
+Версия `0.5.7` добавляет выключенный по умолчанию сбор имени/email прямо в чате: обязательное согласие, honeypot, отдельный rate limit, retention, WP-Cron, защищённый admin list и WordPress privacy exporter/eraser. Следующий срез — unit/security tests и расширенная проверка lifecycle/rate limiting.
 
 Локальные `node_modules` и dev-пакеты в `vendor` используются только для разработки и не попадают в Git. Installable ZIP содержит только production Composer runtime PDF parser; dev-зависимости и `vendor/bin` исключены. Локальные тяжёлые каталоги будут удалены перед финальной передачей.

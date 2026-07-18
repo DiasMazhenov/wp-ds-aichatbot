@@ -106,4 +106,50 @@
 			button.disabled = false;
 		}
 	});
+
+	document.addEventListener('submit', async (event) => {
+		const form = event.target.closest('[data-wpdsac-lead-form]');
+		if (!form) {
+			return;
+		}
+
+		event.preventDefault();
+
+		const button = form.querySelector('button[type="submit"]');
+		const lead = form.closest('[data-wpdsac-lead]');
+		const status = lead.querySelector('[data-wpdsac-lead-status]');
+		const name = form.elements.name.value.trim();
+		const email = form.elements.email.value.trim();
+		const consent = form.elements.consent.checked;
+		const website = form.elements.website.value.trim();
+
+		if (!email || !consent || button.disabled) {
+			form.reportValidity();
+			return;
+		}
+
+		button.disabled = true;
+		status.textContent = strings.leadSaving || '';
+
+		try {
+			const session = await getSessionToken();
+			const response = await request('/lead', {
+				session,
+				name,
+				email,
+				consent,
+				website,
+			});
+
+			form.hidden = true;
+			status.textContent = response.message || '';
+		} catch (error) {
+			if (error.status === 401) {
+				window.sessionStorage.removeItem(sessionStorageKey);
+			}
+			status.textContent = error.message || strings.leadError || '';
+		} finally {
+			button.disabled = false;
+		}
+	});
 })();

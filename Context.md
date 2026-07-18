@@ -175,3 +175,11 @@
 - `Knowledge\WooCommerceSource` опционально добавляет только опубликованные видимые товары через публичные WooCommerce API: описание, SKU, цена, наличие и категории.
 - Core runtime probe проверяет фактическое извлечение текста из валидного PDF, non-autoload selection option и индексирование WooCommerce-compatible product fixture.
 - Следующий основной срез: сбор лидов с consent, retention и privacy exporter/eraser.
+- Версия `0.5.7`: DB schema `5` добавляет `{prefix}wpdsac_leads`; lead collection выключен по умолчанию и требует явного checkbox consent.
+- Общий chat template показывает опциональную форму имени/email; REST `/lead` требует подписанную session, валидный email, consent=true и пустой honeypot.
+- Lead rate limit отделён от AI budget: 3 отправки на session и 10 на прямой peer IP за час; IP и raw session UUID не сохраняются.
+- Lead хранит name, email, точный consent text, timestamps, user ID при авторизации и HMAC session hash; retention ограничен 1–730 днями.
+- `Инструменты → DS AI Leads` доступен только `manage_options`; WordPress privacy tools экспортируют и удаляют заявки по email, включая анонимных посетителей.
+- Ежедневный `wpdsac_cleanup_leads` удаляет истёкшие данные; deactivation очищает schedule, uninstall удаляет table.
+- Runtime probe подтверждает migration `5`, lead table/cron, frontend consent form, persistence, privacy export/erase и REST rejection без consent.
+- Следующий основной срез: unit/security tests, lifecycle/rate-limit verification и финальный installable ZIP audit.

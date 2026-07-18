@@ -47,6 +47,9 @@ final class Renderer {
 			'expanded'        => ! empty( $options['expanded'] ),
 			'appearance'      => Appearance::inline_style( $options ),
 			'position_class'  => Appearance::position_class( $options ),
+			'leads_enabled'   => ! empty( $options['leads_enabled'] ),
+			'lead_prompt'     => sanitize_text_field( (string) $options['lead_prompt'] ),
+			'lead_consent'    => sanitize_textarea_field( (string) $options['lead_consent_text'] ),
 		);
 
 		$this->assets->enqueue();

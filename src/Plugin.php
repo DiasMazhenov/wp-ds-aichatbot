@@ -9,6 +9,7 @@ namespace DiasMazhenov\WPDsAiChatbot;
 
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 use DiasMazhenov\WPDsAiChatbot\Admin\KnowledgePage;
+use DiasMazhenov\WPDsAiChatbot\Admin\LeadsPage;
 use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
 use DiasMazhenov\WPDsAiChatbot\AI\AnthropicProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\GeminiProvider;
@@ -17,6 +18,7 @@ use DiasMazhenov\WPDsAiChatbot\AI\OpenRouterProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\ProviderManager;
 use DiasMazhenov\WPDsAiChatbot\AI\WordPressAiClientProvider;
 use DiasMazhenov\WPDsAiChatbot\Api\ChatController;
+use DiasMazhenov\WPDsAiChatbot\Api\LeadController;
 use DiasMazhenov\WPDsAiChatbot\Api\RateLimiter;
 use DiasMazhenov\WPDsAiChatbot\Api\RequestLock;
 use DiasMazhenov\WPDsAiChatbot\Api\SessionController;
@@ -26,6 +28,7 @@ use DiasMazhenov\WPDsAiChatbot\Chat\Renderer;
 use DiasMazhenov\WPDsAiChatbot\Chat\Shortcode;
 use DiasMazhenov\WPDsAiChatbot\Data\ConversationLogger;
 use DiasMazhenov\WPDsAiChatbot\Data\ConversationRepository;
+use DiasMazhenov\WPDsAiChatbot\Data\LeadRepository;
 use DiasMazhenov\WPDsAiChatbot\Elementor\Integration;
 use DiasMazhenov\WPDsAiChatbot\Lifecycle\Migrator;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker;
@@ -36,6 +39,7 @@ use DiasMazhenov\WPDsAiChatbot\Knowledge\Repository;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Retriever;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\WooCommerceSource;
 use DiasMazhenov\WPDsAiChatbot\Privacy\ConversationPrivacy;
+use DiasMazhenov\WPDsAiChatbot\Privacy\LeadPrivacy;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -84,6 +88,7 @@ final class Plugin {
 		$pdf_indexer   = new PdfIndexer( $knowledge, $chunker );
 		$retriever     = new Retriever( $knowledge );
 		$conversations = new ConversationRepository();
+		$leads         = new LeadRepository();
 		$logger        = new ConversationLogger( $conversations );
 		$providers     = new ProviderManager(
 			array(
@@ -103,6 +108,7 @@ final class Plugin {
 		$request_lock->register_hooks();
 		$chat_api->register_hooks();
 		$session_api->register_hooks();
+		( new LeadController( $tokens, $rate_limiter, $leads ) )->register_hooks();
 		$providers->register_hooks();
 		$post_indexer->register_hooks();
 		$pdf_indexer->register_hooks();
@@ -110,12 +116,14 @@ final class Plugin {
 		$retriever->register_hooks();
 		$logger->register_hooks();
 		( new ConversationPrivacy( $conversations ) )->register_hooks();
+		( new LeadPrivacy( $leads ) )->register_hooks();
 		( new FaqPostType() )->register_hooks();
 		( new Shortcode( $renderer ) )->register_hooks();
 		( new Integration( $renderer ) )->register_hooks();
 
 		if ( is_admin() ) {
 			( new KnowledgePage( $post_indexer, $pdf_indexer, $knowledge ) )->register_hooks();
+			( new LeadsPage( $leads ) )->register_hooks();
 		}
 
 		add_action( 'init', array( $this, 'load_textdomain' ) );
