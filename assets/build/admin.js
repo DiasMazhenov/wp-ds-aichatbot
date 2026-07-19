@@ -77,14 +77,7 @@
   }
 
   const providerSelect = document.querySelector('[data-wpdsac-provider-select]');
-  const providerRows = document.querySelectorAll('.wpdsac-provider-setting');
   const providerFields = Array.from(document.querySelectorAll('[data-wpdsac-provider-field]'));
-  const providerTargets = Array.from(
-    new Set([
-      ...providerRows,
-      ...providerFields.map((field) => field.closest('tr') || field),
-    ])
-  );
   const diagnosticsPanel = document.querySelector('[data-wpdsac-provider-diagnostics]');
   const providerDiagnostics = {...(window.wpdsacAdmin?.providerDiagnostics || {})};
 
@@ -133,17 +126,21 @@
       return;
     }
 
-    providerTargets.forEach((target) => {
-      const marker = target.querySelector?.('[data-wpdsac-provider-field]');
-      const targetProvider = marker?.dataset.wpdsacProviderField ||
-        Array.from(target.classList || [])
-          .find((className) => className.startsWith('wpdsac-provider-setting--'))
-          ?.replace('wpdsac-provider-setting--', '');
-      const active = targetProvider === providerSelect.value;
+    providerFields.forEach((field) => {
+      const target = field.closest('tr') || field;
+      const active = field.dataset.wpdsacProviderField === providerSelect.value;
 
-      target.hidden = !active;
-      target.setAttribute('aria-hidden', active ? 'false' : 'true');
-      target.style.setProperty('display', active ? '' : 'none', active ? '' : 'important');
+      if (active) {
+        target.hidden = false;
+        target.removeAttribute('hidden');
+        target.setAttribute('aria-hidden', 'false');
+        target.style.removeProperty('display');
+        return;
+      }
+
+      target.hidden = true;
+      target.setAttribute('aria-hidden', 'true');
+      target.style.setProperty('display', 'none', 'important');
     });
 
     renderProviderDiagnostics(providerDiagnostics[providerSelect.value]);

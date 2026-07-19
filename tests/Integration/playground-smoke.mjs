@@ -38,6 +38,8 @@ assert.match(adminScript, /wpdsacDebugProvider/);
 assert.match(adminScript, /wpdsac_credentials/);
 assert.match(adminScript, /wpdsac_credential_payload/);
 assert.match(adminScript, /Credential preflight/);
+assert.match(adminScript, /removeProperty\('display'\)/);
+assert.doesNotMatch(adminScript, /providerTargets/);
 assert.match(settingsPhp, /data-wpdsac-provider-field/);
 assert.match(adminStyles, /wpdsac-provider-setting\[hidden\]/);
 assert.match(chatScript, /REST request failed/);
@@ -71,7 +73,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.19',
+    plugin_version: '0.5.20',
     db_version: '5',
     rate_limit_table: true,
     request_lock_table: true,
