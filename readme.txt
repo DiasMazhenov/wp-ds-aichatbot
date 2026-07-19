@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.31
+Stable tag: 0.5.32
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,12 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.32 =
+* Recognize a visitor name and phone number in chat messages, then prefill the consent form instead of sending the contact data to the AI provider.
+* Repair the lead database schema automatically and retry once when persistence fails.
+* Keep the contact form reusable after submission and accept common phone punctuation.
+* Fall back to the WordPress administrator email and report mail failures in debug logs and the browser console.
 
 = 0.5.31 =
 * Remove the mandatory pre-chat name gate and open the conversation immediately.

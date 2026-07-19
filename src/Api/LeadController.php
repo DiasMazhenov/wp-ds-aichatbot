@@ -10,6 +10,7 @@ namespace DiasMazhenov\WPDsAiChatbot\Api;
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 use DiasMazhenov\WPDsAiChatbot\Data\LeadRepository;
 use DiasMazhenov\WPDsAiChatbot\Data\LeadNotifier;
+use DiasMazhenov\WPDsAiChatbot\Lifecycle\Migrator;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -101,13 +102,13 @@ final class LeadController {
 					),
 					'name'       => array(
 						'type'              => 'string',
-						'default'           => '',
+						'required'          => true,
 						'sanitize_callback' => 'sanitize_text_field',
 						'validate_callback' => array( $this, 'validate_name' ),
 					),
 					'phone'      => array(
 						'type'              => 'string',
-						'default'           => '',
+						'required'          => true,
 						'sanitize_callback' => 'sanitize_text_field',
 						'validate_callback' => array( $this, 'validate_phone' ),
 					),
@@ -169,7 +170,13 @@ final class LeadController {
 	 * @return bool
 	 */
 	public function validate_phone( $value ): bool {
-		return is_string( $value ) && '' !== trim( $value ) && self::length( $value ) <= 50 && 1 === preg_match( '/^[0-9+()\-\s]*$/', $value );
+		if ( ! is_string( $value ) || self::length( $value ) > 50 || 1 !== preg_match( '/^[0-9+().\/\-\s]*$/', $value ) ) {
+			return false;
+		}
+
+		$digits = preg_replace( '/\D/', '', $value );
+
+		return is_string( $digits ) && strlen( $digits ) >= 7 && strlen( $digits ) <= 20;
 	}
 
 	/**
@@ -274,6 +281,25 @@ final class LeadController {
 		);
 
 		if ( ! $saved ) {
+			Migrator::migrate();
+			$saved = $this->repository->save(
+				$this->session_id,
+				get_current_user_id(),
+				$name,
+				'',
+				$phone,
+				(string) $request->get_param( 'request' ),
+				(string) $options['lead_consent_text'],
+				(int) $options['lead_retention_days']
+			);
+		}
+
+		if ( ! $saved ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				global $wpdb;
+				error_log( '[WP DS AI Chatbot] Lead save failed: ' . sanitize_text_field( (string) $wpdb->last_error ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug-only operational diagnostic without visitor data.
+			}
+
 			return new \WP_Error(
 				'wpdsac_lead_not_saved',
 				__( 'Contact details could not be saved. Please try again.', 'wp-ds-aichatbot' ),

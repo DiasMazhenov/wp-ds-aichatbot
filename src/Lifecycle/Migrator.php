@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Migrator {
 
-	public const DB_VERSION = '6';
+	public const DB_VERSION = '7';
 
 	private const VERSION_OPTION = 'wpdsac_db_version';
 

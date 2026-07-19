@@ -25,6 +25,7 @@ final class LeadNotifier {
 	public function send( array $lead ): bool {
 		$options = Settings::get();
 		$to      = sanitize_email( (string) $options['lead_notification_email'] );
+		$to      = is_email( $to ) ? $to : sanitize_email( (string) get_option( 'admin_email', '' ) );
 
 		if ( '' === $to || ! is_email( $to ) ) {
 			return false;
@@ -52,7 +53,13 @@ final class LeadNotifier {
 				'' !== $transcript ? $transcript : __( 'No messages yet.', 'wp-ds-aichatbot' ),
 			)
 		);
-		return wp_mail( $to, sanitize_text_field( $subject ), $body, array( 'Content-Type: text/plain; charset=UTF-8' ) );
+		$sent = wp_mail( $to, sanitize_text_field( $subject ), $body, array( 'Content-Type: text/plain; charset=UTF-8' ) );
+
+		if ( ! $sent && defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( '[WP DS AI Chatbot] WordPress could not send the lead notification to ' . $to . '. Configure SMTP and inspect the wp_mail_failed hook.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug-only operational diagnostic without visitor data.
+		}
+
+		return $sent;
 	}
 
 	/**

@@ -173,6 +173,42 @@
 		.replace(/[ \t]{2,}/g, ' ')
 		.trim();
 
+	const extractLeadDetails = (message) => {
+		const phoneMatch = message.match(/(?:\+?\d[\d\s().\/-]{5,}\d)/u);
+		const phone = phoneMatch ? phoneMatch[0].trim() : '';
+		const digitCount = phone.replace(/\D/g, '').length;
+		const namePatterns = [
+			/(?:меня\s+зовут|мо[её]\s+имя|имя)\s*[:—-]?\s*([\p{L}][\p{L}'’-]*(?:\s+[\p{L}][\p{L}'’-]*){0,2}?)(?=\s*(?:[,.;]|мой|телефон|номер|\+?\d|$))/iu,
+			/(?:my\s+name\s+is|name)\s*[:—-]?\s*([\p{L}][\p{L}'’-]*(?:\s+[\p{L}][\p{L}'’-]*){0,2}?)(?=\s*(?:[,.;]|my|phone|number|\+?\d|$))/iu,
+		];
+		let name = '';
+
+		for (const pattern of namePatterns) {
+			const match = message.match(pattern);
+			if (match) {
+				name = match[1].trim();
+				break;
+			}
+		}
+
+		if (!name && phone && message.trim().startsWith(phone) === false) {
+			const beforePhone = message.slice(0, message.indexOf(phone))
+				.replace(/\b(?:оставляю|оставить|контакты?|телефон|номер|мой|мои|перезвоните|позвоните|свяжитесь|phone|call|contact|me|my|is)\b/giu, ' ')
+				.replace(/[^\p{L}'’\-\s]/gu, ' ')
+				.replace(/\s+/g, ' ')
+				.trim();
+
+			if (/^[\p{L}][\p{L}'’-]*(?:\s+[\p{L}][\p{L}'’-]*){0,2}$/u.test(beforePhone)) {
+				name = beforePhone;
+			}
+		}
+
+		return {
+			name: name.slice(0, 100),
+			phone: digitCount >= 7 && digitCount <= 20 ? phone.slice(0, 50) : '',
+		};
+	};
+
 	const getConversationHistory = (chat) => {
 		const entries = Array.from(chat.querySelectorAll('.wpdsac-chat__messages .wpdsac-chat__message'));
 		const history = [];
@@ -402,7 +438,7 @@
 		}
 	};
 
-	const openLeadForm = (chat) => {
+	const openLeadForm = (chat, details = {}) => {
 		const lead = chat.querySelector('[data-wpdsac-lead]');
 		if (!lead) {
 			return;
@@ -414,6 +450,17 @@
 		}
 
 		lead.hidden = false;
+		const form = lead.querySelector('[data-wpdsac-lead-form]');
+		if (details.name) {
+			form.elements.name.value = details.name;
+			window.sessionStorage.setItem(visitorNameStorageKey, details.name);
+		}
+		if (details.phone) {
+			form.elements.phone.value = details.phone;
+		}
+		if (details.request && !form.elements.request.value) {
+			form.elements.request.value = details.request;
+		}
 		lead.querySelector('input:not([type="hidden"])')?.focus();
 		lead.scrollIntoView({behavior: 'smooth', block: 'nearest'});
 	};
@@ -472,13 +519,17 @@
 		ensureAudioContext();
 
 		button.disabled = true;
+		const leadDetails = extractLeadDetails(message);
+		const contactDigits = leadDetails.phone.replace(/\D/g, '').length;
+		const hasContactIntent = /\b(оставить\s+(?:заявк[а-яё]*|контакт[а-яё]*)|хочу\s+оставить\s+(?:номер|телефон)|связаться|перезвон[а-яё]*|позвон[а-яё]*|contact\s+me|leave\s+(?:my\s+contacts?|a\s+request)|call\s+me)\b/iu.test(message);
 
-		if (/\b(оставить\s+(?:заявк[а-яё]*|контакт[а-яё]*)|хочу\s+оставить\s+(?:номер|телефон)|связаться|перезвон[а-яё]*|contact\s+me|leave\s+(?:my\s+contacts?|a\s+request)|call\s+me)\b/iu.test(message)) {
+		if (hasContactIntent || (leadDetails.phone && (leadDetails.name || contactDigits >= 10))) {
 			appendMessage(chat, message, 'user');
 			input.value = '';
 			button.disabled = false;
 			hideQuickAction(chat.querySelector('[data-wpdsac-quick-action="lead"]'));
-			openLeadForm(chat);
+			openLeadForm(chat, {...leadDetails, request: message});
+			persistConversationHistory(chat);
 			return;
 		}
 
@@ -554,12 +605,16 @@
 				website,
 			});
 
-			form.hidden = true;
-			window.sessionStorage.setItem(visitorNameStorageKey, name.slice(0, 100));
-			appendMessage(chat, response.message || '', 'bot');
-			persistConversationHistory(chat);
-			playReplySound(chat.dataset.wpdsacReplySound || 'off');
-			status.textContent = '';
+				lead.hidden = true;
+				window.sessionStorage.setItem(visitorNameStorageKey, name.slice(0, 100));
+				appendMessage(chat, response.message || '', 'bot');
+				persistConversationHistory(chat);
+				playReplySound(chat.dataset.wpdsacReplySound || 'off');
+				form.reset();
+				status.textContent = '';
+				if (response.notified === false) {
+					console.warn('[WP DS AI Chatbot] Lead saved, but WordPress could not send the notification email. Configure SMTP and verify the notification address.');
+				}
 		} catch (error) {
 			if (error.status === 401) {
 				window.sessionStorage.removeItem(sessionStorageKey);

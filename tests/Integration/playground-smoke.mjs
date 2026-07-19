@@ -102,6 +102,8 @@ assert.ok(
 assert.doesNotMatch(chatbotTemplate, /name="email"/);
 assert.match(chatScript, /hideQuickAction/);
 assert.match(chatScript, /openLeadForm/);
+assert.match(chatScript, /extractLeadDetails/);
+assert.match(chatScript, /lead\.hidden = true/);
 assert.match(chatbotTemplate, /name="phone"[^>]+required/);
 assert.match(chatbotTemplate, /data-wpdsac-intro-trigger/);
 assert.match(chatbotTemplate, /wpdsac-chat__avatar/);
@@ -137,8 +139,8 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.31',
-    db_version: '6',
+    plugin_version: '0.5.32',
+    db_version: '7',
     rate_limit_table: true,
     request_lock_table: true,
     knowledge_table: true,
