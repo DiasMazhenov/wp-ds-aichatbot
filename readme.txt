@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.22
+Stable tag: 0.5.23
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,11 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.23 =
+* Index rendered Gutenberg blocks, Elementor widget content, and every published public post type even while retrieval is disabled.
+* Rebuild existing knowledge automatically after extraction upgrades and include exact source URLs when visitors request links.
+* Add indexed phone, WhatsApp, and Telegram fields plus safe clickable links in chatbot replies.
 
 = 0.5.22 =
 * Merge FAQ management into the Knowledge base page and remove its separate admin menu item.

@@ -155,6 +155,7 @@ final class CoreSecurityTest extends TestCase {
 		$this->assertSame( $options['guard_refusal_message'], $guard->inspect( 'Кто выиграл чемпионат мира по футболу?', $options ) );
 		$this->assertNull( $guard->inspect( 'Какие условия возврата товара?', $options ) );
 		$this->assertNull( $guard->inspect( 'Салем!', $options ) );
+		$this->assertNull( $guard->inspect( 'Как связаться с вами в WhatsApp?', $options ) );
 
 		$instructions = PromptGuard::protected_instructions(
 			'Use verified website knowledge.',
@@ -168,7 +169,7 @@ final class CoreSecurityTest extends TestCase {
 	}
 
 	public function test_administrative_label_uses_current_plugin_version(): void {
-		$this->assertSame( 'DS AI Chatbot v0.5.22', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
+		$this->assertSame( 'DS AI Chatbot v0.5.23', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
 	}
 
 	public function test_settings_remain_the_default_plugin_submenu(): void {
@@ -193,7 +194,7 @@ final class CoreSecurityTest extends TestCase {
 			)
 		);
 
-		$this->assertSame( 'WP DS AI Chatbot v0.5.22', $plugins[ $plugin_file ]['Name'] );
-		$this->assertSame( 'WP DS AI Chatbot v0.5.22', $plugins[ $plugin_file ]['Title'] );
+		$this->assertSame( 'WP DS AI Chatbot v0.5.23', $plugins[ $plugin_file ]['Name'] );
+		$this->assertSame( 'WP DS AI Chatbot v0.5.23', $plugins[ $plugin_file ]['Title'] );
 	}
 }

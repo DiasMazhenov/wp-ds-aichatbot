@@ -113,6 +113,15 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	border-radius: var(--wpdsac-message-radius) var(--wpdsac-message-radius) var(--wpdsac-message-radius) calc(var(--wpdsac-message-radius) / 3);
 	background: var(--wpdsac-bot-message);
 	color: var(--wpdsac-bot-text);
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.wpdsac-chat__message a {
+	color: inherit;
+	font-weight: 700;
+	text-decoration: underline;
+	text-underline-offset: 2px;
 }
 
 .wpdsac-chat__messages {

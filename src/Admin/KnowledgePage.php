@@ -10,6 +10,7 @@ namespace DiasMazhenov\WPDsAiChatbot\Admin;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\PostIndexer;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\PdfIndexer;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType;
+use DiasMazhenov\WPDsAiChatbot\Knowledge\ContactSource;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\ManualSource;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Repository;
 use DiasMazhenov\WPDsAiChatbot\Support\PluginInfo;
@@ -50,18 +51,27 @@ final class KnowledgePage {
 	private $manual_source;
 
 	/**
+	 * Administrator contact source.
+	 *
+	 * @var ContactSource
+	 */
+	private $contact_source;
+
+	/**
 	 * Store administration dependencies.
 	 *
-	 * @param PostIndexer  $indexer       WordPress source indexer.
-	 * @param PdfIndexer   $pdf_indexer   Selected PDF source indexer.
-	 * @param ManualSource $manual_source Administrator-authored source.
-	 * @param Repository   $repository    Knowledge repository.
+	 * @param PostIndexer   $indexer       WordPress source indexer.
+	 * @param PdfIndexer    $pdf_indexer   Selected PDF source indexer.
+	 * @param ManualSource  $manual_source Administrator-authored source.
+	 * @param ContactSource $contact_source Administrator contact source.
+	 * @param Repository    $repository     Knowledge repository.
 	 */
-	public function __construct( PostIndexer $indexer, PdfIndexer $pdf_indexer, ManualSource $manual_source, Repository $repository ) {
-		$this->indexer       = $indexer;
-		$this->pdf_indexer   = $pdf_indexer;
-		$this->manual_source = $manual_source;
-		$this->repository    = $repository;
+	public function __construct( PostIndexer $indexer, PdfIndexer $pdf_indexer, ManualSource $manual_source, ContactSource $contact_source, Repository $repository ) {
+		$this->indexer        = $indexer;
+		$this->pdf_indexer    = $pdf_indexer;
+		$this->manual_source  = $manual_source;
+		$this->contact_source = $contact_source;
+		$this->repository     = $repository;
 	}
 
 	/**
@@ -74,6 +84,7 @@ final class KnowledgePage {
 		add_action( 'admin_post_wpdsac_reindex_knowledge', array( $this, 'handle_reindex' ) );
 		add_action( 'admin_post_wpdsac_save_pdf_sources', array( $this, 'handle_pdf_sources' ) );
 		add_action( 'admin_post_wpdsac_save_manual_knowledge', array( $this, 'handle_manual_knowledge' ) );
+		add_action( 'admin_post_wpdsac_save_contact_information', array( $this, 'handle_contact_information' ) );
 	}
 
 	/**
@@ -108,8 +119,10 @@ final class KnowledgePage {
 		$pdf_indexed       = isset( $_GET['wpdsac_pdf_indexed'] ) ? absint( wp_unslash( $_GET['wpdsac_pdf_indexed'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice.
 		$pdf_failed        = isset( $_GET['wpdsac_pdf_failed'] ) ? absint( wp_unslash( $_GET['wpdsac_pdf_failed'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice.
 		$manual_saved      = isset( $_GET['wpdsac_manual_saved'] ) ? absint( wp_unslash( $_GET['wpdsac_manual_saved'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice.
+		$contacts_saved    = isset( $_GET['wpdsac_contacts_saved'] ) ? absint( wp_unslash( $_GET['wpdsac_contacts_saved'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice.
 		$options           = Settings::get();
 		$pdf_ids           = $this->pdf_indexer->selected_ids();
+		$contact_fields    = $this->contact_source->fields();
 		$knowledge_entries = get_posts(
 			array(
 				'post_type'      => FaqPostType::POST_TYPE,
@@ -164,8 +177,13 @@ final class KnowledgePage {
 					<?php esc_html_e( 'Additional knowledge saved and indexed.', 'wp-ds-aichatbot' ); ?>
 				</p></div>
 			<?php endif; ?>
+			<?php if ( null !== $contacts_saved ) : ?>
+				<div class="notice notice-success is-dismissible"><p>
+					<?php esc_html_e( 'Contact information saved and indexed.', 'wp-ds-aichatbot' ); ?>
+				</p></div>
+			<?php endif; ?>
 			<p>
-				<?php esc_html_e( 'Published pages, posts, knowledge entries, administrator text, WooCommerce products, and selected PDFs are split into bounded fragments and stored in a dedicated table.', 'wp-ds-aichatbot' ); ?>
+				<?php esc_html_e( 'All published public content types, rendered Gutenberg blocks, Elementor widgets, knowledge entries, administrator text, WooCommerce products, and selected PDFs are split into bounded fragments and stored in a dedicated table.', 'wp-ds-aichatbot' ); ?>
 			</p>
 			<p>
 				<strong><?php esc_html_e( 'Stored fragments:', 'wp-ds-aichatbot' ); ?></strong>
@@ -221,6 +239,30 @@ final class KnowledgePage {
 			</div>
 
 			<section class="wpdsac-admin-card">
+				<h2><?php esc_html_e( 'Contact information', 'wp-ds-aichatbot' ); ?></h2>
+				<p><?php esc_html_e( 'The chatbot may provide these contacts when a visitor asks how to call or message you. WhatsApp accepts a number or wa.me URL; Telegram accepts a username or t.me URL.', 'wp-ds-aichatbot' ); ?></p>
+				<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
+					<input type="hidden" name="action" value="wpdsac_save_contact_information">
+					<?php wp_nonce_field( 'wpdsac_save_contact_information' ); ?>
+					<div class="wpdsac-contact-fields">
+						<label>
+							<span><?php esc_html_e( 'Phone number', 'wp-ds-aichatbot' ); ?></span>
+							<input type="text" class="regular-text" name="contact_information[phone]" value="<?php echo esc_attr( $contact_fields['phone'] ); ?>" autocomplete="tel" placeholder="+7 700 000 00 00">
+						</label>
+						<label>
+							<span><?php esc_html_e( 'WhatsApp', 'wp-ds-aichatbot' ); ?></span>
+							<input type="text" class="regular-text" name="contact_information[whatsapp]" value="<?php echo esc_attr( $contact_fields['whatsapp'] ); ?>" placeholder="77000000000">
+						</label>
+						<label>
+							<span><?php esc_html_e( 'Telegram', 'wp-ds-aichatbot' ); ?></span>
+							<input type="text" class="regular-text" name="contact_information[telegram]" value="<?php echo esc_attr( $contact_fields['telegram'] ); ?>" placeholder="@username">
+						</label>
+					</div>
+					<?php submit_button( __( 'Save contact information', 'wp-ds-aichatbot' ), 'secondary', 'submit', false ); ?>
+				</form>
+			</section>
+
+			<section class="wpdsac-admin-card">
 				<h2><?php esc_html_e( 'PDF knowledge sources', 'wp-ds-aichatbot' ); ?></h2>
 				<p><?php esc_html_e( 'Select text-based PDFs from the Media Library. Scanned images require OCR before upload. Maximum 50 files and 10 MB per file.', 'wp-ds-aichatbot' ); ?></p>
 				<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
@@ -258,7 +300,10 @@ final class KnowledgePage {
 
 		check_admin_referer( 'wpdsac_reindex_knowledge' );
 
-		$indexed = $this->indexer->reindex_all() + $this->pdf_indexer->reindex_selected() + $this->manual_source->reindex();
+		$indexed = $this->indexer->reindex_all()
+			+ $this->pdf_indexer->reindex_selected()
+			+ $this->manual_source->reindex()
+			+ $this->contact_source->reindex();
 		$url     = add_query_arg(
 			array(
 				'page'           => 'wpdsac-knowledge',
@@ -318,6 +363,32 @@ final class KnowledgePage {
 			array(
 				'page'                => 'wpdsac-knowledge',
 				'wpdsac_manual_saved' => $indexed,
+			),
+			admin_url( 'admin.php' )
+		);
+
+		wp_safe_redirect( $url );
+		exit;
+	}
+
+	/**
+	 * Save and index public contact information.
+	 *
+	 * @return void
+	 */
+	public function handle_contact_information(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You are not allowed to manage the knowledge index.', 'wp-ds-aichatbot' ) );
+		}
+
+		check_admin_referer( 'wpdsac_save_contact_information' );
+
+		$fields  = isset( $_POST['contact_information'] ) ? wp_unslash( $_POST['contact_information'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- ContactSource validates every supported field.
+		$indexed = $this->contact_source->save( $fields );
+		$url     = add_query_arg(
+			array(
+				'page'                  => 'wpdsac-knowledge',
+				'wpdsac_contacts_saved' => $indexed,
 			),
 			admin_url( 'admin.php' )
 		);

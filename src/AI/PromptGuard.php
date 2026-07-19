@@ -126,7 +126,7 @@ final class PromptGuard {
 
 		$topic_scope = $this->normalize( $topic_scope );
 
-		if ( '' !== $topic_scope && ! $this->is_greeting( $message ) && ! $this->has_topic_overlap( $message, $topic_scope ) ) {
+		if ( '' !== $topic_scope && ! $this->is_greeting( $message ) && ! $this->is_contact_request( $message ) && ! $this->has_topic_overlap( $message, $topic_scope ) ) {
 			return 'off_topic';
 		}
 
@@ -226,6 +226,16 @@ final class PromptGuard {
 	 */
 	private function is_greeting( string $message ): bool {
 		return 1 === preg_match( '/^(hello|hi|hey|thanks|thank you|good (morning|afternoon|evening)|привет|здравствуйте|салем|салам|спасибо)[!.,\s]*$/iu', $message );
+	}
+
+	/**
+	 * Always allow visitors to request administrator-configured contacts.
+	 *
+	 * @param string $message Normalized visitor message.
+	 * @return bool
+	 */
+	private function is_contact_request( string $message ): bool {
+		return 1 === preg_match( '/\b(contact|call|phone|telephone|whatsapp|telegram|manager|связаться|контакт|позвонить|телефон|номер|ватсап|вотсап|телеграм|менеджер|консультация)\b/iu', $message );
 	}
 
 	/**

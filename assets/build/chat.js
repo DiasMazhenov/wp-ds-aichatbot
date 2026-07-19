@@ -51,12 +51,48 @@
 		return token;
 	};
 
+	const appendLinkedText = (container, message) => {
+		const parts = message.split(/(https?:\/\/[^\s]+)/g);
+
+		parts.forEach((part) => {
+			if (!part.startsWith('http://') && !part.startsWith('https://')) {
+				container.appendChild(document.createTextNode(part));
+				return;
+			}
+
+			const urlText = part.replace(/[),.!?;:]+$/u, '');
+			const trailing = part.slice(urlText.length);
+
+			try {
+				const url = new URL(urlText);
+				if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+					throw new Error('Unsupported link protocol.');
+				}
+
+				const link = document.createElement('a');
+				link.href = url.href;
+				link.textContent = urlText;
+				link.target = '_blank';
+				link.rel = 'noopener noreferrer';
+				container.appendChild(link);
+				container.appendChild(document.createTextNode(trailing));
+			} catch (error) {
+				container.appendChild(document.createTextNode(part));
+			}
+		});
+	};
+
 	const appendMessage = (chat, message, role) => {
 		const messages = chat.querySelector('.wpdsac-chat__messages');
 		const item = document.createElement('p');
 		item.className = `wpdsac-chat__message wpdsac-chat__message--${role}`;
-		item.textContent = message;
+		if (role === 'bot') {
+			appendLinkedText(item, message);
+		} else {
+			item.textContent = message;
+		}
 		messages.appendChild(item);
+		messages.scrollTop = messages.scrollHeight;
 	};
 
 	document.addEventListener('click', (event) => {

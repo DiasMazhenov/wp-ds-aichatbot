@@ -512,6 +512,25 @@
 	padding: 0;
 }
 
+.wpdsac-contact-fields {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 16px;
+	margin-top: 16px;
+}
+
+.wpdsac-contact-fields label > span {
+	display: block;
+	margin-bottom: 6px;
+	font-weight: 600;
+}
+
+.wpdsac-contact-fields input.regular-text {
+	width: 100%;
+	border-color: #8f98a3;
+	border-radius: 6px;
+}
+
 .wpdsac-card-actions {
 	display: flex;
 	flex-wrap: wrap;
@@ -559,6 +578,10 @@
 	}
 
 	.wpdsac-knowledge-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.wpdsac-contact-fields {
 		grid-template-columns: 1fr;
 	}
 }

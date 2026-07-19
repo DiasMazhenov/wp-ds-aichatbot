@@ -35,7 +35,10 @@ use DiasMazhenov\WPDsAiChatbot\Data\LeadRepository;
 use DiasMazhenov\WPDsAiChatbot\Elementor\Integration;
 use DiasMazhenov\WPDsAiChatbot\Lifecycle\Migrator;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker;
+use DiasMazhenov\WPDsAiChatbot\Knowledge\AnswerEnricher;
+use DiasMazhenov\WPDsAiChatbot\Knowledge\ContactSource;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType;
+use DiasMazhenov\WPDsAiChatbot\Knowledge\ElementorSource;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\ManualSource;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\PdfIndexer;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\PostIndexer;
@@ -78,24 +81,25 @@ final class Plugin {
 	 * @return void
 	 */
 	public function boot(): void {
-		$assets        = new Assets();
-		$renderer      = new Renderer( $assets );
-		$tokens        = new SessionToken();
-		$rate_limiter  = new RateLimiter();
-		$request_lock  = new RequestLock();
-		$chat_api      = new ChatController( $tokens, $rate_limiter, $request_lock );
-		$session_api   = new SessionController( $tokens );
-		$credentials   = new CredentialResolver();
-		$knowledge     = new Repository();
-		$chunker       = new Chunker();
-		$post_indexer  = new PostIndexer( $knowledge, $chunker );
-		$pdf_indexer   = new PdfIndexer( $knowledge, $chunker );
-		$manual_source = new ManualSource( $knowledge, $chunker );
-		$retriever     = new Retriever( $knowledge );
-		$conversations = new ConversationRepository();
-		$leads         = new LeadRepository();
-		$logger        = new ConversationLogger( $conversations );
-		$providers     = new ProviderManager(
+		$assets         = new Assets();
+		$renderer       = new Renderer( $assets );
+		$tokens         = new SessionToken();
+		$rate_limiter   = new RateLimiter();
+		$request_lock   = new RequestLock();
+		$chat_api       = new ChatController( $tokens, $rate_limiter, $request_lock );
+		$session_api    = new SessionController( $tokens );
+		$credentials    = new CredentialResolver();
+		$knowledge      = new Repository();
+		$chunker        = new Chunker();
+		$post_indexer   = new PostIndexer( $knowledge, $chunker );
+		$pdf_indexer    = new PdfIndexer( $knowledge, $chunker );
+		$manual_source  = new ManualSource( $knowledge, $chunker );
+		$contact_source = new ContactSource( $knowledge, $chunker );
+		$retriever      = new Retriever( $knowledge );
+		$conversations  = new ConversationRepository();
+		$leads          = new LeadRepository();
+		$logger         = new ConversationLogger( $conversations );
+		$providers      = new ProviderManager(
 			array(
 				'openai'       => new OpenAIProvider( $credentials ),
 				'anthropic'    => new AnthropicProvider( $credentials ),
@@ -119,8 +123,10 @@ final class Plugin {
 		$providers->register_hooks();
 		$post_indexer->register_hooks();
 		$pdf_indexer->register_hooks();
+		( new ElementorSource() )->register_hooks();
 		( new WooCommerceSource() )->register_hooks();
 		$retriever->register_hooks();
+		( new AnswerEnricher( $knowledge, $contact_source ) )->register_hooks();
 		$logger->register_hooks();
 		( new ConversationPrivacy( $conversations ) )->register_hooks();
 		( new LeadPrivacy( $leads ) )->register_hooks();
@@ -130,7 +136,7 @@ final class Plugin {
 
 		if ( is_admin() ) {
 			( new PluginList() )->register_hooks();
-			( new KnowledgePage( $post_indexer, $pdf_indexer, $manual_source, $knowledge ) )->register_hooks();
+			( new KnowledgePage( $post_indexer, $pdf_indexer, $manual_source, $contact_source, $knowledge ) )->register_hooks();
 			( new LeadsPage( $leads ) )->register_hooks();
 		}
 

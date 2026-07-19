@@ -20,6 +20,8 @@ delete_option( 'wpdsac_version' );
 delete_option( 'wpdsac_db_version' );
 delete_option( 'wpdsac_pdf_attachment_ids' );
 delete_option( 'wpdsac_manual_knowledge' );
+delete_option( 'wpdsac_contact_information' );
+delete_option( 'wpdsac_knowledge_index_version' );
 wp_clear_scheduled_hook( 'wpdsac_cleanup_logs' );
 wp_clear_scheduled_hook( 'wpdsac_cleanup_rate_limits' );
 wp_clear_scheduled_hook( 'wpdsac_cleanup_conversations' );

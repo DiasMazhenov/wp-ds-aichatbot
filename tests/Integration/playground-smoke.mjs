@@ -30,8 +30,12 @@ const chatScript = await readFile(
 const settingsPhp = await readFile(join(projectRoot, 'src/Admin/Settings.php'), 'utf8');
 const faqPhp = await readFile(join(projectRoot, 'src/Knowledge/FaqPostType.php'), 'utf8');
 const manualSourcePhp = await readFile(join(projectRoot, 'src/Knowledge/ManualSource.php'), 'utf8');
+const elementorSourcePhp = await readFile(join(projectRoot, 'src/Knowledge/ElementorSource.php'), 'utf8');
+const contactSourcePhp = await readFile(join(projectRoot, 'src/Knowledge/ContactSource.php'), 'utf8');
+const answerEnricherPhp = await readFile(join(projectRoot, 'src/Knowledge/AnswerEnricher.php'), 'utf8');
 const promptGuardPhp = await readFile(join(projectRoot, 'src/AI/PromptGuard.php'), 'utf8');
 const providerManagerPhp = await readFile(join(projectRoot, 'src/AI/ProviderManager.php'), 'utf8');
+const postIndexerPhp = await readFile(join(projectRoot, 'src/Knowledge/PostIndexer.php'), 'utf8');
 
 assert.match(adminScript, /data-wpdsac-tab/);
 assert.match(adminScript, /data-wpdsac-provider-select/);
@@ -52,6 +56,11 @@ assert.match(settingsPhp, /add_submenu_page/);
 assert.match(settingsPhp, /ensure_settings_first/);
 assert.match(faqPhp, /'show_in_menu'\s*=>\s*false/);
 assert.match(manualSourcePhp, /wpdsac_manual_knowledge/);
+assert.match(elementorSourcePhp, /_elementor_data/);
+assert.match(postIndexerPhp, /elementor\/editor\/after_save/);
+assert.match(contactSourcePhp, /wpdsac_contact_information/);
+assert.match(answerEnricherPhp, /source_url/);
+assert.match(chatScript, /noopener noreferrer/);
 assert.match(settingsPhp, /Knowledge/);
 assert.match(settingsPhp, /prompt_guard_enabled/);
 assert.match(promptGuardPhp, /prompt_injection/);
@@ -83,7 +92,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.22',
+    plugin_version: '0.5.23',
     db_version: '5',
     rate_limit_table: true,
     request_lock_table: true,
@@ -109,11 +118,18 @@ try {
     knowledge_indexed: true,
     knowledge_retrieved: true,
     knowledge_augmented: true,
+    knowledge_auto_indexed: true,
+    elementor_content_indexed: true,
+    source_url_retrieved: true,
+    requested_link_appended: true,
     faq_registered: true,
     faq_merged_into_knowledge: true,
     faq_indexed: true,
     manual_knowledge_indexed: true,
     manual_knowledge_non_autoloaded: true,
+    contact_knowledge_indexed: true,
+    contact_option_non_autoloaded: true,
+    requested_contacts_appended: true,
     pdf_indexed: true,
     pdf_option_non_autoloaded: true,
     woocommerce_indexed: true,

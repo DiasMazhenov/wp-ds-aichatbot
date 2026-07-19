@@ -10,6 +10,8 @@ namespace DiasMazhenov\WPDsAiChatbot\Lifecycle;
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\ManualSource;
+use DiasMazhenov\WPDsAiChatbot\Knowledge\ContactSource;
+use DiasMazhenov\WPDsAiChatbot\Knowledge\PostIndexer;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -37,6 +39,8 @@ final class Activator {
 		add_option( Settings::OPTION_NAME, Settings::defaults(), '', false );
 		add_option( CredentialResolver::CREDENTIALS_OPTION, array(), '', false );
 		add_option( ManualSource::OPTION_NAME, '', '', false );
+		add_option( ContactSource::OPTION_NAME, array(), '', false );
+		add_option( PostIndexer::INDEX_VERSION_OPTION, '', '', false );
 
 		$credentials = new CredentialResolver();
 

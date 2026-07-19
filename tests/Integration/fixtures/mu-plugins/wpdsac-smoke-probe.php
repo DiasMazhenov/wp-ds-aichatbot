@@ -219,6 +219,10 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$knowledge_indexed = false;
 	$knowledge_retrieved = false;
 	$knowledge_augmented = false;
+	$knowledge_auto_indexed = false;
+	$elementor_content_indexed = false;
+	$source_url_retrieved = false;
+	$requested_link_appended = false;
 	$faq_registered = post_type_exists( \DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType::POST_TYPE );
 	$faq_type       = get_post_type_object( \DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType::POST_TYPE );
 	$faq_merged_into_knowledge = $faq_type instanceof WP_Post_Type
@@ -226,6 +230,9 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$faq_indexed = false;
 	$manual_knowledge_indexed = false;
 	$manual_knowledge_non_autoloaded = false;
+	$contact_knowledge_indexed = false;
+	$contact_option_non_autoloaded = false;
+	$requested_contacts_appended = false;
 	$pdf_indexed = false;
 	$pdf_option_non_autoloaded = false;
 	$woocommerce_indexed = false;
@@ -249,6 +256,8 @@ function wpdsac_test_probe(): WP_REST_Response {
 			new \DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker()
 		);
 		$knowledge_post       = get_post( $knowledge_post_id );
+		$auto_matches         = $knowledge_repository->search( 'refund policy thirty days', 2 );
+		$knowledge_auto_indexed = false !== stripos( wp_json_encode( $auto_matches ), 'thirty calendar days' );
 		$manual_source        = new \DiasMazhenov\WPDsAiChatbot\Knowledge\ManualSource(
 			$knowledge_repository,
 			new \DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker()
@@ -261,6 +270,82 @@ function wpdsac_test_probe(): WP_REST_Response {
 			\DiasMazhenov\WPDsAiChatbot\Knowledge\ManualSource::OPTION_NAME,
 			wp_load_alloptions()
 		);
+		$contact_source = new \DiasMazhenov\WPDsAiChatbot\Knowledge\ContactSource(
+			$knowledge_repository,
+			new \DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker()
+		);
+		$contact_source->save(
+			array(
+				'phone'    => '+7 700 123 45 67',
+				'whatsapp' => '77001234567',
+				'telegram' => '@wpdsactest',
+			)
+		);
+		$contact_matches = $knowledge_repository->search( 'phone WhatsApp Telegram contact', 3 );
+		$contact_json = wp_json_encode( $contact_matches );
+		$contact_knowledge_indexed = false !== strpos( $contact_json, '+7 700 123 45 67' )
+			&& false !== strpos( $contact_json, 'https:\/\/wa.me\/77001234567' )
+			&& false !== strpos( $contact_json, 'https:\/\/t.me\/wpdsactest' );
+		$contact_option_non_autoloaded = ! array_key_exists(
+			\DiasMazhenov\WPDsAiChatbot\Knowledge\ContactSource::OPTION_NAME,
+			wp_load_alloptions()
+		);
+		$answer_enricher = new \DiasMazhenov\WPDsAiChatbot\Knowledge\AnswerEnricher( $knowledge_repository, $contact_source );
+		$contact_reply = $answer_enricher->enrich(
+			'You can contact our manager.',
+			'How can I call the manager on WhatsApp?',
+			'test-session',
+			new WP_REST_Request()
+		);
+		$requested_contacts_appended = false !== strpos( $contact_reply, '+7 700 123 45 67' )
+			&& false !== strpos( $contact_reply, 'https://wa.me/77001234567' )
+			&& false !== strpos( $contact_reply, 'https://t.me/wpdsactest' );
+
+		$elementor_page_id = wp_insert_post(
+			array(
+				'post_title'   => 'Website prices',
+				'post_content' => '',
+				'post_status'  => 'publish',
+				'post_type'    => 'page',
+			),
+			true
+		);
+
+		if ( ! is_wp_error( $elementor_page_id ) ) {
+			update_post_meta(
+				$elementor_page_id,
+				'_elementor_data',
+				wp_json_encode(
+					array(
+						array(
+							'elType'   => 'widget',
+							'widgetType' => 'text-editor',
+							'settings' => array(
+								'editor' => '<h2>Premium website package</h2><p>The price is 500000 tenge.</p>',
+							),
+						),
+					)
+				)
+			);
+			$elementor_source = new \DiasMazhenov\WPDsAiChatbot\Knowledge\ElementorSource();
+			$elementor_source->register_hooks();
+			$elementor_post = get_post( $elementor_page_id );
+
+			if ( $elementor_post instanceof WP_Post ) {
+				$knowledge_indexer->index_post( $elementor_post );
+				$elementor_matches = $knowledge_repository->search( 'premium website package price', 3 );
+				$elementor_content_indexed = false !== stripos( wp_json_encode( $elementor_matches ), '500000 tenge' );
+				$elementor_url = get_permalink( $elementor_page_id );
+				$source_url_retrieved = is_string( $elementor_url ) && in_array( $elementor_url, wp_list_pluck( $elementor_matches, 'source_url' ), true );
+				$link_reply = $answer_enricher->enrich(
+					'Our prices are listed on the website.',
+					'Give me the page link for the premium package price.',
+					'test-session',
+					new WP_REST_Request()
+				);
+				$requested_link_appended = false !== strpos( $link_reply, get_permalink( $elementor_page_id ) );
+			}
+		}
 
 		if ( $knowledge_post instanceof WP_Post ) {
 			$knowledge_indexed = $knowledge_indexer->index_post( $knowledge_post ) > 0;
@@ -502,11 +587,18 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'knowledge_indexed'           => $knowledge_indexed,
 			'knowledge_retrieved'         => $knowledge_retrieved,
 			'knowledge_augmented'         => $knowledge_augmented,
+			'knowledge_auto_indexed'      => $knowledge_auto_indexed,
+			'elementor_content_indexed'   => $elementor_content_indexed,
+			'source_url_retrieved'        => $source_url_retrieved,
+			'requested_link_appended'     => $requested_link_appended,
 			'faq_registered'              => $faq_registered,
 			'faq_merged_into_knowledge'   => $faq_merged_into_knowledge,
 			'faq_indexed'                 => $faq_indexed,
 			'manual_knowledge_indexed'    => $manual_knowledge_indexed,
 			'manual_knowledge_non_autoloaded' => $manual_knowledge_non_autoloaded,
+			'contact_knowledge_indexed'   => $contact_knowledge_indexed,
+			'contact_option_non_autoloaded' => $contact_option_non_autoloaded,
+			'requested_contacts_appended' => $requested_contacts_appended,
 			'pdf_indexed'                 => $pdf_indexed,
 			'pdf_option_non_autoloaded'   => $pdf_option_non_autoloaded,
 			'woocommerce_indexed'         => $woocommerce_indexed,
@@ -564,6 +656,8 @@ function wpdsac_test_uninstall(): WP_REST_Response {
 			'options_removed' => false === get_option( 'wpdsac_settings', false )
 				&& false === get_option( 'wpdsac_pdf_attachment_ids', false )
 				&& false === get_option( 'wpdsac_manual_knowledge', false )
+				&& false === get_option( 'wpdsac_contact_information', false )
+				&& false === get_option( 'wpdsac_knowledge_index_version', false )
 				&& false === get_option( 'wpdsac_deepseek_api_key', false )
 				&& false === get_option( 'wpdsac_provider_credentials', false )
 				&& false === get_option( 'wpdsac_db_version', false ),

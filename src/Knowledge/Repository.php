@@ -182,7 +182,30 @@ final class Repository {
 	 * @return array<int, string>
 	 */
 	private function terms( string $query ): array {
-		$parts = preg_split( '/[^\p{L}\p{N}_-]+/u', $this->lower( $query ) );
+		$parts     = preg_split( '/[^\p{L}\p{N}_-]+/u', $this->lower( $query ) );
+		$stopwords = array(
+			'about',
+			'give',
+			'link',
+			'page',
+			'please',
+			'show',
+			'site',
+			'the',
+			'website',
+			'где',
+			'дай',
+			'дайте',
+			'как',
+			'мне',
+			'на',
+			'покажи',
+			'пожалуйста',
+			'сайт',
+			'сайта',
+			'ссылку',
+			'страницу',
+		);
 
 		if ( ! is_array( $parts ) ) {
 			return array();
@@ -190,10 +213,10 @@ final class Repository {
 
 		$parts = array_filter(
 			array_unique( $parts ),
-			static function ( string $term ): bool {
+			static function ( string $term ) use ( $stopwords ): bool {
 				$length = function_exists( 'mb_strlen' ) ? mb_strlen( $term ) : strlen( $term );
 
-				return $length >= 3;
+				return $length >= 3 && ! in_array( $term, $stopwords, true );
 			}
 		);
 
