@@ -72,6 +72,7 @@
 	font-size: 14px;
 	font-weight: 600;
 	cursor: pointer;
+	box-shadow: none;
 }
 
 .wpdsac-settings-tab::after {
@@ -94,6 +95,11 @@
 
 .wpdsac-settings-tab[aria-selected="true"]::after {
 	background: #2271b1;
+}
+
+.wpdsac-settings-tab:focus {
+	box-shadow: none;
+	outline: none;
 }
 
 .wpdsac-settings-tab:focus-visible {
@@ -126,6 +132,8 @@
 }
 
 .wpdsac-settings-panel > .form-table {
+	display: block;
+	width: 100%;
 	margin: 0;
 	border: 1px solid #d7dce1;
 	border-radius: 10px;
@@ -133,14 +141,23 @@
 	border-collapse: separate;
 	border-spacing: 0;
 	overflow: hidden;
+	box-sizing: border-box;
+}
+
+.wpdsac-settings-panel > .form-table > tbody {
+	display: block;
+	width: 100%;
 }
 
 .wpdsac-settings-panel > .form-table tr {
 	display: grid;
-	grid-template-columns: minmax(190px, 250px) minmax(300px, 1fr);
-	gap: 26px;
-	padding: 20px 24px;
+	grid-template-columns: minmax(210px, 260px) minmax(0, 1fr);
+	align-items: start;
+	gap: 32px;
+	width: 100%;
+	padding: 22px 24px;
 	border-bottom: 1px solid #edf0f2;
+	box-sizing: border-box;
 }
 
 .wpdsac-provider-setting[hidden] {
@@ -161,6 +178,12 @@
 	color: #303842;
 	font-weight: 600;
 	line-height: 1.45;
+	text-align: left;
+	word-break: normal;
+}
+
+.wpdsac-settings-panel .form-table td {
+	min-width: 0;
 }
 
 .wpdsac-settings-panel input.regular-text,
@@ -188,9 +211,29 @@
 }
 
 .wpdsac-settings-panel .description {
+	max-width: 68ch;
 	margin-top: 7px;
 	color: #66717e;
 	line-height: 1.5;
+}
+
+.wpdsac-checkbox-field {
+	display: flex;
+	align-items: flex-start;
+	gap: 9px;
+	max-width: 68ch;
+	line-height: 1.5;
+}
+
+.wpdsac-checkbox-field input[type="checkbox"] {
+	flex: 0 0 auto;
+	margin: 3px 0 0;
+}
+
+.wpdsac-provider-setting > div,
+[data-wpdsac-provider-field] {
+	min-width: 0;
+	max-width: 680px;
 }
 
 .wpdsac-provider-diagnostics {

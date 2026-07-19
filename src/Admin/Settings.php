@@ -597,7 +597,7 @@ final class Settings {
 				$this->render_appearance_workspace( $section_ids, $section_titles );
 			} else {
 				foreach ( $section_ids as $section_id ) {
-					do_settings_fields( 'wpdsac-settings', $section_id );
+					$this->render_settings_fields_table( $section_id );
 				}
 
 				if ( 'ai' === $tab_id ) {
@@ -624,7 +624,7 @@ final class Settings {
 					<details class="wpdsac-control-group" <?php echo 0 === $index ? 'open' : ''; ?>>
 						<summary><?php echo esc_html( $section_titles[ $section_id ] ?? '' ); ?></summary>
 						<div class="wpdsac-control-group__body">
-							<?php do_settings_fields( 'wpdsac-settings', $section_id ); ?>
+							<?php $this->render_settings_fields_table( $section_id ); ?>
 						</div>
 					</details>
 				<?php endforeach; ?>
@@ -633,6 +633,22 @@ final class Settings {
 				<?php $this->appearance->render_preview(); ?>
 			</div>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Render Settings API rows inside their required semantic table wrapper.
+	 *
+	 * @param string $section_id Settings section identifier.
+	 * @return void
+	 */
+	private function render_settings_fields_table( string $section_id ): void {
+		?>
+		<table class="form-table wpdsac-fields-table" role="presentation">
+			<tbody>
+				<?php do_settings_fields( 'wpdsac-settings', $section_id ); ?>
+			</tbody>
+		</table>
 		<?php
 	}
 
@@ -669,7 +685,7 @@ final class Settings {
 			$description  = $descriptions[ $key ] ?? '';
 
 			printf(
-				'<label><input type="checkbox" name="%1$s" value="1" %2$s> %3$s</label>',
+				'<label class="wpdsac-checkbox-field"><input type="checkbox" name="%1$s" value="1" %2$s> <span>%3$s</span></label>',
 				esc_attr( $name ),
 				checked( ! empty( $options[ $key ] ), true, false ),
 				esc_html( $description )

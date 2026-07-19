@@ -48,6 +48,8 @@ assert.match(adminScript, /Credential preflight/);
 assert.match(adminScript, /removeProperty\('display'\)/);
 assert.doesNotMatch(adminScript, /providerTargets/);
 assert.match(settingsPhp, /data-wpdsac-provider-field/);
+assert.match(settingsPhp, /wpdsac-fields-table/);
+assert.match(settingsPhp, /render_settings_fields_table/);
 assert.match(adminStyles, /wpdsac-provider-setting\[hidden\]/);
 assert.match(chatScript, /REST request failed/);
 assert.match(settingsPhp, /add_menu_page/);
@@ -92,7 +94,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.23',
+    plugin_version: '0.5.24',
     db_version: '5',
     rate_limit_table: true,
     request_lock_table: true,

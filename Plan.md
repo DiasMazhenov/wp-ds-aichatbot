@@ -154,7 +154,7 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.23` индексирует все опубликованные публичные типы записей, отрисованные Gutenberg-блоки и Elementor-виджеты независимо от состояния retrieval. При обновлении extraction rules существующий сайт переиндексируется автоматически; запросы ссылок и контактов получают детерминированно добавленные URL, телефон, WhatsApp или Telegram.
+Версия `0.5.24` исправляет корневую ошибку вёрстки настроек: `do_settings_fields()` теперь всегда находится внутри семантической `form-table`, поэтому labels, inputs, descriptions и provider rows больше не склеиваются. Карточки получили устойчивую двухколоночную сетку, адаптивный single-column режим, выравнивание checkbox и корректный keyboard focus.
 
 GitHub Actions run `29664260145` полностью прошёл: PHPUnit PHP 7.4/8.3, PHP lint 7.4/8.1/8.3, WPCS, WordPress/Elementor integration и package. Artifact `8435277185` содержит installable ZIP для commit `aaf3120`.
 

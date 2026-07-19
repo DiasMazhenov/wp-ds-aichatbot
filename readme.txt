@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.23
+Stable tag: 0.5.24
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.24 =
+* Restore valid Settings API table markup so labels, controls, descriptions, and provider visibility render correctly.
+* Improve form-card spacing, checkbox alignment, responsive layout, and keyboard focus styling across settings tabs.
 
 = 0.5.23 =
 * Index rendered Gutenberg blocks, Elementor widget content, and every published public post type even while retrieval is disabled.
