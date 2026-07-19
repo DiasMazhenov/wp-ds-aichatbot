@@ -209,3 +209,4 @@
 - Настройки сохраняются без перезагрузки через `wp_ajax_wpdsac_save_settings`; handler требует `manage_options`, проверяет nonce и повторно использует существующие sanitization schemas. `options.php` остаётся fallback без JavaScript.
 - AJAX handler явно сохраняет write-only API key каждого direct provider в его отдельную non-autoload option. Валидация выполняется до любой записи, чтобы ошибка ключа не оставляла частично обновлённые настройки.
 - Версия `0.5.14`: плейсхолдер поля сообщения редактируется в общих настройках, санитизируется и передаётся в единый renderer для global, shortcode и Elementor; live preview обновляется до сохранения.
+- Версия `0.5.15`: `wp-chatbot.svg` имеет intrinsic-размер 20×20 px для корректного вывода WordPress admin menu; шапка страницы по-прежнему задаёт иконке размер 46×46 px через HTML-атрибуты.
