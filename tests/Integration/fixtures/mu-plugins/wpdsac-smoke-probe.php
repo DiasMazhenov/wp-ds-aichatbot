@@ -241,6 +241,7 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$privacy_erased = false;
 	$lead_rendered = false;
 	$lead_saved = false;
+	$lead_mail_sent = false;
 	$lead_privacy_exported = false;
 	$lead_privacy_erased = false;
 	$rate_limit_enforced = false;
@@ -489,10 +490,31 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$lead_settings['leads_enabled']       = true;
 	$lead_settings['lead_consent_text']   = 'I consent to a follow-up about my request.';
 	$lead_settings['lead_retention_days'] = 1;
+	$lead_settings['lead_notification_email'] = 'owner@example.test';
 	update_option( 'wpdsac_settings', $lead_settings, false );
+	$captured_mail = array();
+	$mail_filter   = static function ( $return, $attributes ) use ( &$captured_mail ) {
+		$captured_mail = $attributes;
+		return true;
+	};
+	add_filter( 'pre_wp_mail', $mail_filter, 10, 2 );
+	$lead_mail_sent = ( new \DiasMazhenov\WPDsAiChatbot\Data\LeadNotifier() )->send(
+		array(
+			'name'       => 'Lead Test',
+			'email'      => 'lead@example.test',
+			'phone'      => '+7 700 123 45 67',
+			'request'    => 'Please call me.',
+			'transcript' => 'Visitor: Hello',
+		)
+	) && 'owner@example.test' === $captured_mail['to']
+		&& false !== strpos( $captured_mail['message'], 'Visitor: Hello' );
+	remove_filter( 'pre_wp_mail', $mail_filter, 10 );
 
 	$lead_html     = do_shortcode( '[ds_ai_chatbot]' );
 	$lead_rendered = false !== strpos( $lead_html, 'data-wpdsac-lead-form' )
+		&& false !== strpos( $lead_html, 'data-wpdsac-name-form' )
+		&& false !== strpos( $lead_html, 'data-wpdsac-open-lead' )
+		&& false !== strpos( $lead_html, 'href="tel:+77001234567"' )
 		&& false !== strpos( $lead_html, 'I consent to a follow-up' );
 	$lead_email    = 'wpdsac-lead-' . wp_generate_password( 8, false ) . '@example.test';
 	$lead_repository = new \DiasMazhenov\WPDsAiChatbot\Data\LeadRepository();
@@ -501,6 +523,8 @@ function wpdsac_test_probe(): WP_REST_Response {
 		0,
 		'Lead Test',
 		$lead_email,
+		'+7 700 123 45 67',
+		'Please call me tomorrow.',
 		$lead_settings['lead_consent_text'],
 		1
 	);
@@ -607,6 +631,7 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'privacy_erased'              => $privacy_erased,
 			'lead_rendered'               => $lead_rendered,
 			'lead_saved'                  => $lead_saved,
+			'lead_mail_sent'              => $lead_mail_sent,
 			'lead_privacy_exported'       => $lead_privacy_exported,
 			'lead_privacy_erased'         => $lead_privacy_erased,
 			'rate_limit_enforced'         => $rate_limit_enforced,

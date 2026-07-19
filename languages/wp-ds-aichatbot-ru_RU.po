@@ -699,3 +699,97 @@ msgstr "Телефон:"
 
 msgid "All published public content types, rendered Gutenberg blocks, Elementor widgets, knowledge entries, administrator text, WooCommerce products, and selected PDFs are split into bounded fragments and stored in a dedicated table."
 msgstr "Все опубликованные публичные типы контента, отрисованные блоки Gutenberg, виджеты Elementor, записи базы знаний, текст администратора, товары WooCommerce и выбранные PDF разбиваются на ограниченные фрагменты и хранятся в отдельной таблице."
+msgid "Hello! What is your name?"
+msgstr "Здравствуйте! Как к вам обращаться?"
+
+msgid "Start chat"
+msgstr "Начать чат"
+
+msgid "Call"
+msgstr "Позвонить"
+
+msgid "Leave a request"
+msgstr "Оставить заявку"
+
+msgid "Send request"
+msgstr "Отправить заявку"
+
+msgid "Name request text"
+msgstr "Текст запроса имени"
+
+msgid "Start chat button"
+msgstr "Кнопка начала чата"
+
+msgid "Call button text"
+msgstr "Текст кнопки звонка"
+
+msgid "Request button text"
+msgstr "Текст кнопки заявки"
+
+msgid "Submit request button"
+msgstr "Кнопка отправки заявки"
+
+msgid "Notification email"
+msgstr "Email для уведомлений"
+
+msgid "A new request and its chat transcript will be sent to this address."
+msgstr "На этот адрес будут отправляться новая заявка и переписка из чата."
+
+msgid "Your name"
+msgstr "Ваше имя"
+
+msgid "Quick actions"
+msgstr "Быстрые действия"
+
+msgid "Phone"
+msgstr "Телефон"
+
+msgid "How can we help?"
+msgstr "Чем мы можем помочь?"
+
+msgid "Enter an email address or phone number."
+msgstr "Укажите email или номер телефона."
+
+msgid "Thank you. Your request was sent."
+msgstr "Спасибо! Ваша заявка отправлена."
+
+#, php-format
+msgid "New chatbot request from %s"
+msgstr "Новая заявка из чат-бота от %s"
+
+msgid "website visitor"
+msgstr "посетителя сайта"
+
+msgid "A visitor submitted a contact request in the chatbot."
+msgstr "Посетитель оставил заявку через чат-бот."
+
+msgid "Name:"
+msgstr "Имя:"
+
+msgid "Email:"
+msgstr "Email:"
+
+msgid "Request:"
+msgstr "Заявка:"
+
+msgid "Chat transcript:"
+msgstr "Переписка в чате:"
+
+msgid "No messages yet."
+msgstr "Сообщений пока нет."
+
+msgid "Request"
+msgstr "Заявка"
+
+msgid "When contact collection is enabled, the chatbot stores the submitted name, email address, phone number, request text, consent text, and submission time for the configured retention period. The submitted chat transcript is emailed to the configured administrator address but is not stored with the lead. IP addresses and raw chat session identifiers are not stored. Contact requests can be exported or erased using the WordPress privacy tools."
+msgstr "Когда сбор заявок включён, чат-бот хранит имя, email, номер телефона, текст заявки, текст согласия и время отправки в течение заданного срока. Переписка отправляется на настроенный адрес администратора, но не хранится вместе с заявкой. IP-адреса и исходные идентификаторы сессий не сохраняются. Заявки можно экспортировать или удалить инструментами приватности WordPress."
+msgid "Light mode"
+msgstr "Светлая тема"
+
+msgid "Dark mode"
+msgstr "Тёмная тема"
+msgid "Email is required; phone is optional."
+msgstr "Email обязателен, телефон можно указать дополнительно."
+
+msgid "Enter a valid email address."
+msgstr "Укажите корректный email."

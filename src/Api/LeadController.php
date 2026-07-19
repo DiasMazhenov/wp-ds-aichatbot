@@ -9,6 +9,7 @@ namespace DiasMazhenov\WPDsAiChatbot\Api;
 
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 use DiasMazhenov\WPDsAiChatbot\Data\LeadRepository;
+use DiasMazhenov\WPDsAiChatbot\Data\LeadNotifier;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -41,6 +42,13 @@ final class LeadController {
 	private $repository;
 
 	/**
+	 * Lead email notifier.
+	 *
+	 * @var LeadNotifier
+	 */
+	private $notifier;
+
+	/**
 	 * Verified session UUID.
 	 *
 	 * @var string
@@ -53,11 +61,13 @@ final class LeadController {
 	 * @param SessionToken   $tokens     Session token service.
 	 * @param RateLimiter    $limiter    Public request limiter.
 	 * @param LeadRepository $repository Lead repository.
+	 * @param LeadNotifier   $notifier   Lead email notifier.
 	 */
-	public function __construct( SessionToken $tokens, RateLimiter $limiter, LeadRepository $repository ) {
+	public function __construct( SessionToken $tokens, RateLimiter $limiter, LeadRepository $repository, LeadNotifier $notifier ) {
 		$this->tokens     = $tokens;
 		$this->limiter    = $limiter;
 		$this->repository = $repository;
+		$this->notifier   = $notifier;
 	}
 
 	/**
@@ -83,29 +93,46 @@ final class LeadController {
 				'callback'            => array( $this, 'create' ),
 				'permission_callback' => array( $this, 'permissions_check' ),
 				'args'                => array(
-					'session' => array(
+					'session'    => array(
 						'type'              => 'string',
 						'required'          => true,
 						'sanitize_callback' => 'sanitize_text_field',
 						'validate_callback' => array( $this, 'validate_session' ),
 					),
-					'name'    => array(
+					'name'       => array(
 						'type'              => 'string',
 						'default'           => '',
 						'sanitize_callback' => 'sanitize_text_field',
 						'validate_callback' => array( $this, 'validate_name' ),
 					),
-					'email'   => array(
+					'email'      => array(
 						'type'              => 'string',
-						'required'          => true,
+						'default'           => '',
 						'sanitize_callback' => 'sanitize_email',
-						'validate_callback' => 'is_email',
 					),
-					'consent' => array(
+					'phone'      => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+						'validate_callback' => array( $this, 'validate_phone' ),
+					),
+					'request'    => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_textarea_field',
+						'validate_callback' => array( $this, 'validate_request' ),
+					),
+					'transcript' => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_textarea_field',
+						'validate_callback' => array( $this, 'validate_transcript' ),
+					),
+					'consent'    => array(
 						'type'     => 'boolean',
 						'required' => true,
 					),
-					'website' => array(
+					'website'    => array(
 						'type'              => 'string',
 						'default'           => '',
 						'sanitize_callback' => 'sanitize_text_field',
@@ -138,6 +165,36 @@ final class LeadController {
 		}
 
 		return self::length( $value ) <= 100;
+	}
+
+	/**
+	 * Validate an optional phone number.
+	 *
+	 * @param mixed $value Raw phone number.
+	 * @return bool
+	 */
+	public function validate_phone( $value ): bool {
+		return is_string( $value ) && self::length( $value ) <= 50 && 1 === preg_match( '/^[0-9+()\-\s]*$/', $value );
+	}
+
+	/**
+	 * Validate an optional request description.
+	 *
+	 * @param mixed $value Raw request text.
+	 * @return bool
+	 */
+	public function validate_request( $value ): bool {
+		return is_string( $value ) && self::length( $value ) <= 4000;
+	}
+
+	/**
+	 * Validate a bounded plain-text transcript.
+	 *
+	 * @param mixed $value Raw transcript.
+	 * @return bool
+	 */
+	public function validate_transcript( $value ): bool {
+		return is_string( $value ) && self::length( $value ) <= 20000;
 	}
 
 	/**
@@ -193,6 +250,17 @@ final class LeadController {
 			);
 		}
 
+		$email = sanitize_email( (string) $request->get_param( 'email' ) );
+		$phone = sanitize_text_field( (string) $request->get_param( 'phone' ) );
+
+		if ( '' === $email || ! is_email( $email ) ) {
+			return new \WP_Error(
+				'wpdsac_lead_email_required',
+				__( 'Enter a valid email address.', 'wp-ds-aichatbot' ),
+				array( 'status' => 400 )
+			);
+		}
+
 		$limit = $this->limiter->consume_lead( $this->session_id );
 
 		if ( ! $limit['allowed'] ) {
@@ -213,7 +281,9 @@ final class LeadController {
 			$this->session_id,
 			get_current_user_id(),
 			(string) $request->get_param( 'name' ),
-			(string) $request->get_param( 'email' ),
+			$email,
+			$phone,
+			(string) $request->get_param( 'request' ),
 			(string) $options['lead_consent_text'],
 			(int) $options['lead_retention_days']
 		);
@@ -227,9 +297,21 @@ final class LeadController {
 		}
 
 		do_action( 'wpdsac_lead_created', sanitize_email( (string) $request->get_param( 'email' ) ), $this->session_id );
+		$notified = $this->notifier->send(
+			array(
+				'name'       => (string) $request->get_param( 'name' ),
+				'email'      => $email,
+				'phone'      => $phone,
+				'request'    => (string) $request->get_param( 'request' ),
+				'transcript' => (string) $request->get_param( 'transcript' ),
+			)
+		);
 
 		$response = new \WP_REST_Response(
-			array( 'message' => __( 'Thank you. Your contact details were saved.', 'wp-ds-aichatbot' ) ),
+			array(
+				'message'  => __( 'Thank you. Your request was sent.', 'wp-ds-aichatbot' ),
+				'notified' => $notified,
+			),
 			201
 		);
 		$response->header( 'Cache-Control', 'no-store' );

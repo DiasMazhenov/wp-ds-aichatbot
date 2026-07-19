@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Migrator {
 
-	public const DB_VERSION = '5';
+	public const DB_VERSION = '6';
 
 	private const VERSION_OPTION = 'wpdsac_db_version';
 
@@ -102,7 +102,9 @@ final class Migrator {
 			session_hash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
 			user_id bigint(20) unsigned NOT NULL DEFAULT 0,
 			name varchar(190) NOT NULL DEFAULT '',
-			email varchar(190) NOT NULL,
+			email varchar(190) NOT NULL DEFAULT '',
+			phone varchar(50) NOT NULL DEFAULT '',
+			request_text text NOT NULL,
 			consent_text text NOT NULL,
 			created_at bigint(20) unsigned NOT NULL,
 			expires_at bigint(20) unsigned NOT NULL,

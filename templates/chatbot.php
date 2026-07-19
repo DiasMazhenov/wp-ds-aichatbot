@@ -28,6 +28,9 @@ if ( ! $view['show_toggle_icon'] ) {
 	style="<?php echo esc_attr( $view['appearance'] ); ?>"
 	data-wpdsac-chat
 >
+	<button type="button" class="wpdsac-chat__intro-bubble" data-wpdsac-intro-bubble>
+		<?php echo esc_html( $view['name_prompt'] ); ?>
+	</button>
 	<button
 		type="button"
 		class="wpdsac-chat__toggle"
@@ -43,14 +46,41 @@ if ( ! $view['show_toggle_icon'] ) {
 		class="wpdsac-chat__panel"
 		<?php echo $view['expanded'] ? '' : 'hidden'; ?>
 	>
+		<div class="wpdsac-chat__name-gate" data-wpdsac-name-gate>
+			<p><strong><?php echo esc_html( $view['name_prompt'] ); ?></strong></p>
+			<form data-wpdsac-name-form>
+				<label class="screen-reader-text" for="<?php echo esc_attr( $view['id'] ); ?>-name">
+					<?php esc_html_e( 'Your name', 'wp-ds-aichatbot' ); ?>
+				</label>
+				<input id="<?php echo esc_attr( $view['id'] ); ?>-name" type="text" name="visitor_name" maxlength="100" autocomplete="name" required>
+				<button type="submit"><?php echo esc_html( $view['name_submit_label'] ); ?></button>
+			</form>
+		</div>
+
+		<div class="wpdsac-chat__conversation" data-wpdsac-conversation hidden>
 		<div class="wpdsac-chat__messages" aria-live="polite">
 			<p class="wpdsac-chat__message wpdsac-chat__message--bot">
 				<?php echo nl2br( esc_html( $view['welcome_message'] ) ); ?>
 			</p>
 		</div>
 
+		<?php if ( $view['leads_enabled'] || '' !== $view['call_url'] ) : ?>
+			<div class="wpdsac-chat__quick-actions" aria-label="<?php esc_attr_e( 'Quick actions', 'wp-ds-aichatbot' ); ?>">
+				<?php if ( '' !== $view['call_url'] ) : ?>
+					<a href="<?php echo esc_url( $view['call_url'], array( 'tel' ) ); ?>" class="wpdsac-chat__quick-action">
+						<?php echo esc_html( $view['quick_call_label'] ); ?>
+					</a>
+				<?php endif; ?>
+				<?php if ( $view['leads_enabled'] ) : ?>
+					<button type="button" class="wpdsac-chat__quick-action" data-wpdsac-open-lead>
+						<?php echo esc_html( $view['quick_lead_label'] ); ?>
+					</button>
+				<?php endif; ?>
+			</div>
+		<?php endif; ?>
+
 		<?php if ( $view['leads_enabled'] ) : ?>
-			<div class="wpdsac-chat__lead" data-wpdsac-lead>
+			<div class="wpdsac-chat__lead" data-wpdsac-lead hidden>
 				<p><strong><?php echo esc_html( $view['lead_prompt'] ); ?></strong></p>
 				<form data-wpdsac-lead-form>
 					<label>
@@ -61,6 +91,15 @@ if ( ! $view['show_toggle_icon'] ) {
 						<span><?php esc_html_e( 'Email', 'wp-ds-aichatbot' ); ?></span>
 						<input type="email" name="email" maxlength="190" autocomplete="email" required>
 					</label>
+					<label>
+						<span><?php esc_html_e( 'Phone', 'wp-ds-aichatbot' ); ?></span>
+						<input type="tel" name="phone" maxlength="50" autocomplete="tel">
+					</label>
+					<p class="wpdsac-chat__field-hint"><?php esc_html_e( 'Email is required; phone is optional.', 'wp-ds-aichatbot' ); ?></p>
+					<label>
+						<span><?php esc_html_e( 'How can we help?', 'wp-ds-aichatbot' ); ?></span>
+						<textarea name="request" rows="3" maxlength="4000"></textarea>
+					</label>
 					<label class="wpdsac-chat__consent">
 						<input type="checkbox" name="consent" value="1" required>
 						<span><?php echo esc_html( $view['lead_consent'] ); ?></span>
@@ -69,7 +108,7 @@ if ( ! $view['show_toggle_icon'] ) {
 						<span><?php esc_html_e( 'Website', 'wp-ds-aichatbot' ); ?></span>
 						<input type="text" name="website" tabindex="-1" autocomplete="off">
 					</label>
-					<button type="submit"><?php esc_html_e( 'Send contact details', 'wp-ds-aichatbot' ); ?></button>
+					<button type="submit"><?php echo esc_html( $view['lead_submit_label'] ); ?></button>
 				</form>
 				<p class="wpdsac-chat__status" data-wpdsac-lead-status aria-live="polite"></p>
 			</div>
@@ -89,5 +128,6 @@ if ( ! $view['show_toggle_icon'] ) {
 			<button type="submit"><?php esc_html_e( 'Send', 'wp-ds-aichatbot' ); ?></button>
 		</form>
 		<p class="wpdsac-chat__status" data-wpdsac-status aria-live="polite"></p>
+		</div>
 	</div>
 </section>

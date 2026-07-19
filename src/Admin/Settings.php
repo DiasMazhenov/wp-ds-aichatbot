@@ -69,33 +69,39 @@ final class Settings {
 	public static function defaults(): array {
 		return array_merge(
 			array(
-				'global_enabled'        => false,
-				'title'                 => __( 'AI Assistant', 'wp-ds-aichatbot' ),
-				'welcome_message'       => __( 'Hello! How can I help you?', 'wp-ds-aichatbot' ),
-				'message_placeholder'   => __( 'Type your message…', 'wp-ds-aichatbot' ),
-				'rate_limit_requests'   => 10,
-				'rate_limit_window'     => 60,
-				'daily_request_limit'   => 500,
-				'knowledge_enabled'     => false,
-				'knowledge_max_chunks'  => 4,
-				'logging_enabled'       => false,
-				'log_retention_days'    => 30,
-				'leads_enabled'         => false,
-				'lead_prompt'           => __( 'Would you like us to contact you?', 'wp-ds-aichatbot' ),
-				'lead_consent_text'     => __( 'I agree that my contact details may be stored and used to respond to my request.', 'wp-ds-aichatbot' ),
-				'lead_retention_days'   => 90,
-				'ai_provider'           => 'openai',
-				'ai_instructions'       => __( 'You are a concise and helpful website support assistant. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
-				'ai_max_output_tokens'  => 1200,
-				'prompt_guard_enabled'  => true,
-				'topic_scope'           => '',
-				'guard_refusal_message' => __( 'I can only help with questions related to this website.', 'wp-ds-aichatbot' ),
-				'openai_model'          => 'gpt-5.6-sol',
-				'anthropic_model'       => 'claude-sonnet-4-6',
-				'gemini_model'          => 'gemini-3.5-flash',
-				'openrouter_model'      => 'openai/gpt-5.6-luna',
-				'deepseek_model'        => 'deepseek-v4-flash',
-				'deepseek_thinking'     => false,
+				'global_enabled'          => false,
+				'title'                   => __( 'AI Assistant', 'wp-ds-aichatbot' ),
+				'welcome_message'         => __( 'Hello! How can I help you?', 'wp-ds-aichatbot' ),
+				'message_placeholder'     => __( 'Type your message…', 'wp-ds-aichatbot' ),
+				'rate_limit_requests'     => 10,
+				'rate_limit_window'       => 60,
+				'daily_request_limit'     => 500,
+				'knowledge_enabled'       => false,
+				'knowledge_max_chunks'    => 4,
+				'logging_enabled'         => false,
+				'log_retention_days'      => 30,
+				'leads_enabled'           => false,
+				'name_prompt'             => __( 'Hello! What is your name?', 'wp-ds-aichatbot' ),
+				'name_submit_label'       => __( 'Start chat', 'wp-ds-aichatbot' ),
+				'quick_call_label'        => __( 'Call', 'wp-ds-aichatbot' ),
+				'quick_lead_label'        => __( 'Leave a request', 'wp-ds-aichatbot' ),
+				'lead_prompt'             => __( 'Would you like us to contact you?', 'wp-ds-aichatbot' ),
+				'lead_submit_label'       => __( 'Send request', 'wp-ds-aichatbot' ),
+				'lead_notification_email' => get_option( 'admin_email', '' ),
+				'lead_consent_text'       => __( 'I agree that my contact details may be stored and used to respond to my request.', 'wp-ds-aichatbot' ),
+				'lead_retention_days'     => 90,
+				'ai_provider'             => 'openai',
+				'ai_instructions'         => __( 'You are a concise and helpful website support assistant. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
+				'ai_max_output_tokens'    => 1200,
+				'prompt_guard_enabled'    => true,
+				'topic_scope'             => '',
+				'guard_refusal_message'   => __( 'I can only help with questions related to this website.', 'wp-ds-aichatbot' ),
+				'openai_model'            => 'gpt-5.6-sol',
+				'anthropic_model'         => 'claude-sonnet-4-6',
+				'gemini_model'            => 'gemini-3.5-flash',
+				'openrouter_model'        => 'openai/gpt-5.6-luna',
+				'deepseek_model'          => 'deepseek-v4-flash',
+				'deepseek_thinking'       => false,
 			),
 			Appearance::defaults()
 		);
@@ -252,7 +258,13 @@ final class Settings {
 		$this->add_field( 'logging_enabled', __( 'Conversation logging', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_privacy' );
 		$this->add_field( 'log_retention_days', __( 'Log retention (days)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_privacy' );
 		$this->add_field( 'leads_enabled', __( 'Contact form in chat', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_leads' );
+		$this->add_field( 'name_prompt', __( 'Name request text', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
+		$this->add_field( 'name_submit_label', __( 'Start chat button', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
+		$this->add_field( 'quick_call_label', __( 'Call button text', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
+		$this->add_field( 'quick_lead_label', __( 'Request button text', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
 		$this->add_field( 'lead_prompt', __( 'Contact prompt', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
+		$this->add_field( 'lead_submit_label', __( 'Submit request button', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
+		$this->add_field( 'lead_notification_email', __( 'Notification email', 'wp-ds-aichatbot' ), 'email', 'wpdsac_leads' );
 		$this->add_field( 'lead_consent_text', __( 'Consent text', 'wp-ds-aichatbot' ), 'textarea', 'wpdsac_leads' );
 		$this->add_field( 'lead_retention_days', __( 'Lead retention (days)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_leads' );
 		$this->appearance->register_fields();
@@ -291,40 +303,61 @@ final class Settings {
 		$lead_prompt  = '' !== $lead_prompt ? $lead_prompt : $defaults['lead_prompt'];
 		$lead_consent = sanitize_textarea_field( $input['lead_consent_text'] ?? '' );
 		$lead_consent = '' !== $lead_consent ? $lead_consent : $defaults['lead_consent_text'];
+		$name_prompt  = sanitize_text_field( $input['name_prompt'] ?? '' );
+		$name_prompt  = '' !== $name_prompt ? $name_prompt : $defaults['name_prompt'];
 		$refusal      = sanitize_text_field( $input['guard_refusal_message'] ?? '' );
 		$refusal      = '' !== $refusal ? $refusal : $defaults['guard_refusal_message'];
 
 		$settings = array(
-			'global_enabled'        => ! empty( $input['global_enabled'] ),
-			'title'                 => sanitize_text_field( $input['title'] ?? '' ),
-			'welcome_message'       => sanitize_textarea_field( $input['welcome_message'] ?? '' ),
-			'message_placeholder'   => sanitize_text_field( $input['message_placeholder'] ?? '' ),
-			'rate_limit_requests'   => min( 100, max( 1, absint( $input['rate_limit_requests'] ?? 10 ) ) ),
-			'rate_limit_window'     => min( HOUR_IN_SECONDS, max( 10, absint( $input['rate_limit_window'] ?? 60 ) ) ),
-			'daily_request_limit'   => min( 100000, absint( $input['daily_request_limit'] ?? 500 ) ),
-			'knowledge_enabled'     => ! empty( $input['knowledge_enabled'] ),
-			'knowledge_max_chunks'  => min( 8, max( 1, absint( $input['knowledge_max_chunks'] ?? 4 ) ) ),
-			'logging_enabled'       => ! empty( $input['logging_enabled'] ),
-			'log_retention_days'    => min( 365, max( 1, absint( $input['log_retention_days'] ?? 30 ) ) ),
-			'leads_enabled'         => ! empty( $input['leads_enabled'] ),
-			'lead_prompt'           => $lead_prompt,
-			'lead_consent_text'     => $lead_consent,
-			'lead_retention_days'   => min( 730, max( 1, absint( $input['lead_retention_days'] ?? 90 ) ) ),
-			'ai_provider'           => $provider,
-			'ai_instructions'       => sanitize_textarea_field( $input['ai_instructions'] ?? '' ),
-			'ai_max_output_tokens'  => min( 8000, max( 100, absint( $input['ai_max_output_tokens'] ?? 1200 ) ) ),
-			'prompt_guard_enabled'  => ! empty( $input['prompt_guard_enabled'] ),
-			'topic_scope'           => $this->limit_text( sanitize_textarea_field( $input['topic_scope'] ?? '' ), 2000 ),
-			'guard_refusal_message' => $this->limit_text( $refusal, 300 ),
-			'openai_model'          => $this->sanitize_model_id( $input['openai_model'] ?? '', 'gpt-5.6-sol' ),
-			'anthropic_model'       => $this->sanitize_model_id( $input['anthropic_model'] ?? '', 'claude-sonnet-4-6' ),
-			'gemini_model'          => $this->sanitize_model_id( $input['gemini_model'] ?? '', 'gemini-3.5-flash' ),
-			'openrouter_model'      => $this->sanitize_model_id( $input['openrouter_model'] ?? '', 'openai/gpt-5.6-luna' ),
-			'deepseek_model'        => $this->sanitize_model_id( $input['deepseek_model'] ?? '', 'deepseek-v4-flash' ),
-			'deepseek_thinking'     => ! empty( $input['deepseek_thinking'] ),
+			'global_enabled'          => ! empty( $input['global_enabled'] ),
+			'title'                   => sanitize_text_field( $input['title'] ?? '' ),
+			'welcome_message'         => sanitize_textarea_field( $input['welcome_message'] ?? '' ),
+			'message_placeholder'     => sanitize_text_field( $input['message_placeholder'] ?? '' ),
+			'rate_limit_requests'     => min( 100, max( 1, absint( $input['rate_limit_requests'] ?? 10 ) ) ),
+			'rate_limit_window'       => min( HOUR_IN_SECONDS, max( 10, absint( $input['rate_limit_window'] ?? 60 ) ) ),
+			'daily_request_limit'     => min( 100000, absint( $input['daily_request_limit'] ?? 500 ) ),
+			'knowledge_enabled'       => ! empty( $input['knowledge_enabled'] ),
+			'knowledge_max_chunks'    => min( 8, max( 1, absint( $input['knowledge_max_chunks'] ?? 4 ) ) ),
+			'logging_enabled'         => ! empty( $input['logging_enabled'] ),
+			'log_retention_days'      => min( 365, max( 1, absint( $input['log_retention_days'] ?? 30 ) ) ),
+			'leads_enabled'           => ! empty( $input['leads_enabled'] ),
+			'name_prompt'             => $this->limit_text( $name_prompt, 160 ),
+			'name_submit_label'       => $this->label_or_default( $input['name_submit_label'] ?? '', $defaults['name_submit_label'] ),
+			'quick_call_label'        => $this->label_or_default( $input['quick_call_label'] ?? '', $defaults['quick_call_label'] ),
+			'quick_lead_label'        => $this->label_or_default( $input['quick_lead_label'] ?? '', $defaults['quick_lead_label'] ),
+			'lead_prompt'             => $lead_prompt,
+			'lead_submit_label'       => $this->label_or_default( $input['lead_submit_label'] ?? '', $defaults['lead_submit_label'] ),
+			'lead_notification_email' => sanitize_email( $input['lead_notification_email'] ?? '' ),
+			'lead_consent_text'       => $lead_consent,
+			'lead_retention_days'     => min( 730, max( 1, absint( $input['lead_retention_days'] ?? 90 ) ) ),
+			'ai_provider'             => $provider,
+			'ai_instructions'         => sanitize_textarea_field( $input['ai_instructions'] ?? '' ),
+			'ai_max_output_tokens'    => min( 8000, max( 100, absint( $input['ai_max_output_tokens'] ?? 1200 ) ) ),
+			'prompt_guard_enabled'    => ! empty( $input['prompt_guard_enabled'] ),
+			'topic_scope'             => $this->limit_text( sanitize_textarea_field( $input['topic_scope'] ?? '' ), 2000 ),
+			'guard_refusal_message'   => $this->limit_text( $refusal, 300 ),
+			'openai_model'            => $this->sanitize_model_id( $input['openai_model'] ?? '', 'gpt-5.6-sol' ),
+			'anthropic_model'         => $this->sanitize_model_id( $input['anthropic_model'] ?? '', 'claude-sonnet-4-6' ),
+			'gemini_model'            => $this->sanitize_model_id( $input['gemini_model'] ?? '', 'gemini-3.5-flash' ),
+			'openrouter_model'        => $this->sanitize_model_id( $input['openrouter_model'] ?? '', 'openai/gpt-5.6-luna' ),
+			'deepseek_model'          => $this->sanitize_model_id( $input['deepseek_model'] ?? '', 'deepseek-v4-flash' ),
+			'deepseek_thinking'       => ! empty( $input['deepseek_thinking'] ),
 		);
 
 		return array_merge( $settings, Appearance::sanitize( $input ) );
+	}
+
+	/**
+	 * Sanitize a short interface label and preserve a useful default.
+	 *
+	 * @param mixed  $value   Submitted label.
+	 * @param string $fallback Default label.
+	 * @return string
+	 */
+	private function label_or_default( $value, string $fallback ): string {
+		$value = $this->limit_text( sanitize_text_field( is_string( $value ) ? $value : '' ), 60 );
+
+		return '' !== $value ? $value : $fallback;
 	}
 
 	/**
@@ -722,6 +755,16 @@ final class Settings {
 				absint( $minimum ),
 				esc_attr( $name ),
 				(int) $options[ $key ]
+			);
+			return;
+		}
+
+		if ( 'email' === $args['type'] ) {
+			printf(
+				'<input class="regular-text" type="email" name="%1$s" value="%2$s" autocomplete="email"><p class="description">%3$s</p>',
+				esc_attr( $name ),
+				esc_attr( (string) $options[ $key ] ),
+				esc_html__( 'A new request and its chat transcript will be sent to this address.', 'wp-ds-aichatbot' )
 			);
 			return;
 		}

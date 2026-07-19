@@ -32,6 +32,7 @@ use DiasMazhenov\WPDsAiChatbot\Chat\Shortcode;
 use DiasMazhenov\WPDsAiChatbot\Data\ConversationLogger;
 use DiasMazhenov\WPDsAiChatbot\Data\ConversationRepository;
 use DiasMazhenov\WPDsAiChatbot\Data\LeadRepository;
+use DiasMazhenov\WPDsAiChatbot\Data\LeadNotifier;
 use DiasMazhenov\WPDsAiChatbot\Elementor\Integration;
 use DiasMazhenov\WPDsAiChatbot\Lifecycle\Migrator;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker;
@@ -82,7 +83,6 @@ final class Plugin {
 	 */
 	public function boot(): void {
 		$assets         = new Assets();
-		$renderer       = new Renderer( $assets );
 		$tokens         = new SessionToken();
 		$rate_limiter   = new RateLimiter();
 		$request_lock   = new RequestLock();
@@ -95,9 +95,11 @@ final class Plugin {
 		$pdf_indexer    = new PdfIndexer( $knowledge, $chunker );
 		$manual_source  = new ManualSource( $knowledge, $chunker );
 		$contact_source = new ContactSource( $knowledge, $chunker );
+		$renderer       = new Renderer( $assets, $contact_source );
 		$retriever      = new Retriever( $knowledge );
 		$conversations  = new ConversationRepository();
 		$leads          = new LeadRepository();
+		$lead_notifier  = new LeadNotifier();
 		$logger         = new ConversationLogger( $conversations );
 		$providers      = new ProviderManager(
 			array(
@@ -119,7 +121,7 @@ final class Plugin {
 		$request_lock->register_hooks();
 		$chat_api->register_hooks();
 		$session_api->register_hooks();
-		( new LeadController( $tokens, $rate_limiter, $leads ) )->register_hooks();
+		( new LeadController( $tokens, $rate_limiter, $leads, $lead_notifier ) )->register_hooks();
 		$providers->register_hooks();
 		$post_indexer->register_hooks();
 		$pdf_indexer->register_hooks();

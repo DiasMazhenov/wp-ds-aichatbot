@@ -33,6 +33,31 @@
 	font: 400 var(--wpdsac-font-size)/1.5 var(--wpdsac-font-family);
 }
 
+.wpdsac-chat [hidden] {
+	display: none !important;
+}
+
+.wpdsac-chat__intro-bubble {
+	position: absolute;
+	right: 0;
+	bottom: calc(var(--wpdsac-launcher-size) + 12px);
+	width: max-content;
+	max-width: min(280px, calc(100vw - 32px));
+	padding: 12px 16px;
+	border: 1px solid var(--wpdsac-border);
+	border-radius: 16px 16px 4px;
+	background: var(--wpdsac-surface);
+	box-shadow: 0 12px 32px rgb(23 32 51 / var(--wpdsac-shadow-opacity));
+	color: var(--wpdsac-text);
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.wpdsac-chat.is-expanded .wpdsac-chat__intro-bubble {
+	display: none;
+}
+
 body > .wpdsac-chat.wpdsac-position--bottom-right {
 	position: fixed;
 	right: var(--wpdsac-offset-x);
@@ -137,6 +162,69 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	color: var(--wpdsac-user-text);
 }
 
+.wpdsac-chat__name-gate p {
+	margin: 0 0 12px;
+}
+
+.wpdsac-chat__name-gate form {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 8px;
+}
+
+.wpdsac-chat__name-gate input,
+.wpdsac-chat__name-gate button {
+	min-height: 44px;
+	box-sizing: border-box;
+	border-radius: var(--wpdsac-input-radius);
+	font: inherit;
+}
+
+.wpdsac-chat__name-gate input {
+	min-width: 0;
+	padding: 10px 12px;
+	border: 1px solid var(--wpdsac-border);
+}
+
+.wpdsac-chat__name-gate button {
+	padding: 8px 16px;
+	border: 0;
+	background: var(--wpdsac-send);
+	color: var(--wpdsac-send-text);
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.wpdsac-chat__quick-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0 0 14px;
+}
+
+.wpdsac-chat__quick-action {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 44px;
+	padding: 8px 14px;
+	border: 1px solid var(--wpdsac-accent);
+	border-radius: 999px;
+	background: transparent;
+	color: var(--wpdsac-accent);
+	font: inherit;
+	font-weight: 700;
+	line-height: 1.2;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.wpdsac-chat__quick-action:hover,
+.wpdsac-chat__quick-action:focus-visible {
+	background: var(--wpdsac-bot-message);
+	color: var(--wpdsac-accent);
+}
+
 .wpdsac-chat__form {
 	display: grid;
 	grid-template-columns: 1fr auto;
@@ -178,6 +266,12 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	margin: 0 0 10px;
 }
 
+.wpdsac-chat__lead .wpdsac-chat__field-hint {
+	margin: -4px 0 0;
+	color: var(--wpdsac-muted);
+	font-size: 12px;
+}
+
 .wpdsac-chat__lead form {
 	display: grid;
 	gap: 10px;
@@ -190,13 +284,27 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 }
 
 .wpdsac-chat__lead input[type="text"],
-.wpdsac-chat__lead input[type="email"] {
+.wpdsac-chat__lead input[type="email"],
+.wpdsac-chat__lead input[type="tel"],
+.wpdsac-chat__lead textarea {
 	box-sizing: border-box;
 	width: 100%;
 	padding: 9px 10px;
 	border: 1px solid var(--wpdsac-border);
 	border-radius: calc(var(--wpdsac-radius) / 2);
 	font: inherit;
+}
+
+.wpdsac-chat__lead textarea {
+	resize: vertical;
+}
+
+.wpdsac-chat input:focus-visible,
+.wpdsac-chat textarea:focus-visible,
+.wpdsac-chat button:focus-visible,
+.wpdsac-chat a:focus-visible {
+	outline: 2px solid var(--wpdsac-accent);
+	outline-offset: 2px;
 }
 
 .wpdsac-chat__consent {
@@ -243,6 +351,10 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 		bottom: 12px;
 		left: 12px;
 		width: auto;
+	}
+
+	.wpdsac-chat__name-gate form {
+		grid-template-columns: 1fr;
 	}
 }
 

@@ -146,6 +146,18 @@ final class ContactSource {
 	}
 
 	/**
+	 * Return a safe telephone URL for the configured public phone number.
+	 *
+	 * @return string
+	 */
+	public function call_url(): string {
+		$phone = $this->fields()['phone'];
+		$phone = preg_replace( '/[^0-9+]/', '', $phone );
+
+		return is_string( $phone ) && '' !== $phone ? 'tel:' . $phone : '';
+	}
+
+	/**
 	 * Normalize a public phone number.
 	 *
 	 * @param mixed $value Submitted phone.

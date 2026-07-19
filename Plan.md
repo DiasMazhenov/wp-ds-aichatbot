@@ -154,7 +154,7 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.24` исправляет корневую ошибку вёрстки настроек: `do_settings_fields()` теперь всегда находится внутри семантической `form-table`, поэтому labels, inputs, descriptions и provider rows больше не склеиваются. Карточки получили устойчивую двухколоночную сетку, адаптивный single-column режим, выравнивание checkbox и корректный keyboard focus.
+Версия `0.5.25` добавляет полный lead-capture flow: редактируемый pre-chat запрос имени, быстрые кнопки звонка и заявки, встроенную форму с email/телефоном/описанием, распознавание намерения связаться и отправку ограниченной plain-text переписки на настроенный email. Схема лидов обновлена до DB version 6 с приватностью и retention.
 
 GitHub Actions run `29664260145` полностью прошёл: PHPUnit PHP 7.4/8.3, PHP lint 7.4/8.1/8.3, WPCS, WordPress/Elementor integration и package. Artifact `8435277185` содержит installable ZIP для commit `aaf3120`.
 

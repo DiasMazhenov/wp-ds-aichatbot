@@ -100,6 +100,14 @@ final class LeadPrivacy {
 						'value' => sanitize_email( (string) $row['email'] ),
 					),
 					array(
+						'name'  => __( 'Phone', 'wp-ds-aichatbot' ),
+						'value' => sanitize_text_field( (string) $row['phone'] ),
+					),
+					array(
+						'name'  => __( 'Request', 'wp-ds-aichatbot' ),
+						'value' => sanitize_textarea_field( (string) $row['request_text'] ),
+					),
+					array(
 						'name'  => __( 'Consent', 'wp-ds-aichatbot' ),
 						'value' => sanitize_textarea_field( (string) $row['consent_text'] ),
 					),
@@ -149,7 +157,7 @@ final class LeadPrivacy {
 			wp_kses_post(
 				sprintf(
 					'<p>%s</p>',
-					esc_html__( 'When contact collection is enabled, the chatbot stores the submitted name, email address, the consent text shown at submission, and the submission time for the configured retention period. IP addresses and raw chat session identifiers are not stored. Contact requests can be exported or erased using the WordPress privacy tools.', 'wp-ds-aichatbot' )
+					esc_html__( 'When contact collection is enabled, the chatbot stores the submitted name, email address, phone number, request text, consent text, and submission time for the configured retention period. The submitted chat transcript is emailed to the configured administrator address but is not stored with the lead. IP addresses and raw chat session identifiers are not stored. Contact requests can be exported or erased using the WordPress privacy tools.', 'wp-ds-aichatbot' )
 				)
 			)
 		);

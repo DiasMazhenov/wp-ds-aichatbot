@@ -76,11 +76,12 @@ final class Assets {
 				'restUrl'   => esc_url_raw( rest_url( 'wp-ds-aichatbot/v1' ) ),
 				'restNonce' => is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '',
 				'strings'   => array(
-					'connecting' => __( 'Connecting…', 'wp-ds-aichatbot' ),
-					'sending'    => __( 'Sending…', 'wp-ds-aichatbot' ),
-					'error'      => __( 'The chat request failed. Please try again.', 'wp-ds-aichatbot' ),
-					'leadSaving' => __( 'Saving contact details…', 'wp-ds-aichatbot' ),
-					'leadError'  => __( 'Contact details could not be saved. Please try again.', 'wp-ds-aichatbot' ),
+					'connecting'        => __( 'Connecting…', 'wp-ds-aichatbot' ),
+					'sending'           => __( 'Sending…', 'wp-ds-aichatbot' ),
+					'error'             => __( 'The chat request failed. Please try again.', 'wp-ds-aichatbot' ),
+					'leadSaving'        => __( 'Saving contact details…', 'wp-ds-aichatbot' ),
+					'leadError'         => __( 'Contact details could not be saved. Please try again.', 'wp-ds-aichatbot' ),
+					'leadEmailRequired' => __( 'Enter a valid email address.', 'wp-ds-aichatbot' ),
 				),
 			)
 		);

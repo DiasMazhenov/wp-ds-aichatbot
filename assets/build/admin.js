@@ -1,6 +1,56 @@
 (() => {
   'use strict';
 
+  const adminRoot = document.querySelector('.wpdsac-settings-wrap, .wpdsac-admin-page');
+  const themeStorageKey = 'wpdsacAdminTheme';
+
+  if (adminRoot) {
+    let theme = 'light';
+
+    try {
+      theme = window.localStorage.getItem(themeStorageKey)
+        || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    } catch (error) {
+      theme = 'light';
+    }
+
+    const themeButton = document.createElement('button');
+    themeButton.type = 'button';
+    themeButton.className = 'wpdsac-theme-toggle';
+    themeButton.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 3a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0V4a1 1 0 0 1 1-1Zm0 5a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm9 3a1 1 0 1 1 0 2h-1a1 1 0 1 1 0-2h1ZM5 11a1 1 0 1 1 0 2H4a1 1 0 1 1 0-2h1Zm13.66-5.07a1 1 0 0 1 0 1.41l-.71.71a1 1 0 0 1-1.41-1.41l.7-.71a1 1 0 0 1 1.42 0ZM7.46 16.54a1 1 0 0 1 0 1.41l-.7.71a1 1 0 0 1-1.42-1.42l.71-.7a1 1 0 0 1 1.41 0Zm10.49 0 .71.7a1 1 0 0 1-1.42 1.42l-.7-.71a1 1 0 0 1 1.41-1.41ZM6.76 5.93l.7.71a1 1 0 0 1-1.41 1.41l-.71-.71a1 1 0 0 1 1.42-1.41ZM13 19v1a1 1 0 1 1-2 0v-1a1 1 0 1 1 2 0Z"/></svg><span></span>';
+    const themeLabel = themeButton.querySelector('span');
+
+    const applyTheme = (nextTheme) => {
+      theme = nextTheme === 'dark' ? 'dark' : 'light';
+      adminRoot.dataset.wpdsacTheme = theme;
+      document.body.classList.toggle('wpdsac-admin-theme-dark', theme === 'dark');
+      themeButton.setAttribute('aria-pressed', String(theme === 'dark'));
+      themeLabel.textContent = theme === 'dark'
+        ? window.wpdsacAdmin?.lightTheme || 'Light mode'
+        : window.wpdsacAdmin?.darkTheme || 'Dark mode';
+    };
+
+    const header = adminRoot.querySelector('.wpdsac-settings-header');
+    if (header) {
+      header.appendChild(themeButton);
+    } else {
+      adminRoot.prepend(themeButton);
+    }
+
+    applyTheme(theme);
+
+    themeButton.addEventListener('click', () => {
+      const nextTheme = theme === 'dark' ? 'light' : 'dark';
+      applyTheme(nextTheme);
+
+      try {
+        window.localStorage.setItem(themeStorageKey, nextTheme);
+      } catch (error) {
+        // The selected mode remains active until navigation.
+      }
+    });
+  }
+
   const settingsWrap = document.querySelector('.wpdsac-settings-wrap');
   const tabs = Array.from(document.querySelectorAll('[data-wpdsac-tab]'));
   const panels = Array.from(document.querySelectorAll('[data-wpdsac-panel]'));

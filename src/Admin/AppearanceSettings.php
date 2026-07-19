@@ -94,10 +94,6 @@ final class AppearanceSettings {
 			WPDSAC_VERSION
 		);
 
-		if ( ! $is_settings_page ) {
-			return;
-		}
-
 		wp_enqueue_script(
 			'wpdsac-admin',
 			WPDSAC_URL . 'assets/build/admin.js',
@@ -120,6 +116,8 @@ final class AppearanceSettings {
 				'unsavedText'         => __( 'There are unsaved changes.', 'wp-ds-aichatbot' ),
 				'configuredYes'       => __( 'Yes', 'wp-ds-aichatbot' ),
 				'configuredNo'        => __( 'No', 'wp-ds-aichatbot' ),
+				'lightTheme'          => __( 'Light mode', 'wp-ds-aichatbot' ),
+				'darkTheme'           => __( 'Dark mode', 'wp-ds-aichatbot' ),
 				'providerDiagnostics' => Settings::all_provider_diagnostics(),
 			)
 		);

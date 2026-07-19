@@ -36,6 +36,8 @@ const answerEnricherPhp = await readFile(join(projectRoot, 'src/Knowledge/Answer
 const promptGuardPhp = await readFile(join(projectRoot, 'src/AI/PromptGuard.php'), 'utf8');
 const providerManagerPhp = await readFile(join(projectRoot, 'src/AI/ProviderManager.php'), 'utf8');
 const postIndexerPhp = await readFile(join(projectRoot, 'src/Knowledge/PostIndexer.php'), 'utf8');
+const leadNotifierPhp = await readFile(join(projectRoot, 'src/Data/LeadNotifier.php'), 'utf8');
+const chatbotTemplate = await readFile(join(projectRoot, 'templates/chatbot.php'), 'utf8');
 
 assert.match(adminScript, /data-wpdsac-tab/);
 assert.match(adminScript, /data-wpdsac-provider-select/);
@@ -46,6 +48,8 @@ assert.match(adminScript, /wpdsac_credentials/);
 assert.match(adminScript, /wpdsac_credential_payload/);
 assert.match(adminScript, /Credential preflight/);
 assert.match(adminScript, /removeProperty\('display'\)/);
+assert.match(adminScript, /wpdsacAdminTheme/);
+assert.match(adminStyles, /wpdsac-admin-theme-dark/);
 assert.doesNotMatch(adminScript, /providerTargets/);
 assert.match(settingsPhp, /data-wpdsac-provider-field/);
 assert.match(settingsPhp, /wpdsac-fields-table/);
@@ -63,6 +67,10 @@ assert.match(postIndexerPhp, /elementor\/editor\/after_save/);
 assert.match(contactSourcePhp, /wpdsac_contact_information/);
 assert.match(answerEnricherPhp, /source_url/);
 assert.match(chatScript, /noopener noreferrer/);
+assert.match(chatScript, /wpdsacVisitorName/);
+assert.match(chatbotTemplate, /data-wpdsac-open-lead/);
+assert.match(chatbotTemplate, /data-wpdsac-name-form/);
+assert.match(leadNotifierPhp, /wp_mail/);
 assert.match(settingsPhp, /Knowledge/);
 assert.match(settingsPhp, /prompt_guard_enabled/);
 assert.match(promptGuardPhp, /prompt_injection/);
@@ -94,8 +102,8 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.24',
-    db_version: '5',
+    plugin_version: '0.5.25',
+    db_version: '6',
     rate_limit_table: true,
     request_lock_table: true,
     knowledge_table: true,
@@ -140,6 +148,7 @@ try {
     privacy_erased: true,
     lead_rendered: true,
     lead_saved: true,
+    lead_mail_sent: true,
     lead_privacy_exported: true,
     lead_privacy_erased: true,
     rate_limit_enforced: true,

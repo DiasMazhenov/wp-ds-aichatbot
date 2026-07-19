@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.24
+Stable tag: 0.5.25
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,7 +18,7 @@ API keys remain server-side. Public requests use signed sessions, atomic rate li
 
 The Design tab includes separate colors for the header, panel, assistant and visitor messages, input and send button; layout, typography, radii, spacing, shadow and launcher size controls; and open/collapsed live preview. The same appearance applies to global, shortcode, and Elementor chatbots. The collapsed chatbot is a compact circular launcher.
 
-Optional lead collection adds a name/email form inside the chat with required consent, bounded retention, scheduled cleanup, rate limits, and WordPress privacy export/erasure.
+Optional lead collection adds a name/email/phone form inside the chat with required consent, editable quick actions, bounded retention, scheduled cleanup, rate limits, email notifications with the submitted transcript, and WordPress privacy export/erasure.
 
 An optional knowledge layer indexes published WordPress pages, posts, administrator-managed FAQs, WooCommerce products, and selected text PDFs into a dedicated table. Relevant bounded fragments are added as untrusted reference context before any configured AI provider is called.
 
@@ -31,6 +31,11 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.25 =
+* Add an editable pre-chat name prompt, quick Call and Leave a request actions, and an inline contact form triggered by button or contact intent.
+* Store the submitted phone and request text, then email the configured recipient a plain-text lead summary and bounded chat transcript.
+* Add a persistent light/dark mode switch across Settings, Knowledge base, and Leads administration screens.
 
 = 0.5.24 =
 * Restore valid Settings API table markup so labels, controls, descriptions, and provider visibility render correctly.

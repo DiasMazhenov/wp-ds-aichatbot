@@ -79,18 +79,22 @@ final class LeadsPage {
 				<thead><tr>
 					<th><?php esc_html_e( 'Name', 'wp-ds-aichatbot' ); ?></th>
 					<th><?php esc_html_e( 'Email', 'wp-ds-aichatbot' ); ?></th>
+					<th><?php esc_html_e( 'Phone', 'wp-ds-aichatbot' ); ?></th>
+					<th><?php esc_html_e( 'Request', 'wp-ds-aichatbot' ); ?></th>
 					<th><?php esc_html_e( 'Consent', 'wp-ds-aichatbot' ); ?></th>
 					<th><?php esc_html_e( 'Submitted', 'wp-ds-aichatbot' ); ?></th>
 					<th><?php esc_html_e( 'Expires', 'wp-ds-aichatbot' ); ?></th>
 				</tr></thead>
 				<tbody>
 				<?php if ( array() === $rows ) : ?>
-					<tr><td colspan="5"><?php esc_html_e( 'No leads have been collected.', 'wp-ds-aichatbot' ); ?></td></tr>
+					<tr><td colspan="7"><?php esc_html_e( 'No leads have been collected.', 'wp-ds-aichatbot' ); ?></td></tr>
 				<?php else : ?>
 					<?php foreach ( $rows as $row ) : ?>
 						<tr>
 							<td><?php echo esc_html( (string) $row['name'] ); ?></td>
 							<td><a href="mailto:<?php echo esc_attr( (string) $row['email'] ); ?>"><?php echo esc_html( (string) $row['email'] ); ?></a></td>
+							<td><?php echo esc_html( (string) $row['phone'] ); ?></td>
+							<td><?php echo esc_html( (string) $row['request_text'] ); ?></td>
 							<td><?php echo esc_html( (string) $row['consent_text'] ); ?></td>
 							<td><?php echo esc_html( wp_date( 'Y-m-d H:i', absint( $row['created_at'] ) ) ); ?></td>
 							<td><?php echo esc_html( wp_date( 'Y-m-d H:i', absint( $row['expires_at'] ) ) ); ?></td>
