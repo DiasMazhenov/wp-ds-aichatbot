@@ -363,16 +363,22 @@ final class Settings {
 		$settings     = $this->sanitize( $raw_settings );
 		$resolver     = new CredentialResolver();
 		$api_keys     = array();
+		$submitted    = array();
+		$credentials  = isset( $_POST['wpdsac_credentials'] ) ? wp_unslash( $_POST['wpdsac_credentials'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Each value is validated by sanitize_api_key().
+		$credentials  = is_array( $credentials ) ? $credentials : array();
 
 		foreach ( CredentialResolver::provider_ids() as $provider_id ) {
-			$option = $resolver->option_name( $provider_id );
+			$option             = $resolver->option_name( $provider_id );
+			$has_structured_key = array_key_exists( $provider_id, $credentials );
+			$has_legacy_key     = isset( $_POST[ $option ] );
 
-			if ( ! isset( $_POST[ $option ] ) ) {
+			if ( ! $has_structured_key && ! $has_legacy_key ) {
 				continue;
 			}
 
-			$raw_key             = wp_unslash( $_POST[ $option ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Validated by sanitize_api_key() against length and whitespace constraints.
-			$api_keys[ $option ] = $this->sanitize_api_key( $raw_key, $provider_id );
+			$raw_key                   = $has_structured_key ? $credentials[ $provider_id ] : wp_unslash( $_POST[ $option ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Validated by sanitize_api_key() against length and whitespace constraints.
+			$api_keys[ $option ]       = $this->sanitize_api_key( $raw_key, $provider_id );
+			$submitted[ $provider_id ] = is_string( $raw_key ) && '' !== trim( $raw_key );
 		}
 
 		$errors = get_settings_errors();
@@ -390,7 +396,9 @@ final class Settings {
 			update_option( $option, $api_key, false );
 		}
 
-		$diagnostics = self::provider_diagnostics( (string) $settings['ai_provider'], $settings );
+		$diagnostics                        = self::provider_diagnostics( (string) $settings['ai_provider'], $settings );
+		$diagnostics['credentialSubmitted'] = ! empty( $submitted[ $settings['ai_provider'] ] );
+		$diagnostics['storageVerified']     = ! empty( $diagnostics['configured'] );
 
 		if ( in_array( $settings['ai_provider'], CredentialResolver::provider_ids(), true ) && empty( $diagnostics['configured'] ) ) {
 			wp_send_json_error(
@@ -690,10 +698,11 @@ final class Settings {
 		$disabled = in_array( $source, array( 'constant', 'environment' ), true );
 
 		printf(
-			'<input class="regular-text" type="password" name="%1$s" value="" autocomplete="new-password" placeholder="%2$s" %3$s data-wpdsac-api-key>',
+			'<input class="regular-text" type="password" name="%1$s" value="" autocomplete="new-password" placeholder="%2$s" %3$s data-wpdsac-api-key data-wpdsac-provider="%4$s">',
 			esc_attr( $resolver->option_name( $provider ) ),
 			esc_attr( 'missing' === $source ? '' : '••••••••••••' ),
-			disabled( $disabled, true, false )
+			disabled( $disabled, true, false ),
+			esc_attr( $provider )
 		);
 
 		if ( $disabled ) {

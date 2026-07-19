@@ -161,6 +161,14 @@
       const originalButtonText = submitButton ? submitButton.value : '';
       const formData = new FormData(settingsForm);
 
+      settingsForm.querySelectorAll('[data-wpdsac-api-key]').forEach((input) => {
+        const provider = input.dataset.wpdsacProvider;
+
+        if (provider && input.value) {
+          formData.set(`wpdsac_credentials[${provider}]`, input.value);
+        }
+      });
+
       formData.set('action', 'wpdsac_save_settings');
       formData.set('nonce', window.wpdsacAdmin.nonce);
 

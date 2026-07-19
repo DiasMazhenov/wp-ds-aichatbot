@@ -154,7 +154,7 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.16` добавляет безопасную диагностику провайдера в UI и через `wpdsacDebugProvider()` в консоли. AJAX после записи повторно проверяет наличие credential, не выводя секрет. Неактивные provider rows скрываются жёстким CSS-правилом, сохранённый ключ обозначается точками. Иконка меню получает versioned URL и глобальное CSS-ограничение 20×20 px.
+Версия `0.5.17` исправляет транспорт API-ключа: admin JavaScript явно добавляет непустой credential в `wpdsac_credentials[provider]`, а PHP handler поддерживает новый и legacy-форматы. Диагностика без секрета фиксирует `credentialSubmitted` и `storageVerified`.
 
 GitHub Actions run `29664260145` полностью прошёл: PHPUnit PHP 7.4/8.3, PHP lint 7.4/8.1/8.3, WPCS, WordPress/Elementor integration и package. Artifact `8435277185` содержит installable ZIP для commit `aaf3120`.
 
