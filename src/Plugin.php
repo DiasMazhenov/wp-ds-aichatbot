@@ -12,6 +12,7 @@ use DiasMazhenov\WPDsAiChatbot\Admin\KnowledgePage;
 use DiasMazhenov\WPDsAiChatbot\Admin\LeadsPage;
 use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
 use DiasMazhenov\WPDsAiChatbot\AI\AnthropicProvider;
+use DiasMazhenov\WPDsAiChatbot\AI\DeepSeekProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\GeminiProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\OpenAIProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\OpenRouterProvider;
@@ -96,6 +97,7 @@ final class Plugin {
 				'anthropic'    => new AnthropicProvider( $credentials ),
 				'gemini'       => new GeminiProvider( $credentials ),
 				'openrouter'   => new OpenRouterProvider( $credentials ),
+				'deepseek'     => new DeepSeekProvider( $credentials ),
 				'wordpress_ai' => new WordPressAiClientProvider(),
 			)
 		);

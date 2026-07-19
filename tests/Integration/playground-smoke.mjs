@@ -15,6 +15,14 @@ const blueprint = withElementor
       await readFile(join(testDirectory, 'blueprint-elementor.json'), 'utf8')
     )
   : undefined;
+const adminScript = await readFile(
+  join(projectRoot, 'assets/build/admin.js'),
+  'utf8'
+);
+
+assert.match(adminScript, /data-wpdsac-tab/);
+assert.match(adminScript, /data-wpdsac-provider-select/);
+assert.match(adminScript, /wpdsacActiveSettingsTab/);
 
 const playground = await runCLI({
   command: 'server',
@@ -40,7 +48,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.9',
+    plugin_version: '0.5.10',
     db_version: '5',
     rate_limit_table: true,
     request_lock_table: true,
@@ -59,6 +67,7 @@ try {
     appearance_positioned: true,
     appearance_sanitized: true,
     admin_preview_assets: true,
+    deepseek_registered: true,
     knowledge_indexed: true,
     knowledge_retrieved: true,
     knowledge_augmented: true,

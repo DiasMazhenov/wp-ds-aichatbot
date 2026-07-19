@@ -10,6 +10,9 @@ define( 'DAY_IN_SECONDS', 86400 );
 define( 'MINUTE_IN_SECONDS', 60 );
 define( 'WPDSAC_PATH', dirname( __DIR__, 2 ) . '/' );
 
+$GLOBALS['wpdsac_test_options'] = array();
+$GLOBALS['wpdsac_test_settings_errors'] = array();
+
 final class WP_Error {
 
 	private $code;
@@ -65,6 +68,16 @@ function sanitize_hex_color( $value ) {
 
 function absint( $value ): int {
 	return abs( (int) $value );
+}
+
+function get_option( string $name, $default = false ) {
+	return array_key_exists( $name, $GLOBALS['wpdsac_test_options'] )
+		? $GLOBALS['wpdsac_test_options'][ $name ]
+		: $default;
+}
+
+function add_settings_error( string $setting, string $code, string $message ): void {
+	$GLOBALS['wpdsac_test_settings_errors'][] = compact( 'setting', 'code', 'message' );
 }
 
 function sanitize_key( $value ): string {

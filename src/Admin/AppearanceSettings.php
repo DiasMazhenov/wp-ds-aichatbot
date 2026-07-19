@@ -126,7 +126,7 @@ final class AppearanceSettings {
 	public function render_preview(): void {
 		$options = Settings::get();
 		?>
-		<div class="wpdsac-admin-preview-wrap">
+		<div class="wpdsac-admin-preview-wrap" aria-live="polite">
 			<h2><?php esc_html_e( 'Live preview', 'wp-ds-aichatbot' ); ?></h2>
 			<p class="description">
 				<?php esc_html_e( 'Appearance changes are previewed before saving and apply to global, shortcode, and Elementor chatbots.', 'wp-ds-aichatbot' ); ?>
@@ -139,7 +139,7 @@ final class AppearanceSettings {
 				>
 					<button type="button" class="wpdsac-chat__toggle" aria-expanded="true">
 						<span class="wpdsac-chat__toggle-title"><?php echo esc_html( (string) $options['title'] ); ?></span>
-						<span aria-hidden="true">✦</span>
+						<svg class="wpdsac-chat__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2.75c.47 4.88 4.37 8.78 9.25 9.25-4.88.47-8.78 4.37-9.25 9.25C11.53 16.37 7.63 12.47 2.75 12 7.63 11.53 11.53 7.63 12 2.75Z"/></svg>
 					</button>
 					<div class="wpdsac-chat__panel">
 						<p class="wpdsac-chat__message wpdsac-chat__message--bot">

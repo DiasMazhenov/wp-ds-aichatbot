@@ -7,6 +7,9 @@
 
 use DiasMazhenov\WPDsAiChatbot\Api\LeadController;
 use DiasMazhenov\WPDsAiChatbot\Api\SessionToken;
+use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
+use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
+use DiasMazhenov\WPDsAiChatbot\AI\DeepSeekProvider;
 use DiasMazhenov\WPDsAiChatbot\Chat\Appearance;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker;
 use PHPUnit\Framework\TestCase;
@@ -65,5 +68,60 @@ final class CoreSecurityTest extends TestCase {
 		$this->assertTrue( $controller->validate_honeypot( '' ) );
 		$this->assertFalse( $controller->validate_honeypot( 'https://spam.test' ) );
 		$this->assertFalse( $controller->validate_session( str_repeat( 'a', 1025 ) . '.' ) );
+	}
+
+	public function test_deepseek_request_uses_chat_completions_without_exposing_reasoning(): void {
+		$provider   = new DeepSeekProvider( new CredentialResolver() );
+		$reflection = new ReflectionClass( $provider );
+		$body       = $reflection->getMethod( 'request_body' );
+		$output     = $reflection->getMethod( 'extract_output_text' );
+		$options    = array(
+			'deepseek_model'    => 'deepseek-v4-flash',
+			'deepseek_thinking' => false,
+			'ai_instructions'   => 'Use verified website knowledge.',
+			'ai_max_output_tokens' => 1200,
+		);
+
+		if ( PHP_VERSION_ID < 80100 ) {
+			$body->setAccessible( true );
+			$output->setAccessible( true );
+		}
+
+		$request = $body->invoke( $provider, 'Where are you located?', 'session-id', $options );
+
+		$this->assertSame( 'deepseek-v4-flash', $request['model'] );
+		$this->assertSame( 'disabled', $request['thinking']['type'] );
+		$this->assertFalse( $request['stream'] );
+		$this->assertSame( 'Use verified website knowledge.', $request['messages'][0]['content'] );
+		$this->assertSame( 'Where are you located?', $request['messages'][1]['content'] );
+		$this->assertSame(
+			'Final answer',
+			$output->invoke(
+				$provider,
+				array(
+					'choices' => array(
+						array(
+							'message' => array(
+								'content'           => 'Final answer',
+								'reasoning_content' => 'Private reasoning',
+							),
+						),
+					),
+				)
+			)
+		);
+	}
+
+	public function test_blank_api_key_submission_preserves_saved_key(): void {
+		$saved_key = str_repeat( 'x', 32 );
+		$GLOBALS['wpdsac_test_options']['wpdsac_deepseek_api_key'] = $saved_key;
+
+		$settings = new Settings();
+
+		$this->assertSame(
+			$saved_key,
+			$settings->sanitize_api_key( '', 'deepseek' )
+		);
+		$this->assertContains( 'deepseek', CredentialResolver::provider_ids() );
 	}
 }

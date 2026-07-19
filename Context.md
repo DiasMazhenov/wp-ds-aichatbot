@@ -193,3 +193,8 @@
 - GitHub Actions run `29664260145` для commit `aaf3120` завершился успешно во всех jobs; artifact ID `8435277185`, имя `wp-ds-aichatbot-aaf3120a3d0f4fe5e5f0a877651514e77e231ec7`, размер 202 840 bytes.
 - Финальный локальный `dist/wp-ds-aichatbot.zip` версии `0.5.9` прошёл `unzip -t`, весит около 232 КБ и не содержит tests, CI, `node_modules`, dev dependencies или `vendor/bin`.
 - После проверки локальные `node_modules` и dev-`vendor` удалены; рабочий каталог вместе с ZIP занимает около 3.1 МБ и остаётся clean.
+- Версия `0.5.10`: добавлен нативный `DeepSeekProvider` для `https://api.deepseek.com/chat/completions`, актуальный дефолт `deepseek-v4-flash` и опциональный thinking mode.
+- DeepSeek credential разрешается через `WPDSAC_DEEPSEEK_API_KEY` constant → environment variable → отдельную non-autoload option; uninstall удаляет option.
+- Страница настроек разделена на доступные вкладки: основные, AI-провайдеры, база знаний, дизайн, приватность и лиды; активная вкладка сохраняется в текущей browser session.
+- В AI-вкладке показываются только поля выбранного провайдера. Write-only ключи не возвращаются в HTML, но теперь имеют явный статус сохранения; пустая повторная отправка сохраняет прежний ключ.
+- Возле названия страницы настроек динамически выводится текущая версия из `WPDSAC_VERSION`.

@@ -31,7 +31,7 @@ $classes .= ' ' . $view['position_class'];
 		aria-controls="<?php echo esc_attr( $panel_id ); ?>"
 	>
 		<span class="wpdsac-chat__toggle-title"><?php echo esc_html( $view['title'] ); ?></span>
-		<span aria-hidden="true">✦</span>
+		<svg class="wpdsac-chat__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2.75c.47 4.88 4.37 8.78 9.25 9.25-4.88.47-8.78 4.37-9.25 9.25C11.53 16.37 7.63 12.47 2.75 12 7.63 11.53 11.53 7.63 12 2.75Z"/></svg>
 	</button>
 
 	<div

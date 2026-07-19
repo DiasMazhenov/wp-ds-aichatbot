@@ -14,6 +14,7 @@ delete_option( 'wpdsac_openai_api_key' );
 delete_option( 'wpdsac_anthropic_api_key' );
 delete_option( 'wpdsac_gemini_api_key' );
 delete_option( 'wpdsac_openrouter_api_key' );
+delete_option( 'wpdsac_deepseek_api_key' );
 delete_option( 'wpdsac_version' );
 delete_option( 'wpdsac_db_version' );
 delete_option( 'wpdsac_pdf_attachment_ids' );

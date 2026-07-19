@@ -37,6 +37,11 @@ final class CredentialResolver {
 			'environment' => 'WPDSAC_OPENROUTER_API_KEY',
 			'option'      => 'wpdsac_openrouter_api_key',
 		),
+		'deepseek'   => array(
+			'constant'    => 'WPDSAC_DEEPSEEK_API_KEY',
+			'environment' => 'WPDSAC_DEEPSEEK_API_KEY',
+			'option'      => 'wpdsac_deepseek_api_key',
+		),
 	);
 
 	/**

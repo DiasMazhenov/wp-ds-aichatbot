@@ -4,7 +4,7 @@
 
 ## Цель
 
-Создать поддерживаемый WordPress-плагин AI-чатбота с безопасной серверной интеграцией OpenAI, глобальным выводом, shortcode и полноценным Elementor widget. Реализация ведётся с чистого листа: оригинальный коммерческий код Helper используется только как функциональный референс.
+Создать поддерживаемый WordPress-плагин AI-чатбота с безопасными серверными интеграциями разных AI-провайдеров, глобальным выводом, shortcode и полноценным Elementor widget. Реализация ведётся с чистого листа: оригинальный коммерческий код Helper используется только как функциональный референс.
 
 ## Именование
 
@@ -76,6 +76,7 @@
 - [x] Anthropic Claude Messages API.
 - [x] Google Gemini Interactions API v1.
 - [x] OpenRouter OpenResponses API.
+- [x] DeepSeek Chat Completions API с моделями v4 и опциональным thinking mode.
 - [x] WordPress 7.0 AI Client adapter для provider-agnostic коннекторов.
 
 ### 6. Данные и приватность
@@ -153,7 +154,7 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.9` фиксирует Composer platform на минимальном PHP 7.4 и устанавливает production PDF runtime перед Playground tests в CI. После зелёного CI остаются только внешние ручные проверки: Elementor editor iframe на установленном сайте и реальный provider smoke с пользовательскими API credentials.
+Версия `0.5.10` добавляет нативный DeepSeek, явный статус сохранённого write-only API key и доступные вкладки настроек: основные, AI-провайдеры, база знаний, дизайн, приватность и лиды. После автоматических проверок остаются внешние ручные проверки: Elementor editor iframe на установленном сайте и реальный provider smoke с пользовательскими API credentials.
 
 GitHub Actions run `29664260145` полностью прошёл: PHPUnit PHP 7.4/8.3, PHP lint 7.4/8.1/8.3, WPCS, WordPress/Elementor integration и package. Artifact `8435277185` содержит installable ZIP для commit `aaf3120`.
 

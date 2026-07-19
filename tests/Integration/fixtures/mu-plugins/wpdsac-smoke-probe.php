@@ -192,6 +192,11 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$appearance_controller->enqueue_assets( 'settings_page_wpdsac-settings' );
 	$admin_preview_assets = wp_style_is( 'wpdsac-admin', 'enqueued' )
 		&& wp_script_is( 'wpdsac-admin', 'enqueued' );
+	$deepseek_registered = in_array(
+		'deepseek',
+		\DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver::provider_ids(),
+		true
+	) && 'deepseek-v4-flash' === \DiasMazhenov\WPDsAiChatbot\Admin\Settings::defaults()['deepseek_model'];
 
 	$knowledge_post_id = wp_insert_post(
 		array(
@@ -462,6 +467,7 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'appearance_positioned'       => false !== strpos( $global_html, 'wpdsac-position--bottom-left' ),
 			'appearance_sanitized'        => $appearance_sanitized,
 			'admin_preview_assets'        => $admin_preview_assets,
+			'deepseek_registered'         => $deepseek_registered,
 			'knowledge_indexed'           => $knowledge_indexed,
 			'knowledge_retrieved'         => $knowledge_retrieved,
 			'knowledge_augmented'         => $knowledge_augmented,
@@ -523,6 +529,7 @@ function wpdsac_test_uninstall(): WP_REST_Response {
 			'tables_removed'  => $tables_removed,
 			'options_removed' => false === get_option( 'wpdsac_settings', false )
 				&& false === get_option( 'wpdsac_pdf_attachment_ids', false )
+				&& false === get_option( 'wpdsac_deepseek_api_key', false )
 				&& false === get_option( 'wpdsac_db_version', false ),
 			'cron_removed'    => false === wp_next_scheduled( 'wpdsac_cleanup_rate_limits' )
 				&& false === wp_next_scheduled( 'wpdsac_cleanup_conversations' )

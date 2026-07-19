@@ -20,7 +20,7 @@ FAQ создаются через `Инструменты → AI FAQs`: заго
 
 PDF выбираются явно на странице базы знаний из Media Library: максимум 50 файлов по 10 МБ. Поддерживаются PDF с текстовым слоем; сканы нужно предварительно обработать OCR. WooCommerce является опциональным: при его активации индексируются только опубликованные видимые товары, их описание, SKU, публичная цена, наличие и категории.
 
-Перед запросом к OpenAI, Claude, Gemini, OpenRouter или WordPress AI Client плагин находит подходящие фрагменты и добавляет их как недоверенный справочный контекст. Изменённые опубликованные источники синхронизируются автоматически. Текущий retrieval использует локальный keyword ranking; semantic embeddings остаются отдельным опциональным адаптером.
+Перед запросом к OpenAI, Claude, Gemini, OpenRouter, DeepSeek или WordPress AI Client плагин находит подходящие фрагменты и добавляет их как недоверенный справочный контекст. Изменённые опубликованные источники синхронизируются автоматически. Текущий retrieval использует локальный keyword ranking; semantic embeddings остаются отдельным опциональным адаптером.
 
 Подробности: [Plan.md](Plan.md) и [Context.md](Context.md).
 
@@ -71,6 +71,7 @@ bash scripts/build-zip.sh
 - Anthropic Claude — Messages API, `claude-sonnet-4-6`;
 - Google Gemini — stable Interactions API v1, `gemini-3.5-flash`;
 - OpenRouter — OpenResponses API, включая модели разных производителей;
+- DeepSeek — нативный Chat Completions API, модели `deepseek-v4-flash`/`deepseek-v4-pro` и опциональный thinking mode;
 - WordPress AI Client — provider-agnostic режим WordPress 7.0+, использующий настроенный в WordPress AI-коннектор.
 
 Рекомендуемый способ — задать нужные ключи как environment variables в панели хостинга или secret manager:
@@ -78,11 +79,12 @@ bash scripts/build-zip.sh
 - `WPDSAC_OPENAI_API_KEY`;
 - `WPDSAC_ANTHROPIC_API_KEY`;
 - `WPDSAC_GEMINI_API_KEY`;
-- `WPDSAC_OPENROUTER_API_KEY`.
+- `WPDSAC_OPENROUTER_API_KEY`;
+- `WPDSAC_DEEPSEEK_API_KEY`.
 
 Плагин также читает одноимённые PHP constants, заданные сервером. Не добавляйте значения ключей в отслеживаемые Git файлы. В крайнем случае ключ можно сохранить через страницу настроек: поля write-only, сохранённые значения обратно не отображаются. Модели, общие инструкции и максимальный ответ настраиваются там же.
 
-Прямые запросы выполняются через WordPress HTTP API с запретом redirects. OpenAI, OpenRouter и Gemini получают `store: false`. Registry расширяется через `wpdsac_ai_providers`, выбор — через `wpdsac_ai_provider_id`/`wpdsac_ai_provider`, request body — через общий `wpdsac_ai_request_body` и provider-specific фильтры вида `wpdsac_gemini_request_body`. Sanitized diagnostics ошибок передаются в `wpdsac_ai_provider_error`; прежние OpenAI-интеграции сохраняют `wpdsac_openai_error`.
+Прямые запросы выполняются через WordPress HTTP API с запретом redirects. OpenAI, OpenRouter и Gemini получают `store: false`. Registry расширяется через `wpdsac_ai_providers`, выбор — через `wpdsac_ai_provider_id`/`wpdsac_ai_provider`, request body — через общий `wpdsac_ai_request_body` и provider-specific фильтры вида `wpdsac_deepseek_request_body`. Sanitized diagnostics ошибок передаются в `wpdsac_ai_provider_error`; прежние OpenAI-интеграции сохраняют `wpdsac_openai_error`.
 
 Без ключа выбранного direct provider или настроенного WordPress AI Connector endpoint чата ожидаемо возвращает HTTP 503.
 

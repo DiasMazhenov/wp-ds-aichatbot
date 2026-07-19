@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.9
+Stable tag: 0.5.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Extensible multi-provider AI chatbot for WordPress and Elementor.
 
 == Description ==
 
-WP DS AI Chatbot provides one secure chatbot renderer for shortcode, global display, and Elementor. It supports OpenAI, Anthropic Claude, Google Gemini, OpenRouter, and the provider-agnostic WordPress AI Client on WordPress 7.0 or newer.
+WP DS AI Chatbot provides one secure chatbot renderer for shortcode, global display, and Elementor. It supports OpenAI, Anthropic Claude, Google Gemini, OpenRouter, DeepSeek, and the provider-agnostic WordPress AI Client on WordPress 7.0 or newer.
 
 API keys remain server-side. Public requests use signed sessions, atomic rate limits, an in-flight session lock, and a configurable rolling 24-hour request budget.
 
@@ -31,6 +31,10 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.10 =
+* Add native DeepSeek Chat Completions support with optional thinking mode.
+* Show an explicit saved status for write-only API key fields.
 
 = 0.5.9 =
 * Locked development dependencies against the minimum PHP 7.4 platform.

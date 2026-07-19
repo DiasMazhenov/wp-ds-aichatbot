@@ -73,6 +73,8 @@ final class Settings {
 				'anthropic_model'      => 'claude-sonnet-4-6',
 				'gemini_model'         => 'gemini-3.5-flash',
 				'openrouter_model'     => 'openai/gpt-5.6-luna',
+				'deepseek_model'       => 'deepseek-v4-flash',
+				'deepseek_thinking'    => false,
 			),
 			Appearance::defaults()
 		);
@@ -186,13 +188,16 @@ final class Settings {
 		$this->add_field( 'ai_instructions', __( 'Assistant instructions', 'wp-ds-aichatbot' ), 'textarea', 'wpdsac_ai' );
 		$this->add_field( 'ai_max_output_tokens', __( 'Maximum output tokens', 'wp-ds-aichatbot' ), 'number', 'wpdsac_ai' );
 		$this->add_field( 'openai_api_key', __( 'OpenAI API key', 'wp-ds-aichatbot' ), 'password', 'wpdsac_ai', 'openai' );
-		$this->add_field( 'openai_model', __( 'OpenAI model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_ai' );
+		$this->add_field( 'openai_model', __( 'OpenAI model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_ai', 'openai' );
 		$this->add_field( 'anthropic_api_key', __( 'Anthropic API key', 'wp-ds-aichatbot' ), 'password', 'wpdsac_ai', 'anthropic' );
-		$this->add_field( 'anthropic_model', __( 'Anthropic model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_ai' );
+		$this->add_field( 'anthropic_model', __( 'Anthropic model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_ai', 'anthropic' );
 		$this->add_field( 'gemini_api_key', __( 'Gemini API key', 'wp-ds-aichatbot' ), 'password', 'wpdsac_ai', 'gemini' );
-		$this->add_field( 'gemini_model', __( 'Gemini model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_ai' );
+		$this->add_field( 'gemini_model', __( 'Gemini model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_ai', 'gemini' );
 		$this->add_field( 'openrouter_api_key', __( 'OpenRouter API key', 'wp-ds-aichatbot' ), 'password', 'wpdsac_ai', 'openrouter' );
-		$this->add_field( 'openrouter_model', __( 'OpenRouter model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_ai' );
+		$this->add_field( 'openrouter_model', __( 'OpenRouter model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_ai', 'openrouter' );
+		$this->add_field( 'deepseek_api_key', __( 'DeepSeek API key', 'wp-ds-aichatbot' ), 'password', 'wpdsac_ai', 'deepseek' );
+		$this->add_field( 'deepseek_model', __( 'DeepSeek model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_ai', 'deepseek' );
+		$this->add_field( 'deepseek_thinking', __( 'DeepSeek thinking mode', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_ai', 'deepseek' );
 	}
 
 	/**
@@ -203,7 +208,7 @@ final class Settings {
 	 */
 	public function sanitize( $input ): array {
 		$input        = is_array( $input ) ? $input : array();
-		$providers    = array( 'openai', 'anthropic', 'gemini', 'openrouter', 'wordpress_ai' );
+		$providers    = array( 'openai', 'anthropic', 'gemini', 'openrouter', 'deepseek', 'wordpress_ai' );
 		$provider     = sanitize_key( $input['ai_provider'] ?? 'openai' );
 		$provider     = in_array( $provider, $providers, true ) ? $provider : 'openai';
 		$defaults     = self::defaults();
@@ -234,6 +239,8 @@ final class Settings {
 			'anthropic_model'      => $this->sanitize_model_id( $input['anthropic_model'] ?? '', 'claude-sonnet-4-6' ),
 			'gemini_model'         => $this->sanitize_model_id( $input['gemini_model'] ?? '', 'gemini-3.5-flash' ),
 			'openrouter_model'     => $this->sanitize_model_id( $input['openrouter_model'] ?? '', 'openai/gpt-5.6-luna' ),
+			'deepseek_model'       => $this->sanitize_model_id( $input['deepseek_model'] ?? '', 'deepseek-v4-flash' ),
+			'deepseek_thinking'    => ! empty( $input['deepseek_thinking'] ),
 		);
 
 		return array_merge( $settings, Appearance::sanitize( $input ) );
@@ -293,18 +300,89 @@ final class Settings {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
+
+		$tabs = array(
+			'general'    => __( 'General', 'wp-ds-aichatbot' ),
+			'ai'         => __( 'AI providers', 'wp-ds-aichatbot' ),
+			'knowledge'  => __( 'Knowledge', 'wp-ds-aichatbot' ),
+			'appearance' => __( 'Appearance', 'wp-ds-aichatbot' ),
+			'privacy'    => __( 'Privacy', 'wp-ds-aichatbot' ),
+			'leads'      => __( 'Leads', 'wp-ds-aichatbot' ),
+		);
 		?>
-		<div class="wrap">
-			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-			<form action="options.php" method="post">
+		<div class="wrap wpdsac-settings-wrap">
+			<div class="wpdsac-settings-header">
+				<div>
+					<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+					<p><?php esc_html_e( 'Configure the chatbot, AI providers, knowledge, and privacy from one place.', 'wp-ds-aichatbot' ); ?></p>
+				</div>
+				<span class="wpdsac-version"><?php echo esc_html( 'v' . WPDSAC_VERSION ); ?></span>
+			</div>
+			<?php settings_errors(); ?>
+			<nav class="wpdsac-settings-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Chatbot settings', 'wp-ds-aichatbot' ); ?>">
 				<?php
-				settings_fields( 'wpdsac_settings_group' );
-				do_settings_sections( 'wpdsac-settings' );
-				$this->appearance->render_preview();
-				submit_button();
+				foreach ( $tabs as $tab_id => $tab_label ) {
+					printf(
+						'<button type="button" class="wpdsac-settings-tab" id="wpdsac-tab-%1$s" role="tab" aria-controls="wpdsac-panel-%1$s" aria-selected="%2$s" tabindex="%3$d" data-wpdsac-tab="%1$s">%4$s</button>',
+						esc_attr( $tab_id ),
+						'general' === $tab_id ? 'true' : 'false',
+						'general' === $tab_id ? 0 : -1,
+						esc_html( $tab_label )
+					);
+				}
 				?>
+			</nav>
+			<form action="options.php" method="post" data-wpdsac-settings-form>
+				<?php settings_fields( 'wpdsac_settings_group' ); ?>
+				<?php $this->render_tab_panel( 'general', $tabs['general'], array( 'wpdsac_display' ) ); ?>
+				<?php $this->render_tab_panel( 'ai', $tabs['ai'], array( 'wpdsac_ai' ) ); ?>
+				<?php $this->render_tab_panel( 'knowledge', $tabs['knowledge'], array( 'wpdsac_knowledge' ) ); ?>
+				<?php $this->render_tab_panel( 'appearance', $tabs['appearance'], array( 'wpdsac_appearance' ), true ); ?>
+				<?php $this->render_tab_panel( 'privacy', $tabs['privacy'], array( 'wpdsac_privacy' ) ); ?>
+				<?php $this->render_tab_panel( 'leads', $tabs['leads'], array( 'wpdsac_leads' ) ); ?>
+				<div class="wpdsac-settings-actions">
+					<?php submit_button( __( 'Save settings', 'wp-ds-aichatbot' ), 'primary', 'submit', false ); ?>
+					<span class="wpdsac-save-note"><?php esc_html_e( 'Unsaved changes apply only after saving.', 'wp-ds-aichatbot' ); ?></span>
+				</div>
 			</form>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Render one accessible settings tab panel.
+	 *
+	 * @param string             $tab_id          Tab identifier.
+	 * @param string             $title           Panel title.
+	 * @param array<int, string> $section_ids     Settings API section identifiers.
+	 * @param bool               $include_preview Whether to render the appearance preview.
+	 * @return void
+	 */
+	private function render_tab_panel( string $tab_id, string $title, array $section_ids, bool $include_preview = false ): void {
+		$descriptions = array(
+			'general'    => __( 'Control where the chatbot appears and what visitors see first.', 'wp-ds-aichatbot' ),
+			'ai'         => __( 'Choose one provider. Only its connection fields are shown.', 'wp-ds-aichatbot' ),
+			'knowledge'  => __( 'Use indexed website content as reference material for every provider.', 'wp-ds-aichatbot' ),
+			'appearance' => __( 'Adjust the shared design used by global, shortcode, and Elementor chatbots.', 'wp-ds-aichatbot' ),
+			'privacy'    => __( 'Choose whether conversations are stored and how long they are retained.', 'wp-ds-aichatbot' ),
+			'leads'      => __( 'Collect contact requests only after explicit visitor consent.', 'wp-ds-aichatbot' ),
+		);
+		?>
+		<section class="wpdsac-settings-panel" id="wpdsac-panel-<?php echo esc_attr( $tab_id ); ?>" role="tabpanel" aria-labelledby="wpdsac-tab-<?php echo esc_attr( $tab_id ); ?>" data-wpdsac-panel="<?php echo esc_attr( $tab_id ); ?>">
+			<header class="wpdsac-panel-header">
+				<h2><?php echo esc_html( $title ); ?></h2>
+				<p><?php echo esc_html( $descriptions[ $tab_id ] ?? '' ); ?></p>
+			</header>
+			<?php
+			foreach ( $section_ids as $section_id ) {
+				do_settings_fields( 'wpdsac-settings', $section_id );
+			}
+
+			if ( $include_preview ) {
+				$this->appearance->render_preview();
+			}
+			?>
+		</section>
 		<?php
 	}
 
@@ -335,6 +413,7 @@ final class Settings {
 				'knowledge_enabled' => __( 'Add relevant indexed pages, posts, and AI FAQs to AI requests.', 'wp-ds-aichatbot' ),
 				'logging_enabled'   => __( 'Store successful conversations for the configured retention period. Disabled by default.', 'wp-ds-aichatbot' ),
 				'leads_enabled'     => __( 'Show a name/email form with required consent inside the chat. Disabled by default.', 'wp-ds-aichatbot' ),
+				'deepseek_thinking' => __( 'Enable deeper reasoning. This can increase response time and token usage.', 'wp-ds-aichatbot' ),
 			);
 			$description  = $descriptions[ $key ] ?? '';
 
@@ -396,6 +475,8 @@ final class Settings {
 	 * @return void
 	 */
 	private function add_field( string $key, string $label, string $type, string $section = 'wpdsac_display', string $provider = '' ): void {
+		$row_class = '' !== $provider ? 'wpdsac-provider-setting wpdsac-provider-setting--' . sanitize_html_class( $provider ) : '';
+
 		add_settings_field(
 			'wpdsac_' . $key,
 			esc_html( $label ),
@@ -406,6 +487,7 @@ final class Settings {
 				'key'      => $key,
 				'type'     => $type,
 				'provider' => $provider,
+				'class'    => $row_class,
 			)
 		);
 	}
@@ -434,6 +516,13 @@ final class Settings {
 				esc_html__( 'The key is supplied by wp-config.php or the server environment and cannot be changed here.', 'wp-ds-aichatbot' )
 			);
 		} else {
+			if ( 'option' === $source ) {
+				printf(
+					'<p class="description"><strong>%s</strong></p>',
+					esc_html__( 'API key saved. Leave this field empty to keep it.', 'wp-ds-aichatbot' )
+				);
+			}
+
 			printf(
 				'<p class="description">%s</p>',
 				esc_html__( 'The saved key is never displayed. Prefer the provider-specific WPDSAC_*_API_KEY constant or environment variable.', 'wp-ds-aichatbot' )
@@ -454,10 +543,11 @@ final class Settings {
 			'anthropic'    => __( 'Anthropic Claude', 'wp-ds-aichatbot' ),
 			'gemini'       => __( 'Google Gemini', 'wp-ds-aichatbot' ),
 			'openrouter'   => __( 'OpenRouter', 'wp-ds-aichatbot' ),
+			'deepseek'     => __( 'DeepSeek', 'wp-ds-aichatbot' ),
 			'wordpress_ai' => __( 'WordPress AI Client (WordPress 7.0+)', 'wp-ds-aichatbot' ),
 		);
 
-		printf( '<select name="%s">', esc_attr( $name ) );
+		printf( '<select name="%s" data-wpdsac-provider-select>', esc_attr( $name ) );
 
 		foreach ( $providers as $value => $label ) {
 			printf(
