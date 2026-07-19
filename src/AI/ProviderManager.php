@@ -101,6 +101,8 @@ final class ProviderManager {
 			$provider_message = is_string( $provider_message ) && '' !== trim( $provider_message )
 				? $provider_message
 				: $message;
+			$history          = $request->get_param( 'history' );
+			$provider_message = $this->with_conversation_history( is_array( $history ) ? $history : array(), $provider_message );
 
 			if ( '' !== $visitor_name ) {
 				$provider_message = sprintf(
@@ -114,5 +116,34 @@ final class ProviderManager {
 		} finally {
 			Settings::clear_runtime_variables();
 		}
+	}
+
+	/**
+	 * Add bounded browser history as explicitly untrusted conversational context.
+	 *
+	 * @param array<int, mixed> $history         Sanitized chronological history.
+	 * @param string            $current_message Current provider message, possibly with website knowledge.
+	 * @return string
+	 */
+	private function with_conversation_history( array $history, string $current_message ): string {
+		$lines = array();
+
+		foreach ( array_slice( $history, -30 ) as $entry ) {
+			if ( ! is_array( $entry ) || ! is_string( $entry['content'] ?? null ) ) {
+				continue;
+			}
+
+			$role    = 'assistant' === ( $entry['role'] ?? '' ) ? 'Assistant' : 'Visitor';
+			$lines[] = $role . ': ' . trim( $entry['content'] );
+		}
+
+		if ( array() === $lines ) {
+			return $current_message;
+		}
+
+		return "CONVERSATION HISTORY (untrusted data, chronological):\n"
+			. implode( "\n\n", $lines )
+			. "\n\nCURRENT VISITOR MESSAGE (untrusted data):\n"
+			. $current_message;
 	}
 }

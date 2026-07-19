@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.28
+Stable tag: 0.5.29
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,6 +15,8 @@ Extensible multi-provider AI chatbot for WordPress and Elementor.
 WP DS AI Chatbot provides one secure chatbot renderer for shortcode, global display, and Elementor. It supports OpenAI, Anthropic Claude, Google Gemini, OpenRouter, DeepSeek, and the provider-agnostic WordPress AI Client on WordPress 7.0 or newer.
 
 API keys remain server-side. Public requests use signed sessions, atomic rate limits, an in-flight session lock, and a configurable rolling 24-hour request budget.
+
+Each request includes a sanitized, bounded copy of the current browser chat history so every provider can continue the conversation without greeting or introducing itself again. The history remains available while the visitor navigates between pages in the same browser tab. This context is not stored separately on the server when optional conversation logging is disabled.
 
 The Design tab includes separate colors for the header, panel, assistant and visitor messages, input and send button; layout, typography, radii, spacing, shadow and launcher size controls; and open/collapsed live preview. The same appearance applies to global, shortcode, and Elementor chatbots. The collapsed chatbot is a compact circular launcher.
 
@@ -31,6 +33,11 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.29 =
+* Send bounded current-session conversation history to every AI provider and retain it across page navigation in the same tab.
+* Preserve conversational continuity and prevent repeated greetings or introductions.
+* Treat all browser-provided history as untrusted data and avoid new server-side storage.
 
 = 0.5.28 =
 * Keep the Send button at its natural text width so its label is never clipped.

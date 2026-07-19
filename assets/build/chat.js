@@ -5,6 +5,7 @@
 	const strings = config.strings || {};
 	const sessionStorageKey = 'wpdsacSessionToken';
 	const visitorNameStorageKey = 'wpdsacVisitorName';
+	const conversationHistoryStorageKey = 'wpdsacConversationHistory';
 	let audioContext = null;
 
 	const ensureAudioContext = () => {
@@ -164,6 +165,65 @@
 
 	const getVisitorName = () => window.sessionStorage.getItem(visitorNameStorageKey) || '';
 
+	const getConversationHistory = (chat) => {
+		const entries = Array.from(chat.querySelectorAll('.wpdsac-chat__messages .wpdsac-chat__message'));
+		const history = [];
+		let remainingCharacters = 20000;
+
+		for (let index = entries.length - 1; index >= 0 && history.length < 30 && remainingCharacters > 0; index -= 1) {
+			const entry = entries[index];
+			const content = entry.textContent.trim().slice(0, Math.min(4000, remainingCharacters));
+
+			if (!content) {
+				continue;
+			}
+
+			history.unshift({
+				role: entry.classList.contains('wpdsac-chat__message--user') ? 'user' : 'assistant',
+				content,
+			});
+			remainingCharacters -= content.length;
+		}
+
+		return history;
+	};
+
+	const persistConversationHistory = (chat) => {
+		try {
+			window.sessionStorage.setItem(
+				conversationHistoryStorageKey,
+				JSON.stringify(getConversationHistory(chat))
+			);
+		} catch (error) {
+			// The current page conversation still works when browser storage is unavailable.
+		}
+	};
+
+	const restoreConversationHistory = (chat) => {
+		let history = [];
+
+		try {
+			history = JSON.parse(window.sessionStorage.getItem(conversationHistoryStorageKey) || '[]');
+		} catch (error) {
+			history = [];
+		}
+
+		if (!Array.isArray(history) || history.length === 0) {
+			return;
+		}
+
+		const messages = chat.querySelector('.wpdsac-chat__messages');
+		messages.textContent = '';
+
+		history.slice(-30).forEach((entry) => {
+			if (!entry || !['user', 'assistant'].includes(entry.role) || typeof entry.content !== 'string') {
+				return;
+			}
+
+			appendMessage(chat, entry.content.slice(0, 4000), entry.role === 'assistant' ? 'bot' : 'user');
+		});
+	};
+
 	const revealConversation = (chat, name) => {
 		const gate = chat.querySelector('[data-wpdsac-name-gate]');
 		const conversation = chat.querySelector('[data-wpdsac-conversation]');
@@ -263,6 +323,7 @@
 	};
 
 	document.querySelectorAll('[data-wpdsac-chat]').forEach((chat) => {
+		restoreConversationHistory(chat);
 		const name = getVisitorName();
 		if (name) {
 			revealConversation(chat, name);
@@ -340,6 +401,7 @@
 
 		if (/\b(оставить\s+заявк[а-яё]*|связаться|перезвон[а-яё]*|contact\s+me|leave\s+(a\s+)?request|call\s+me)\b/iu.test(message)) {
 			appendMessage(chat, message, 'user');
+			persistConversationHistory(chat);
 			input.value = '';
 			button.disabled = false;
 			chat.querySelector('[data-wpdsac-open-lead]')?.click();
@@ -355,10 +417,12 @@
 				session,
 				message,
 				visitor_name: getVisitorName(),
+				history: getConversationHistory(chat),
 			});
 
 			appendMessage(chat, message, 'user');
 			appendMessage(chat, response.reply, 'bot');
+			persistConversationHistory(chat);
 			playReplySound(chat.dataset.wpdsacReplySound || 'off');
 			input.value = '';
 			status.textContent = '';

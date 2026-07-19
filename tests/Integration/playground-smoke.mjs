@@ -76,6 +76,11 @@ assert.match(chatScript, /wpdsacVisitorName/);
 assert.match(chatScript, /createOscillator/);
 assert.match(chatStyles, /white-space:\s*normal !important/);
 assert.match(chatScript, /visitor_name/);
+assert.match(chatScript, /getConversationHistory/);
+assert.match(chatScript, /wpdsacConversationHistory/);
+assert.match(chatScript, /restoreConversationHistory/);
+assert.match(chatScript, /history:\s*getConversationHistory/);
+assert.match(providerManagerPhp, /CONVERSATION HISTORY/);
 assert.match(chatScript, /scheduleIntroBubble/);
 assert.match(chatScript, /wpdsacAvatarUrl/);
 assert.match(chatScript, /wpdsacMessageTemplate/);
@@ -120,7 +125,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.28',
+    plugin_version: '0.5.29',
     db_version: '6',
     rate_limit_table: true,
     request_lock_table: true,

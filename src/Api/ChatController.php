@@ -100,6 +100,12 @@ final class ChatController {
 						'sanitize_callback' => 'sanitize_text_field',
 						'validate_callback' => array( $this, 'validate_visitor_name' ),
 					),
+					'history'      => array(
+						'type'              => 'array',
+						'default'           => array(),
+						'sanitize_callback' => array( $this, 'sanitize_history' ),
+						'validate_callback' => array( $this, 'validate_history' ),
+					),
 				),
 			)
 		);
@@ -163,6 +169,68 @@ final class ChatController {
 		$length = function_exists( 'mb_strlen' ) ? mb_strlen( $value ) : strlen( $value );
 
 		return $length <= 100;
+	}
+
+	/**
+	 * Validate bounded, untrusted browser conversation history.
+	 *
+	 * @param mixed $value Raw history value.
+	 * @return bool
+	 */
+	public function validate_history( $value ): bool {
+		if ( ! is_array( $value ) || count( $value ) > 30 ) {
+			return false;
+		}
+
+		$total_length = 0;
+
+		foreach ( $value as $entry ) {
+			if ( ! is_array( $entry ) || ! in_array( $entry['role'] ?? '', array( 'user', 'assistant' ), true ) || ! is_string( $entry['content'] ?? null ) ) {
+				return false;
+			}
+
+			$length = function_exists( 'mb_strlen' ) ? mb_strlen( $entry['content'] ) : strlen( $entry['content'] );
+
+			if ( 0 === $length || $length > 4000 ) {
+				return false;
+			}
+
+			$total_length += $length;
+		}
+
+		return $total_length <= 20000;
+	}
+
+	/**
+	 * Sanitize the conversation history without persisting it server-side.
+	 *
+	 * @param mixed $value Raw history value.
+	 * @return array<int, array{role: string, content: string}>
+	 */
+	public function sanitize_history( $value ): array {
+		if ( ! is_array( $value ) ) {
+			return array();
+		}
+
+		$history = array();
+
+		foreach ( array_slice( $value, -30 ) as $entry ) {
+			if ( ! is_array( $entry ) || ! in_array( $entry['role'] ?? '', array( 'user', 'assistant' ), true ) ) {
+				continue;
+			}
+
+			$content = sanitize_textarea_field( (string) ( $entry['content'] ?? '' ) );
+			$content = function_exists( 'mb_substr' ) ? mb_substr( $content, 0, 4000 ) : substr( $content, 0, 4000 );
+
+			if ( '' !== trim( $content ) ) {
+				$history[] = array(
+					'role'    => (string) $entry['role'],
+					'content' => $content,
+				);
+			}
+		}
+
+		return $history;
 	}
 
 	/**
