@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.27
+Stable tag: 0.5.28
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.28 =
+* Keep the Send button at its natural text width so its label is never clipped.
+* Let the message field consume the remaining row width and retain the stacked mobile layout.
 
 = 0.5.27 =
 * Show the configurable chatbot avatar beside every assistant message and in the name prompt.

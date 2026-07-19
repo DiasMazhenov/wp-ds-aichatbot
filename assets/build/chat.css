@@ -302,8 +302,10 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 }
 
 .wpdsac-chat__form button {
+	width: auto;
+	min-width: max-content;
 	min-height: 44px;
-	max-width: 46%;
+	max-width: none;
 	padding: 0 16px;
 	border-radius: var(--wpdsac-input-radius);
 	background: var(--wpdsac-send);
@@ -311,7 +313,7 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	font: inherit;
 	font-weight: 700;
 	line-height: 1.2;
-	white-space: normal;
+	white-space: nowrap;
 }
 
 .wpdsac-chat__form button:disabled {
@@ -424,6 +426,7 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 
 	.wpdsac-chat__form button {
 		width: 100%;
+		min-width: 0;
 		max-width: none;
 		padding: 11px 16px;
 	}
