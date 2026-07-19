@@ -154,7 +154,7 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.18` принудительно держит «Настройки» первым/default submenu перед FAQ. Скрытие неактивных provider rows больше не зависит от DOM-структуры WordPress. Credential передаётся JSON-payload и хранится в отдельном non-autoload bundle option; legacy options остаются fallback.
+Версия `0.5.19` добавляет независимый DOM marker `data-wpdsac-provider-field` каждому provider field и скрывает его полный `<tr>`. Введённый credential временно перехватывается на `input` до вмешательства browser extensions; в console выводится только safe preflight `inputFound/credentialCaptured`.
 
 GitHub Actions run `29664260145` полностью прошёл: PHPUnit PHP 7.4/8.3, PHP lint 7.4/8.1/8.3, WPCS, WordPress/Elementor integration и package. Artifact `8435277185` содержит installable ZIP для commit `aaf3120`.
 

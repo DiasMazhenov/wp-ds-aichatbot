@@ -706,6 +706,18 @@ final class Settings {
 	}
 
 	/**
+	 * Wrap a provider-specific field in a reliable DOM marker.
+	 *
+	 * @param array<string, string> $args Field arguments.
+	 * @return void
+	 */
+	public function render_provider_field( array $args ): void {
+		printf( '<div data-wpdsac-provider-field="%s">', esc_attr( $args['provider'] ) );
+		$this->render_field( $args );
+		echo '</div>';
+	}
+
+	/**
 	 * Add a field with a shared callback.
 	 *
 	 * @param string $key      Setting key.
@@ -721,7 +733,7 @@ final class Settings {
 		add_settings_field(
 			'wpdsac_' . $key,
 			esc_html( $label ),
-			array( $this, 'render_field' ),
+			array( $this, '' !== $provider ? 'render_provider_field' : 'render_field' ),
 			'wpdsac-settings',
 			$section,
 			array(

@@ -78,6 +78,13 @@
 
   const providerSelect = document.querySelector('[data-wpdsac-provider-select]');
   const providerRows = document.querySelectorAll('.wpdsac-provider-setting');
+  const providerFields = Array.from(document.querySelectorAll('[data-wpdsac-provider-field]'));
+  const providerTargets = Array.from(
+    new Set([
+      ...providerRows,
+      ...providerFields.map((field) => field.closest('tr') || field),
+    ])
+  );
   const diagnosticsPanel = document.querySelector('[data-wpdsac-provider-diagnostics]');
   const providerDiagnostics = {...(window.wpdsacAdmin?.providerDiagnostics || {})};
 
@@ -126,11 +133,17 @@
       return;
     }
 
-    providerRows.forEach((row) => {
-      const active = row.classList.contains(`wpdsac-provider-setting--${providerSelect.value}`);
-      row.hidden = !active;
-      row.setAttribute('aria-hidden', active ? 'false' : 'true');
-      row.style.setProperty('display', active ? '' : 'none', active ? '' : 'important');
+    providerTargets.forEach((target) => {
+      const marker = target.querySelector?.('[data-wpdsac-provider-field]');
+      const targetProvider = marker?.dataset.wpdsacProviderField ||
+        Array.from(target.classList || [])
+          .find((className) => className.startsWith('wpdsac-provider-setting--'))
+          ?.replace('wpdsac-provider-setting--', '');
+      const active = targetProvider === providerSelect.value;
+
+      target.hidden = !active;
+      target.setAttribute('aria-hidden', active ? 'false' : 'true');
+      target.style.setProperty('display', active ? '' : 'none', active ? '' : 'important');
     });
 
     renderProviderDiagnostics(providerDiagnostics[providerSelect.value]);
@@ -144,6 +157,14 @@
 
   const settingsForm = document.querySelector('[data-wpdsac-settings-form]');
   const saveStatus = document.querySelector('[data-wpdsac-save-status]');
+  const pendingCredentials = {};
+
+  const providerFromCredentialInput = (input) => {
+    const wrapperProvider = input.closest('[data-wpdsac-provider-field]')?.dataset.wpdsacProviderField;
+    const optionMatch = input.name?.match(/^wpdsac_([a-z0-9_]+)_api_key$/);
+
+    return input.dataset.wpdsacProvider || wrapperProvider || optionMatch?.[1] || '';
+  };
 
   if (settingsForm && window.wpdsacAdmin) {
     const markUnsaved = () => {
@@ -155,6 +176,19 @@
 
     settingsForm.addEventListener('input', markUnsaved);
     settingsForm.addEventListener('change', markUnsaved);
+    settingsForm.addEventListener('input', (event) => {
+      const input = event.target.closest?.('input[type="password"]');
+
+      if (!input) {
+        return;
+      }
+
+      const provider = providerFromCredentialInput(input);
+
+      if (provider) {
+        pendingCredentials[provider] = input.value;
+      }
+    });
 
     settingsForm.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -163,24 +197,27 @@
       const originalButtonText = submitButton ? submitButton.value : '';
       const formData = new FormData(settingsForm);
 
-      settingsForm.querySelectorAll('[data-wpdsac-api-key]').forEach((input) => {
-        const provider = input.dataset.wpdsacProvider;
-
-        if (provider && input.value) {
-          formData.set(`wpdsac_credentials[${provider}]`, input.value);
-        }
-      });
-
+      const activeProvider = providerSelect?.value || '';
       const activeCredential = settingsForm.querySelector(
-        `[data-wpdsac-api-key][data-wpdsac-provider="${providerSelect?.value || ''}"]`
-      );
+        `[data-wpdsac-provider-field="${activeProvider}"] input[type="password"]`
+      ) || settingsForm.querySelector(`[name="wpdsac_${activeProvider}_api_key"]`);
+      const capturedCredential = activeCredential?.value || pendingCredentials[activeProvider] || '';
+      const credentialPreflight = {
+        provider: activeProvider,
+        inputFound: Boolean(activeCredential),
+        credentialCaptured: Boolean(capturedCredential),
+      };
 
-      if (activeCredential?.value) {
+      console.info('[WP DS AI Chatbot] Credential preflight', credentialPreflight);
+      console.info('[WP DS AI Chatbot] Credential preflight JSON', JSON.stringify(credentialPreflight));
+
+      if (capturedCredential) {
+        formData.set(`wpdsac_credentials[${activeProvider}]`, capturedCredential);
         formData.set(
           'wpdsac_credential_payload',
           JSON.stringify({
-            provider: providerSelect.value,
-            credential: activeCredential.value,
+            provider: activeProvider,
+            credential: capturedCredential,
           })
         );
       }
@@ -217,6 +254,8 @@
           renderProviderDiagnostics(result.data.diagnostics);
           console.info('[WP DS AI Chatbot] Settings save diagnostics', result.data.diagnostics);
         }
+
+        delete pendingCredentials[activeProvider];
 
         document.querySelectorAll('[data-wpdsac-api-key]').forEach((input) => {
           if (!input.value) {
