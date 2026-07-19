@@ -9,6 +9,8 @@ namespace DiasMazhenov\WPDsAiChatbot\Admin;
 
 use DiasMazhenov\WPDsAiChatbot\Knowledge\PostIndexer;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\PdfIndexer;
+use DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType;
+use DiasMazhenov\WPDsAiChatbot\Knowledge\ManualSource;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Repository;
 use DiasMazhenov\WPDsAiChatbot\Support\PluginInfo;
 
@@ -41,16 +43,25 @@ final class KnowledgePage {
 	private $pdf_indexer;
 
 	/**
+	 * Administrator-authored knowledge source.
+	 *
+	 * @var ManualSource
+	 */
+	private $manual_source;
+
+	/**
 	 * Store administration dependencies.
 	 *
-	 * @param PostIndexer $indexer     WordPress source indexer.
-	 * @param PdfIndexer  $pdf_indexer Selected PDF source indexer.
-	 * @param Repository  $repository  Knowledge repository.
+	 * @param PostIndexer  $indexer       WordPress source indexer.
+	 * @param PdfIndexer   $pdf_indexer   Selected PDF source indexer.
+	 * @param ManualSource $manual_source Administrator-authored source.
+	 * @param Repository   $repository    Knowledge repository.
 	 */
-	public function __construct( PostIndexer $indexer, PdfIndexer $pdf_indexer, Repository $repository ) {
-		$this->indexer     = $indexer;
-		$this->pdf_indexer = $pdf_indexer;
-		$this->repository  = $repository;
+	public function __construct( PostIndexer $indexer, PdfIndexer $pdf_indexer, ManualSource $manual_source, Repository $repository ) {
+		$this->indexer       = $indexer;
+		$this->pdf_indexer   = $pdf_indexer;
+		$this->manual_source = $manual_source;
+		$this->repository    = $repository;
 	}
 
 	/**
@@ -62,10 +73,11 @@ final class KnowledgePage {
 		add_action( 'admin_menu', array( $this, 'add_page' ) );
 		add_action( 'admin_post_wpdsac_reindex_knowledge', array( $this, 'handle_reindex' ) );
 		add_action( 'admin_post_wpdsac_save_pdf_sources', array( $this, 'handle_pdf_sources' ) );
+		add_action( 'admin_post_wpdsac_save_manual_knowledge', array( $this, 'handle_manual_knowledge' ) );
 	}
 
 	/**
-	 * Add the knowledge page under Tools.
+	 * Add the unified knowledge page under the plugin menu.
 	 *
 	 * @return void
 	 */
@@ -92,12 +104,22 @@ final class KnowledgePage {
 			return;
 		}
 
-		$indexed         = isset( $_GET['wpdsac_indexed'] ) ? absint( wp_unslash( $_GET['wpdsac_indexed'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice.
-		$pdf_indexed     = isset( $_GET['wpdsac_pdf_indexed'] ) ? absint( wp_unslash( $_GET['wpdsac_pdf_indexed'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice.
-		$pdf_failed      = isset( $_GET['wpdsac_pdf_failed'] ) ? absint( wp_unslash( $_GET['wpdsac_pdf_failed'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice.
-		$options         = Settings::get();
-		$pdf_ids         = $this->pdf_indexer->selected_ids();
-		$pdf_attachments = get_posts(
+		$indexed           = isset( $_GET['wpdsac_indexed'] ) ? absint( wp_unslash( $_GET['wpdsac_indexed'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice.
+		$pdf_indexed       = isset( $_GET['wpdsac_pdf_indexed'] ) ? absint( wp_unslash( $_GET['wpdsac_pdf_indexed'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice.
+		$pdf_failed        = isset( $_GET['wpdsac_pdf_failed'] ) ? absint( wp_unslash( $_GET['wpdsac_pdf_failed'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice.
+		$manual_saved      = isset( $_GET['wpdsac_manual_saved'] ) ? absint( wp_unslash( $_GET['wpdsac_manual_saved'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice.
+		$options           = Settings::get();
+		$pdf_ids           = $this->pdf_indexer->selected_ids();
+		$knowledge_entries = get_posts(
+			array(
+				'post_type'      => FaqPostType::POST_TYPE,
+				'post_status'    => array( 'publish', 'draft', 'pending', 'private' ),
+				'posts_per_page' => 20,
+				'orderby'        => 'modified',
+				'order'          => 'DESC',
+			)
+		);
+		$pdf_attachments   = get_posts(
 			array(
 				'post_type'      => 'attachment',
 				'post_status'    => 'inherit',
@@ -137,8 +159,13 @@ final class KnowledgePage {
 					?>
 				</p></div>
 			<?php endif; ?>
+			<?php if ( null !== $manual_saved ) : ?>
+				<div class="notice notice-success is-dismissible"><p>
+					<?php esc_html_e( 'Additional knowledge saved and indexed.', 'wp-ds-aichatbot' ); ?>
+				</p></div>
+			<?php endif; ?>
 			<p>
-				<?php esc_html_e( 'Published pages, posts, AI FAQs, WooCommerce products, and selected PDFs are split into bounded fragments and stored in a dedicated non-autoloaded table.', 'wp-ds-aichatbot' ); ?>
+				<?php esc_html_e( 'Published pages, posts, knowledge entries, administrator text, WooCommerce products, and selected PDFs are split into bounded fragments and stored in a dedicated table.', 'wp-ds-aichatbot' ); ?>
 			</p>
 			<p>
 				<strong><?php esc_html_e( 'Stored fragments:', 'wp-ds-aichatbot' ); ?></strong>
@@ -154,27 +181,67 @@ final class KnowledgePage {
 				<?php submit_button( __( 'Reindex website knowledge', 'wp-ds-aichatbot' ), 'primary', 'submit', false ); ?>
 			</form>
 
-			<hr>
-			<h2><?php esc_html_e( 'PDF knowledge sources', 'wp-ds-aichatbot' ); ?></h2>
-			<p><?php esc_html_e( 'Select text-based PDFs from the Media Library. Scanned images require OCR before upload. Maximum 50 files and 10 MB per file.', 'wp-ds-aichatbot' ); ?></p>
-			<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
-				<input type="hidden" name="action" value="wpdsac_save_pdf_sources">
-				<?php wp_nonce_field( 'wpdsac_save_pdf_sources' ); ?>
-				<?php if ( array() === $pdf_attachments ) : ?>
-					<p><?php esc_html_e( 'No PDF attachments were found in the Media Library.', 'wp-ds-aichatbot' ); ?></p>
-				<?php else : ?>
-					<fieldset>
-						<legend class="screen-reader-text"><?php esc_html_e( 'Select PDF knowledge sources', 'wp-ds-aichatbot' ); ?></legend>
-						<?php foreach ( $pdf_attachments as $attachment ) : ?>
-							<p><label>
-								<input type="checkbox" name="pdf_attachment_ids[]" value="<?php echo esc_attr( (string) $attachment->ID ); ?>" <?php checked( in_array( (int) $attachment->ID, $pdf_ids, true ) ); ?>>
-								<?php echo esc_html( get_the_title( $attachment ) ); ?>
-							</label></p>
-						<?php endforeach; ?>
-					</fieldset>
-				<?php endif; ?>
-				<?php submit_button( __( 'Save and index selected PDFs', 'wp-ds-aichatbot' ), 'secondary', 'submit', false ); ?>
-			</form>
+			<div class="wpdsac-knowledge-grid">
+				<section class="wpdsac-admin-card">
+					<h2><?php esc_html_e( 'Instructions and additional knowledge', 'wp-ds-aichatbot' ); ?></h2>
+					<p><?php esc_html_e( 'Add facts, policies, instructions, contacts, or other information that may not exist on public pages. The text is stored outside autoloaded options and added to the searchable knowledge index.', 'wp-ds-aichatbot' ); ?></p>
+					<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
+						<input type="hidden" name="action" value="wpdsac_save_manual_knowledge">
+						<?php wp_nonce_field( 'wpdsac_save_manual_knowledge' ); ?>
+						<label class="screen-reader-text" for="wpdsac-manual-knowledge"><?php esc_html_e( 'Instructions and additional knowledge', 'wp-ds-aichatbot' ); ?></label>
+						<textarea id="wpdsac-manual-knowledge" name="manual_knowledge" rows="10" class="large-text" maxlength="50000"><?php echo esc_textarea( $this->manual_source->content() ); ?></textarea>
+						<?php submit_button( __( 'Save additional knowledge', 'wp-ds-aichatbot' ), 'primary', 'submit', false ); ?>
+					</form>
+				</section>
+
+				<section class="wpdsac-admin-card">
+					<h2><?php esc_html_e( 'Knowledge entries', 'wp-ds-aichatbot' ); ?></h2>
+					<p><?php esc_html_e( 'Create structured question-and-answer entries using the WordPress editor. They are part of this knowledge base and no longer appear as a separate admin menu item.', 'wp-ds-aichatbot' ); ?></p>
+					<p class="wpdsac-card-actions">
+						<a class="button button-primary" href="<?php echo esc_url( admin_url( 'post-new.php?post_type=' . FaqPostType::POST_TYPE ) ); ?>"><?php esc_html_e( 'Add knowledge entry', 'wp-ds-aichatbot' ); ?></a>
+						<a class="button" href="<?php echo esc_url( admin_url( 'edit.php?post_type=' . FaqPostType::POST_TYPE ) ); ?>"><?php esc_html_e( 'Manage all entries', 'wp-ds-aichatbot' ); ?></a>
+					</p>
+					<?php if ( array() === $knowledge_entries ) : ?>
+						<p class="description"><?php esc_html_e( 'No knowledge entries found.', 'wp-ds-aichatbot' ); ?></p>
+					<?php else : ?>
+						<ul class="wpdsac-knowledge-list">
+							<?php foreach ( $knowledge_entries as $entry ) : ?>
+								<?php
+								$status       = get_post_status_object( $entry->post_status );
+								$status_label = $status instanceof \WP_Post_Status ? $status->label : $entry->post_status;
+								?>
+								<li>
+									<a href="<?php echo esc_url( get_edit_post_link( $entry->ID ) ); ?>"><?php echo esc_html( get_the_title( $entry ) ); ?></a>
+									<span><?php echo esc_html( $status_label ); ?></span>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+					<?php endif; ?>
+				</section>
+			</div>
+
+			<section class="wpdsac-admin-card">
+				<h2><?php esc_html_e( 'PDF knowledge sources', 'wp-ds-aichatbot' ); ?></h2>
+				<p><?php esc_html_e( 'Select text-based PDFs from the Media Library. Scanned images require OCR before upload. Maximum 50 files and 10 MB per file.', 'wp-ds-aichatbot' ); ?></p>
+				<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
+					<input type="hidden" name="action" value="wpdsac_save_pdf_sources">
+					<?php wp_nonce_field( 'wpdsac_save_pdf_sources' ); ?>
+					<?php if ( array() === $pdf_attachments ) : ?>
+						<p><?php esc_html_e( 'No PDF attachments were found in the Media Library.', 'wp-ds-aichatbot' ); ?></p>
+					<?php else : ?>
+						<fieldset>
+							<legend class="screen-reader-text"><?php esc_html_e( 'Select PDF knowledge sources', 'wp-ds-aichatbot' ); ?></legend>
+							<?php foreach ( $pdf_attachments as $attachment ) : ?>
+								<p><label>
+									<input type="checkbox" name="pdf_attachment_ids[]" value="<?php echo esc_attr( (string) $attachment->ID ); ?>" <?php checked( in_array( (int) $attachment->ID, $pdf_ids, true ) ); ?>>
+									<?php echo esc_html( get_the_title( $attachment ) ); ?>
+								</label></p>
+							<?php endforeach; ?>
+						</fieldset>
+					<?php endif; ?>
+					<?php submit_button( __( 'Save and index selected PDFs', 'wp-ds-aichatbot' ), 'secondary', 'submit', false ); ?>
+				</form>
+			</section>
 		</div>
 		<?php
 	}
@@ -191,13 +258,13 @@ final class KnowledgePage {
 
 		check_admin_referer( 'wpdsac_reindex_knowledge' );
 
-		$indexed = $this->indexer->reindex_all() + $this->pdf_indexer->reindex_selected();
+		$indexed = $this->indexer->reindex_all() + $this->pdf_indexer->reindex_selected() + $this->manual_source->reindex();
 		$url     = add_query_arg(
 			array(
 				'page'           => 'wpdsac-knowledge',
 				'wpdsac_indexed' => $indexed,
 			),
-			admin_url( 'tools.php' )
+			admin_url( 'admin.php' )
 		);
 
 		wp_safe_redirect( $url );
@@ -226,7 +293,33 @@ final class KnowledgePage {
 				'wpdsac_pdf_indexed' => $result['indexed'],
 				'wpdsac_pdf_failed'  => $result['failed'],
 			),
-			admin_url( 'tools.php' )
+			admin_url( 'admin.php' )
+		);
+
+		wp_safe_redirect( $url );
+		exit;
+	}
+
+	/**
+	 * Save and index administrator-authored knowledge.
+	 *
+	 * @return void
+	 */
+	public function handle_manual_knowledge(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You are not allowed to manage the knowledge index.', 'wp-ds-aichatbot' ) );
+		}
+
+		check_admin_referer( 'wpdsac_save_manual_knowledge' );
+
+		$content = isset( $_POST['manual_knowledge'] ) ? wp_unslash( $_POST['manual_knowledge'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- ManualSource applies bounded textarea sanitization.
+		$indexed = $this->manual_source->save( $content );
+		$url     = add_query_arg(
+			array(
+				'page'                => 'wpdsac-knowledge',
+				'wpdsac_manual_saved' => $indexed,
+			),
+			admin_url( 'admin.php' )
 		);
 
 		wp_safe_redirect( $url );

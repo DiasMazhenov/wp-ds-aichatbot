@@ -221,9 +221,11 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$knowledge_augmented = false;
 	$faq_registered = post_type_exists( \DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType::POST_TYPE );
 	$faq_type       = get_post_type_object( \DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType::POST_TYPE );
-	$faq_under_plugin_menu = $faq_type instanceof WP_Post_Type
-		&& \DiasMazhenov\WPDsAiChatbot\Admin\Settings::PAGE_SLUG === $faq_type->show_in_menu;
+	$faq_merged_into_knowledge = $faq_type instanceof WP_Post_Type
+		&& false === $faq_type->show_in_menu;
 	$faq_indexed = false;
+	$manual_knowledge_indexed = false;
+	$manual_knowledge_non_autoloaded = false;
 	$pdf_indexed = false;
 	$pdf_option_non_autoloaded = false;
 	$woocommerce_indexed = false;
@@ -247,6 +249,18 @@ function wpdsac_test_probe(): WP_REST_Response {
 			new \DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker()
 		);
 		$knowledge_post       = get_post( $knowledge_post_id );
+		$manual_source        = new \DiasMazhenov\WPDsAiChatbot\Knowledge\ManualSource(
+			$knowledge_repository,
+			new \DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker()
+		);
+		$manual_stored        = $manual_source->save( 'Support is available through the blue contact form every weekday.' );
+		$manual_matches       = $knowledge_repository->search( 'When is support available?', 2 );
+		$manual_knowledge_indexed = $manual_stored > 0
+			&& false !== stripos( wp_json_encode( $manual_matches ), 'every weekday' );
+		$manual_knowledge_non_autoloaded = ! array_key_exists(
+			\DiasMazhenov\WPDsAiChatbot\Knowledge\ManualSource::OPTION_NAME,
+			wp_load_alloptions()
+		);
 
 		if ( $knowledge_post instanceof WP_Post ) {
 			$knowledge_indexed = $knowledge_indexer->index_post( $knowledge_post ) > 0;
@@ -489,8 +503,10 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'knowledge_retrieved'         => $knowledge_retrieved,
 			'knowledge_augmented'         => $knowledge_augmented,
 			'faq_registered'              => $faq_registered,
-			'faq_under_plugin_menu'       => $faq_under_plugin_menu,
+			'faq_merged_into_knowledge'   => $faq_merged_into_knowledge,
 			'faq_indexed'                 => $faq_indexed,
+			'manual_knowledge_indexed'    => $manual_knowledge_indexed,
+			'manual_knowledge_non_autoloaded' => $manual_knowledge_non_autoloaded,
 			'pdf_indexed'                 => $pdf_indexed,
 			'pdf_option_non_autoloaded'   => $pdf_option_non_autoloaded,
 			'woocommerce_indexed'         => $woocommerce_indexed,
@@ -547,6 +563,7 @@ function wpdsac_test_uninstall(): WP_REST_Response {
 			'tables_removed'  => $tables_removed,
 			'options_removed' => false === get_option( 'wpdsac_settings', false )
 				&& false === get_option( 'wpdsac_pdf_attachment_ids', false )
+				&& false === get_option( 'wpdsac_manual_knowledge', false )
 				&& false === get_option( 'wpdsac_deepseek_api_key', false )
 				&& false === get_option( 'wpdsac_provider_credentials', false )
 				&& false === get_option( 'wpdsac_db_version', false ),

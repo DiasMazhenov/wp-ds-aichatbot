@@ -462,6 +462,83 @@
 	overflow: hidden;
 }
 
+.wpdsac-knowledge-grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+	gap: 18px;
+	margin: 24px 0 18px;
+}
+
+.wpdsac-admin-card {
+	margin: 18px 0;
+	padding: 22px;
+	border: 1px solid #d7dce1;
+	border-radius: 10px;
+	background: #fff;
+	box-shadow: 0 1px 2px rgba(30, 41, 59, 0.04);
+}
+
+.wpdsac-knowledge-grid .wpdsac-admin-card {
+	margin: 0;
+}
+
+.wpdsac-admin-card h2 {
+	margin: 0 0 8px;
+	font-size: 18px;
+}
+
+.wpdsac-admin-card > p,
+.wpdsac-admin-card form > p:not(.submit) {
+	color: #66717e;
+	line-height: 1.55;
+}
+
+.wpdsac-admin-card textarea.large-text {
+	width: 100%;
+	margin-top: 8px;
+	border-color: #8f98a3;
+	border-radius: 6px;
+	font-family: inherit;
+	line-height: 1.55;
+}
+
+.wpdsac-admin-card textarea.large-text:focus {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
+.wpdsac-admin-card .submit {
+	margin: 14px 0 0;
+	padding: 0;
+}
+
+.wpdsac-card-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.wpdsac-knowledge-list {
+	margin: 16px 0 0;
+	border-top: 1px solid #edf0f2;
+}
+
+.wpdsac-knowledge-list li {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin: 0;
+	padding: 10px 0;
+	border-bottom: 1px solid #edf0f2;
+}
+
+.wpdsac-knowledge-list li > span {
+	flex: 0 0 auto;
+	color: #66717e;
+	font-size: 12px;
+}
+
 .wpdsac-save-note.is-success {
 	color: #176b3a;
 	font-weight: 600;
@@ -479,6 +556,10 @@
 
 	.wpdsac-appearance-preview {
 		position: static;
+	}
+
+	.wpdsac-knowledge-grid {
+		grid-template-columns: 1fr;
 	}
 }
 

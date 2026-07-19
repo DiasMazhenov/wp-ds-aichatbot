@@ -36,6 +36,7 @@ use DiasMazhenov\WPDsAiChatbot\Elementor\Integration;
 use DiasMazhenov\WPDsAiChatbot\Lifecycle\Migrator;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType;
+use DiasMazhenov\WPDsAiChatbot\Knowledge\ManualSource;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\PdfIndexer;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\PostIndexer;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Repository;
@@ -89,6 +90,7 @@ final class Plugin {
 		$chunker       = new Chunker();
 		$post_indexer  = new PostIndexer( $knowledge, $chunker );
 		$pdf_indexer   = new PdfIndexer( $knowledge, $chunker );
+		$manual_source = new ManualSource( $knowledge, $chunker );
 		$retriever     = new Retriever( $knowledge );
 		$conversations = new ConversationRepository();
 		$leads         = new LeadRepository();
@@ -128,7 +130,7 @@ final class Plugin {
 
 		if ( is_admin() ) {
 			( new PluginList() )->register_hooks();
-			( new KnowledgePage( $post_indexer, $pdf_indexer, $knowledge ) )->register_hooks();
+			( new KnowledgePage( $post_indexer, $pdf_indexer, $manual_source, $knowledge ) )->register_hooks();
 			( new LeadsPage( $leads ) )->register_hooks();
 		}
 

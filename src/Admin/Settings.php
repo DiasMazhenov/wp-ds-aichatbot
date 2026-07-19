@@ -660,7 +660,7 @@ final class Settings {
 		if ( 'checkbox' === $args['type'] ) {
 			$descriptions = array(
 				'global_enabled'       => __( 'Show the chatbot globally in the site footer.', 'wp-ds-aichatbot' ),
-				'knowledge_enabled'    => __( 'Add relevant indexed pages, posts, and AI FAQs to AI requests.', 'wp-ds-aichatbot' ),
+				'knowledge_enabled'    => __( 'Add relevant indexed pages, posts, knowledge entries, and administrator text to AI requests.', 'wp-ds-aichatbot' ),
 				'logging_enabled'      => __( 'Store successful conversations for the configured retention period. Disabled by default.', 'wp-ds-aichatbot' ),
 				'leads_enabled'        => __( 'Show a name/email form with required consent inside the chat. Disabled by default.', 'wp-ds-aichatbot' ),
 				'deepseek_thinking'    => __( 'Enable deeper reasoning. This can increase response time and token usage.', 'wp-ds-aichatbot' ),

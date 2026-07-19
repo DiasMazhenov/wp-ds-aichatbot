@@ -7,7 +7,6 @@
 
 namespace DiasMazhenov\WPDsAiChatbot\Knowledge;
 
-use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 use DiasMazhenov\WPDsAiChatbot\Support\PluginInfo;
 
 defined( 'ABSPATH' ) || exit;
@@ -55,20 +54,20 @@ final class FaqPostType {
 			self::POST_TYPE,
 			array(
 				'labels'              => array(
-					'name'          => PluginInfo::versioned_label( __( 'AI FAQs', 'wp-ds-aichatbot' ) ),
-					'singular_name' => __( 'AI FAQ', 'wp-ds-aichatbot' ),
-					'menu_name'     => PluginInfo::versioned_label( __( 'AI FAQs', 'wp-ds-aichatbot' ) ),
-					'add_new_item'  => __( 'Add AI FAQ', 'wp-ds-aichatbot' ),
-					'edit_item'     => __( 'Edit AI FAQ', 'wp-ds-aichatbot' ),
-					'new_item'      => __( 'New AI FAQ', 'wp-ds-aichatbot' ),
-					'search_items'  => __( 'Search AI FAQs', 'wp-ds-aichatbot' ),
-					'not_found'     => __( 'No AI FAQs found.', 'wp-ds-aichatbot' ),
+					'name'          => PluginInfo::versioned_label( __( 'Knowledge base', 'wp-ds-aichatbot' ) ),
+					'singular_name' => __( 'Knowledge entry', 'wp-ds-aichatbot' ),
+					'menu_name'     => __( 'Knowledge base', 'wp-ds-aichatbot' ),
+					'add_new_item'  => __( 'Add knowledge entry', 'wp-ds-aichatbot' ),
+					'edit_item'     => __( 'Edit knowledge entry', 'wp-ds-aichatbot' ),
+					'new_item'      => __( 'New knowledge entry', 'wp-ds-aichatbot' ),
+					'search_items'  => __( 'Search knowledge entries', 'wp-ds-aichatbot' ),
+					'not_found'     => __( 'No knowledge entries found.', 'wp-ds-aichatbot' ),
 				),
 				'public'              => false,
 				'publicly_queryable'  => false,
 				'exclude_from_search' => true,
 				'show_ui'             => true,
-				'show_in_menu'        => Settings::PAGE_SLUG,
+				'show_in_menu'        => false,
 				'show_in_rest'        => true,
 				'map_meta_cap'        => false,
 				'capabilities'        => $capabilities,
