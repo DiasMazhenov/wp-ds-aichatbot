@@ -110,6 +110,18 @@
 	letter-spacing: -0.01em;
 }
 
+.wpdsac-settings-subheading {
+	margin: 28px 0 4px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid #e2e4e7;
+	color: #2c3338;
+	font-size: 15px;
+}
+
+.wpdsac-panel-header + .wpdsac-settings-subheading {
+	margin-top: 0;
+}
+
 .wpdsac-settings-panel .form-table {
 	margin: 0;
 }
@@ -197,6 +209,18 @@
 
 .wpdsac-admin-preview-wrap h2 {
 	margin-bottom: 0;
+}
+
+.wpdsac-preview-toolbar {
+	display: flex;
+	gap: 6px;
+	margin-top: 14px;
+}
+
+.wpdsac-preview-toolbar .button.is-active {
+	border-color: #2271b1;
+	background: #f0f6fc;
+	color: #0a4b78;
 }
 
 .wpdsac-admin-preview-stage {

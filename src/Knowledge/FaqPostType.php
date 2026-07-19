@@ -7,6 +7,8 @@
 
 namespace DiasMazhenov\WPDsAiChatbot\Knowledge;
 
+use DiasMazhenov\WPDsAiChatbot\Support\PluginInfo;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -52,8 +54,9 @@ final class FaqPostType {
 			self::POST_TYPE,
 			array(
 				'labels'              => array(
-					'name'          => __( 'AI FAQs', 'wp-ds-aichatbot' ),
+					'name'          => PluginInfo::versioned_label( __( 'AI FAQs', 'wp-ds-aichatbot' ) ),
 					'singular_name' => __( 'AI FAQ', 'wp-ds-aichatbot' ),
+					'menu_name'     => PluginInfo::versioned_label( __( 'AI FAQs', 'wp-ds-aichatbot' ) ),
 					'add_new_item'  => __( 'Add AI FAQ', 'wp-ds-aichatbot' ),
 					'edit_item'     => __( 'Edit AI FAQ', 'wp-ds-aichatbot' ),
 					'new_item'      => __( 'New AI FAQ', 'wp-ds-aichatbot' ),

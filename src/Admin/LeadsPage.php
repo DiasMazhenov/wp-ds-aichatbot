@@ -8,6 +8,7 @@
 namespace DiasMazhenov\WPDsAiChatbot\Admin;
 
 use DiasMazhenov\WPDsAiChatbot\Data\LeadRepository;
+use DiasMazhenov\WPDsAiChatbot\Support\PluginInfo;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -47,9 +48,11 @@ final class LeadsPage {
 	 * @return void
 	 */
 	public function add_page(): void {
+		$label = PluginInfo::versioned_label( __( 'DS AI Leads', 'wp-ds-aichatbot' ) );
+
 		add_management_page(
-			esc_html__( 'DS AI Leads', 'wp-ds-aichatbot' ),
-			esc_html__( 'DS AI Leads', 'wp-ds-aichatbot' ),
+			esc_html( $label ),
+			esc_html( $label ),
 			'manage_options',
 			'wpdsac-leads',
 			array( $this, 'render_page' )
@@ -69,7 +72,7 @@ final class LeadsPage {
 		$rows = $this->repository->latest();
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'DS AI Leads', 'wp-ds-aichatbot' ); ?></h1>
+			<h1><?php echo esc_html( PluginInfo::versioned_label( __( 'DS AI Leads', 'wp-ds-aichatbot' ) ) ); ?></h1>
 			<p><?php esc_html_e( 'Recent consented contact requests. Expired rows are removed automatically.', 'wp-ds-aichatbot' ); ?></p>
 			<table class="widefat striped">
 				<thead><tr>

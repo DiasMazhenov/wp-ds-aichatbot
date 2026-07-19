@@ -12,6 +12,7 @@ use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
 use DiasMazhenov\WPDsAiChatbot\AI\DeepSeekProvider;
 use DiasMazhenov\WPDsAiChatbot\Chat\Appearance;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker;
+use DiasMazhenov\WPDsAiChatbot\Support\PluginInfo;
 use PHPUnit\Framework\TestCase;
 
 final class CoreSecurityTest extends TestCase {
@@ -48,6 +49,10 @@ final class CoreSecurityTest extends TestCase {
 				'chat_width'         => 99999,
 				'chat_border_radius' => 999,
 				'chat_font_size'     => 1,
+				'messages_height'    => 9999,
+				'launcher_size'      => 1,
+				'shadow_opacity'     => 999,
+				'font_family'        => 'javascript',
 				'global_position'    => 'top_center',
 			)
 		);
@@ -56,6 +61,10 @@ final class CoreSecurityTest extends TestCase {
 		$this->assertSame( 640, $values['chat_width'] );
 		$this->assertSame( 40, $values['chat_border_radius'] );
 		$this->assertSame( 12, $values['chat_font_size'] );
+		$this->assertSame( 640, $values['messages_height'] );
+		$this->assertSame( 44, $values['launcher_size'] );
+		$this->assertSame( 40, $values['shadow_opacity'] );
+		$this->assertSame( 'system', $values['font_family'] );
 		$this->assertSame( 'bottom_right', $values['global_position'] );
 	}
 
@@ -123,5 +132,9 @@ final class CoreSecurityTest extends TestCase {
 			$settings->sanitize_api_key( '', 'deepseek' )
 		);
 		$this->assertContains( 'deepseek', CredentialResolver::provider_ids() );
+	}
+
+	public function test_administrative_label_uses_current_plugin_version(): void {
+		$this->assertSame( 'DS AI Chatbot v0.5.11', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
 	}
 }

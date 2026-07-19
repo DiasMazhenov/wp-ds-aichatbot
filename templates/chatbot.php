@@ -17,6 +17,10 @@ if ( $view['expanded'] ) {
 }
 
 $classes .= ' ' . $view['position_class'];
+
+if ( ! $view['show_toggle_icon'] ) {
+	$classes .= ' wpdsac-hide-header-icon';
+}
 ?>
 <section
 	id="<?php echo esc_attr( $view['id'] ); ?>"

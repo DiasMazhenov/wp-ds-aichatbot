@@ -9,6 +9,7 @@ namespace DiasMazhenov\WPDsAiChatbot\Admin;
 
 use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
 use DiasMazhenov\WPDsAiChatbot\Chat\Appearance;
+use DiasMazhenov\WPDsAiChatbot\Support\PluginInfo;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -283,8 +284,8 @@ final class Settings {
 	 */
 	public function add_page(): void {
 		add_options_page(
-			esc_html__( 'WP DS AI Chatbot', 'wp-ds-aichatbot' ),
-			esc_html__( 'DS AI Chatbot', 'wp-ds-aichatbot' ),
+			esc_html( PluginInfo::versioned_label( __( 'WP DS AI Chatbot', 'wp-ds-aichatbot' ) ) ),
+			esc_html( PluginInfo::versioned_label( __( 'DS AI Chatbot', 'wp-ds-aichatbot' ) ) ),
 			'manage_options',
 			'wpdsac-settings',
 			array( $this, 'render_page' )
@@ -313,7 +314,7 @@ final class Settings {
 		<div class="wrap wpdsac-settings-wrap">
 			<div class="wpdsac-settings-header">
 				<div>
-					<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+					<h1><?php esc_html_e( 'WP DS AI Chatbot', 'wp-ds-aichatbot' ); ?></h1>
 					<p><?php esc_html_e( 'Configure the chatbot, AI providers, knowledge, and privacy from one place.', 'wp-ds-aichatbot' ); ?></p>
 				</div>
 				<span class="wpdsac-version"><?php echo esc_html( 'v' . WPDSAC_VERSION ); ?></span>
@@ -337,7 +338,7 @@ final class Settings {
 				<?php $this->render_tab_panel( 'general', $tabs['general'], array( 'wpdsac_display' ) ); ?>
 				<?php $this->render_tab_panel( 'ai', $tabs['ai'], array( 'wpdsac_ai' ) ); ?>
 				<?php $this->render_tab_panel( 'knowledge', $tabs['knowledge'], array( 'wpdsac_knowledge' ) ); ?>
-				<?php $this->render_tab_panel( 'appearance', $tabs['appearance'], array( 'wpdsac_appearance' ), true ); ?>
+				<?php $this->render_tab_panel( 'appearance', $tabs['appearance'], array( 'wpdsac_appearance_colors', 'wpdsac_appearance_layout', 'wpdsac_appearance_controls' ), true ); ?>
 				<?php $this->render_tab_panel( 'privacy', $tabs['privacy'], array( 'wpdsac_privacy' ) ); ?>
 				<?php $this->render_tab_panel( 'leads', $tabs['leads'], array( 'wpdsac_leads' ) ); ?>
 				<div class="wpdsac-settings-actions">
@@ -359,13 +360,18 @@ final class Settings {
 	 * @return void
 	 */
 	private function render_tab_panel( string $tab_id, string $title, array $section_ids, bool $include_preview = false ): void {
-		$descriptions = array(
+		$descriptions   = array(
 			'general'    => __( 'Control where the chatbot appears and what visitors see first.', 'wp-ds-aichatbot' ),
 			'ai'         => __( 'Choose one provider. Only its connection fields are shown.', 'wp-ds-aichatbot' ),
 			'knowledge'  => __( 'Use indexed website content as reference material for every provider.', 'wp-ds-aichatbot' ),
 			'appearance' => __( 'Adjust the shared design used by global, shortcode, and Elementor chatbots.', 'wp-ds-aichatbot' ),
 			'privacy'    => __( 'Choose whether conversations are stored and how long they are retained.', 'wp-ds-aichatbot' ),
 			'leads'      => __( 'Collect contact requests only after explicit visitor consent.', 'wp-ds-aichatbot' ),
+		);
+		$section_titles = array(
+			'wpdsac_appearance_colors'   => __( 'Colors', 'wp-ds-aichatbot' ),
+			'wpdsac_appearance_layout'   => __( 'Layout and typography', 'wp-ds-aichatbot' ),
+			'wpdsac_appearance_controls' => __( 'Controls and shapes', 'wp-ds-aichatbot' ),
 		);
 		?>
 		<section class="wpdsac-settings-panel" id="wpdsac-panel-<?php echo esc_attr( $tab_id ); ?>" role="tabpanel" aria-labelledby="wpdsac-tab-<?php echo esc_attr( $tab_id ); ?>" data-wpdsac-panel="<?php echo esc_attr( $tab_id ); ?>">
@@ -375,6 +381,10 @@ final class Settings {
 			</header>
 			<?php
 			foreach ( $section_ids as $section_id ) {
+				if ( count( $section_ids ) > 1 && isset( $section_titles[ $section_id ] ) ) {
+					printf( '<h3 class="wpdsac-settings-subheading">%s</h3>', esc_html( $section_titles[ $section_id ] ) );
+				}
+
 				do_settings_fields( 'wpdsac-settings', $section_id );
 			}
 

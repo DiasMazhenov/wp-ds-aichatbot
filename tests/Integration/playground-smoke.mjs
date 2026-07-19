@@ -48,7 +48,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.10',
+    plugin_version: '0.5.11',
     db_version: '5',
     rate_limit_table: true,
     request_lock_table: true,

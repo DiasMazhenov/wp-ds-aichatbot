@@ -4,18 +4,33 @@
 	--wpdsac-surface: #ffffff;
 	--wpdsac-text: #172033;
 	--wpdsac-bot-message: #eff4ff;
+	--wpdsac-bot-text: #172033;
+	--wpdsac-user-message: #2563eb;
+	--wpdsac-user-text: #fff;
+	--wpdsac-input: #fff;
+	--wpdsac-input-text: #172033;
+	--wpdsac-send: #2563eb;
+	--wpdsac-send-text: #fff;
 	--wpdsac-muted: #64748b;
 	--wpdsac-border: #dce2ee;
 	--wpdsac-width: 380px;
 	--wpdsac-radius: 18px;
+	--wpdsac-toggle-radius: 18px;
+	--wpdsac-message-radius: 14px;
+	--wpdsac-input-radius: 18px;
 	--wpdsac-font-size: 16px;
+	--wpdsac-panel-padding: 18px;
+	--wpdsac-messages-height: 320px;
+	--wpdsac-launcher-size: 60px;
+	--wpdsac-shadow-opacity: 16%;
+	--wpdsac-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 	--wpdsac-offset-x: 24px;
 	--wpdsac-offset-y: 24px;
 	position: relative;
 	z-index: 9999;
 	width: min(100%, var(--wpdsac-width));
 	color: var(--wpdsac-text);
-	font: 400 var(--wpdsac-font-size)/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	font: 400 var(--wpdsac-font-size)/1.5 var(--wpdsac-font-family);
 }
 
 body > .wpdsac-chat.wpdsac-position--bottom-right {
@@ -33,9 +48,6 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 .wpdsac-chat__toggle,
 .wpdsac-chat__form button {
 	border: 0;
-	border-radius: var(--wpdsac-radius);
-	background: var(--wpdsac-accent);
-	color: var(--wpdsac-accent-text);
 	cursor: pointer;
 }
 
@@ -45,17 +57,50 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	justify-content: space-between;
 	width: 100%;
 	padding: 14px 18px;
+	border-radius: var(--wpdsac-toggle-radius);
+	background: var(--wpdsac-accent);
+	color: var(--wpdsac-accent-text);
 	font: inherit;
 	font-weight: 700;
 }
 
+.wpdsac-chat:not(.is-expanded) {
+	width: var(--wpdsac-launcher-size);
+}
+
+.wpdsac-chat:not(.is-expanded) .wpdsac-chat__toggle {
+	align-items: center;
+	justify-content: center;
+	width: var(--wpdsac-launcher-size);
+	height: var(--wpdsac-launcher-size);
+	padding: 0;
+	border-radius: 50%;
+	box-shadow: 0 10px 30px rgb(23 32 51 / var(--wpdsac-shadow-opacity));
+}
+
+.wpdsac-chat:not(.is-expanded) .wpdsac-chat__toggle-title {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.wpdsac-chat.is-expanded.wpdsac-hide-header-icon .wpdsac-chat__icon {
+	display: none;
+}
+
 .wpdsac-chat__panel {
 	margin-bottom: 10px;
-	padding: 18px;
+	padding: var(--wpdsac-panel-padding);
 	border: 1px solid var(--wpdsac-border);
 	border-radius: var(--wpdsac-radius);
 	background: var(--wpdsac-surface);
-	box-shadow: 0 18px 50px rgba(23, 32, 51, 0.16);
+	box-shadow: 0 18px 50px rgb(23 32 51 / var(--wpdsac-shadow-opacity));
 }
 
 .wpdsac-chat:not(.is-expanded) .wpdsac-chat__panel {
@@ -65,15 +110,22 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 .wpdsac-chat__message {
 	margin: 0 0 18px;
 	padding: 12px 14px;
-	border-radius: 14px 14px 14px 4px;
+	border-radius: var(--wpdsac-message-radius) var(--wpdsac-message-radius) var(--wpdsac-message-radius) calc(var(--wpdsac-message-radius) / 3);
 	background: var(--wpdsac-bot-message);
+	color: var(--wpdsac-bot-text);
+}
+
+.wpdsac-chat__messages {
+	max-height: var(--wpdsac-messages-height);
+	overflow-y: auto;
+	overscroll-behavior: contain;
 }
 
 .wpdsac-chat__message--user {
 	margin-left: 36px;
-	border-radius: 14px 14px 4px;
-	background: var(--wpdsac-accent);
-	color: var(--wpdsac-accent-text);
+	border-radius: var(--wpdsac-message-radius) var(--wpdsac-message-radius) calc(var(--wpdsac-message-radius) / 3) var(--wpdsac-message-radius);
+	background: var(--wpdsac-user-message);
+	color: var(--wpdsac-user-text);
 }
 
 .wpdsac-chat__form {
@@ -86,12 +138,17 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	min-width: 0;
 	padding: 11px 12px;
 	border: 1px solid var(--wpdsac-border);
-	border-radius: var(--wpdsac-radius);
+	border-radius: var(--wpdsac-input-radius);
+	background: var(--wpdsac-input);
+	color: var(--wpdsac-input-text);
 	font: inherit;
 }
 
 .wpdsac-chat__form button {
 	padding: 0 16px;
+	border-radius: var(--wpdsac-input-radius);
+	background: var(--wpdsac-send);
+	color: var(--wpdsac-send-text);
 	font: inherit;
 	font-weight: 700;
 }
@@ -171,8 +228,8 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 }
 
 @media (max-width: 480px) {
-	body > .wpdsac-chat.wpdsac-position--bottom-left,
-	body > .wpdsac-chat.wpdsac-position--bottom-right {
+	body > .wpdsac-chat.is-expanded.wpdsac-position--bottom-left,
+	body > .wpdsac-chat.is-expanded.wpdsac-position--bottom-right {
 		right: 12px;
 		bottom: 12px;
 		left: 12px;

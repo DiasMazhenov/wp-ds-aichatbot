@@ -9,6 +9,7 @@ define( 'ABSPATH', __DIR__ . '/' );
 define( 'DAY_IN_SECONDS', 86400 );
 define( 'MINUTE_IN_SECONDS', 60 );
 define( 'WPDSAC_PATH', dirname( __DIR__, 2 ) . '/' );
+define( 'WPDSAC_VERSION', '0.5.11' );
 
 $GLOBALS['wpdsac_test_options'] = array();
 $GLOBALS['wpdsac_test_settings_errors'] = array();

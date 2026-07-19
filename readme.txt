@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.10
+Stable tag: 0.5.11
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,7 +16,7 @@ WP DS AI Chatbot provides one secure chatbot renderer for shortcode, global disp
 
 API keys remain server-side. Public requests use signed sessions, atomic rate limits, an in-flight session lock, and a configurable rolling 24-hour request budget.
 
-The plugin settings include a live chat preview with shared colors, width, typography, corner radius, global position, and offsets. The same appearance applies to global, shortcode, and Elementor chatbots.
+The Design tab includes separate colors for the header, panel, assistant and visitor messages, input and send button; layout, typography, radii, spacing, shadow and launcher size controls; and open/collapsed live preview. The same appearance applies to global, shortcode, and Elementor chatbots. The collapsed chatbot is a compact circular launcher.
 
 Optional lead collection adds a name/email form inside the chat with required consent, bounded retention, scheduled cleanup, rate limits, and WordPress privacy export/erasure.
 
@@ -31,6 +31,11 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.11 =
+* Show the current plugin version beside its name across administrative screens and menus.
+* Expand chat design controls with grouped colors, typography, layout, shapes, and live states.
+* Render the collapsed chatbot as a configurable circular launcher.
 
 = 0.5.10 =
 * Add native DeepSeek Chat Completions support with optional thinking mode.

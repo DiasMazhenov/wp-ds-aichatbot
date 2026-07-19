@@ -48,7 +48,11 @@ final class ChatbotWidget extends \Elementor\Widget_Base {
 	 * @return string
 	 */
 	public function get_title(): string {
-		return esc_html__( 'DS AI Chatbot', 'wp-ds-aichatbot' );
+		return sprintf(
+			/* translators: %s: current plugin version. */
+			esc_html__( 'DS AI Chatbot v%s', 'wp-ds-aichatbot' ),
+			esc_html( WPDSAC_VERSION )
+		);
 	}
 
 	/**

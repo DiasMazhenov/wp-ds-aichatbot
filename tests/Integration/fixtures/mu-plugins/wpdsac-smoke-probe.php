@@ -163,7 +163,9 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$global_settings                    = is_array( $settings ) ? $settings : array();
 	$global_settings['global_enabled']  = true;
 	$global_settings['accent_color']    = '#123456';
+	$global_settings['user_message_color'] = '#654321';
 	$global_settings['chat_width']      = 512;
+	$global_settings['launcher_size']   = 72;
 	$global_settings['global_position'] = 'bottom_left';
 	update_option( 'wpdsac_settings', $global_settings, false );
 
@@ -463,7 +465,9 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'shortcode_escaped'           => false === stripos( $shortcode_html, '<script' ),
 			'global_widget_rendered'      => false !== strpos( $global_html, 'wpdsac-chat' ),
 			'appearance_rendered'         => false !== strpos( $global_html, '--wpdsac-accent:#123456;' )
-				&& false !== strpos( $global_html, '--wpdsac-width:512px;' ),
+				&& false !== strpos( $global_html, '--wpdsac-user-message:#654321;' )
+				&& false !== strpos( $global_html, '--wpdsac-width:512px;' )
+				&& false !== strpos( $global_html, '--wpdsac-launcher-size:72px;' ),
 			'appearance_positioned'       => false !== strpos( $global_html, 'wpdsac-position--bottom-left' ),
 			'appearance_sanitized'        => $appearance_sanitized,
 			'admin_preview_assets'        => $admin_preview_assets,

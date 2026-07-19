@@ -10,6 +10,7 @@ namespace DiasMazhenov\WPDsAiChatbot\Admin;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\PostIndexer;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\PdfIndexer;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Repository;
+use DiasMazhenov\WPDsAiChatbot\Support\PluginInfo;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -69,9 +70,11 @@ final class KnowledgePage {
 	 * @return void
 	 */
 	public function add_page(): void {
+		$label = PluginInfo::versioned_label( __( 'DS AI Knowledge', 'wp-ds-aichatbot' ) );
+
 		add_management_page(
-			esc_html__( 'DS AI Knowledge', 'wp-ds-aichatbot' ),
-			esc_html__( 'DS AI Knowledge', 'wp-ds-aichatbot' ),
+			esc_html( $label ),
+			esc_html( $label ),
 			'manage_options',
 			'wpdsac-knowledge',
 			array( $this, 'render_page' )
@@ -105,7 +108,7 @@ final class KnowledgePage {
 		);
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'DS AI Knowledge', 'wp-ds-aichatbot' ); ?></h1>
+			<h1><?php echo esc_html( PluginInfo::versioned_label( __( 'DS AI Knowledge', 'wp-ds-aichatbot' ) ) ); ?></h1>
 			<?php if ( null !== $indexed ) : ?>
 				<div class="notice notice-success is-dismissible"><p>
 					<?php

@@ -122,4 +122,50 @@
       target.textContent = input.value;
     });
   });
+
+  const fontStacks = {
+    system: '-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',
+    modern: 'Arial,"Helvetica Neue",sans-serif',
+    rounded: 'ui-rounded,"Arial Rounded MT Bold",sans-serif',
+    mono: 'ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace',
+  };
+  const fontSelect = document.querySelector('[data-wpdsac-font-select]');
+
+  if (fontSelect) {
+    fontSelect.addEventListener('change', () => {
+      preview.style.setProperty(
+        '--wpdsac-font-family',
+        fontStacks[fontSelect.value] || fontStacks.system
+      );
+    });
+  }
+
+  const iconToggle = document.querySelector('[data-wpdsac-preview-icon]');
+
+  if (iconToggle) {
+    iconToggle.addEventListener('change', () => {
+      preview.classList.toggle('wpdsac-hide-header-icon', !iconToggle.checked);
+    });
+  }
+
+  const previewPanel = preview.querySelector('[data-wpdsac-preview-panel]');
+  const previewStateButtons = document.querySelectorAll('[data-wpdsac-preview-state]');
+
+  previewStateButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const expanded = button.dataset.wpdsacPreviewState === 'expanded';
+
+      preview.classList.toggle('is-expanded', expanded);
+
+      if (previewPanel) {
+        previewPanel.hidden = !expanded;
+      }
+
+      previewStateButtons.forEach((stateButton) => {
+        const active = stateButton === button;
+        stateButton.classList.toggle('is-active', active);
+        stateButton.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+    });
+  });
 })();
