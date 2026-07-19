@@ -79,6 +79,8 @@ final class AppearanceSettings {
 		}
 
 		if ( $is_settings_page ) {
+			wp_enqueue_media();
+
 			wp_enqueue_style(
 				'wpdsac-admin-chat-preview',
 				WPDSAC_URL . 'assets/build/chat.css',
@@ -118,6 +120,8 @@ final class AppearanceSettings {
 				'configuredNo'        => __( 'No', 'wp-ds-aichatbot' ),
 				'lightTheme'          => __( 'Light mode', 'wp-ds-aichatbot' ),
 				'darkTheme'           => __( 'Dark mode', 'wp-ds-aichatbot' ),
+				'chooseAvatar'        => __( 'Select chatbot avatar', 'wp-ds-aichatbot' ),
+				'useAvatar'           => __( 'Use this avatar', 'wp-ds-aichatbot' ),
 				'providerDiagnostics' => Settings::all_provider_diagnostics(),
 			)
 		);
@@ -184,7 +188,9 @@ final class AppearanceSettings {
 	 * @return void
 	 */
 	public function render_preview(): void {
-		$options = Settings::get();
+		$options    = Settings::get();
+		$avatar_url = ! empty( $options['bot_avatar_id'] ) ? wp_get_attachment_image_url( absint( $options['bot_avatar_id'] ), 'thumbnail' ) : '';
+		$avatar_url = $avatar_url ? $avatar_url : WPDSAC_URL . 'wp-chatbot.svg';
 		?>
 		<div class="wpdsac-admin-preview-wrap" aria-live="polite">
 			<h2><?php esc_html_e( 'Live preview', 'wp-ds-aichatbot' ); ?></h2>
@@ -206,9 +212,14 @@ final class AppearanceSettings {
 						<svg class="wpdsac-chat__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2.75c.47 4.88 4.37 8.78 9.25 9.25-4.88.47-8.78 4.37-9.25 9.25C11.53 16.37 7.63 12.47 2.75 12 7.63 11.53 11.53 7.63 12 2.75Z"/></svg>
 					</button>
 					<div class="wpdsac-chat__panel" data-wpdsac-preview-panel>
-						<p class="wpdsac-chat__message wpdsac-chat__message--bot">
-							<?php echo nl2br( esc_html( (string) $options['welcome_message'] ) ); ?>
-						</p>
+						<div class="wpdsac-chat__messages">
+							<div class="wpdsac-chat__message-row wpdsac-chat__message-row--bot">
+								<img class="wpdsac-chat__avatar" src="<?php echo esc_url( $avatar_url ); ?>" width="32" height="32" alt="" data-wpdsac-admin-avatar>
+								<p class="wpdsac-chat__message wpdsac-chat__message--bot">
+									<?php echo nl2br( esc_html( (string) $options['welcome_message'] ) ); ?>
+								</p>
+							</div>
+						</div>
 						<div class="wpdsac-chat__form">
 							<input type="text" placeholder="<?php echo esc_attr( (string) $options['message_placeholder'] ); ?>" disabled>
 							<button type="button" disabled><?php esc_html_e( 'Send', 'wp-ds-aichatbot' ); ?></button>

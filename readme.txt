@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.26
+Stable tag: 0.5.27
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,12 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.27 =
+* Show the configurable chatbot avatar beside every assistant message and in the name prompt.
+* Add delayed, scroll, exit-intent, immediate, and disabled introductory bubble triggers.
+* Apply visitor-name templates to the welcome message and improve responsive chat layout.
+* Give the introductory bubble a translucent blurred surface.
 
 = 0.5.26 =
 * Keep the introductory bubble text inside its responsive bounds at large font sizes.

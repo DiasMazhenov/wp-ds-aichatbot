@@ -818,3 +818,45 @@ msgid "Use {username} to insert the visitor name, for example: {username}, hello
 msgstr "Используйте {username}, чтобы вставить имя посетителя. Например: {username}, привет!"
 msgid "Use {username} to insert the visitor name. The (username) alias is also supported."
 msgstr "Используйте {username}, чтобы вставить имя посетителя. Алиас (username) также поддерживается."
+
+msgid "Intro bubble trigger"
+msgstr "Триггер приветственного баббла"
+
+msgid "Intro bubble delay (seconds)"
+msgstr "Задержка приветственного баббла (секунды)"
+
+msgid "After a delay"
+msgstr "После задержки"
+
+msgid "After 50% page scroll"
+msgstr "После прокрутки 50% страницы"
+
+msgid "On exit intent"
+msgstr "При попытке уйти со страницы"
+
+msgid "Immediately"
+msgstr "Сразу"
+
+msgid "Do not show automatically"
+msgstr "Не показывать автоматически"
+
+msgid "The name request remains inside the chat when a visitor opens it before the bubble appears."
+msgstr "Если посетитель откроет чат раньше появления баббла, запрос имени останется внутри чата."
+
+msgid "Chatbot avatar"
+msgstr "Аватар чат-бота"
+
+msgid "Choose avatar"
+msgstr "Выбрать аватар"
+
+msgid "Remove avatar"
+msgstr "Удалить аватар"
+
+msgid "Select chatbot avatar"
+msgstr "Выберите аватар чат-бота"
+
+msgid "Use this avatar"
+msgstr "Использовать этот аватар"
+
+msgid "The avatar appears beside every assistant message, like in WhatsApp or Telegram."
+msgstr "Аватар показывается возле каждого сообщения ассистента, как в WhatsApp или Telegram."

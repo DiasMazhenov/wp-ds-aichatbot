@@ -105,10 +105,14 @@ final class CoreSecurityTest extends TestCase {
 
 		$settings = new Settings();
 		$sound    = ( new ReflectionClass( $settings ) )->getMethod( 'sanitize_reply_sound' );
+		$trigger  = ( new ReflectionClass( $settings ) )->getMethod( 'sanitize_intro_trigger' );
 		if ( PHP_VERSION_ID < 80100 ) {
 			$sound->setAccessible( true );
+			$trigger->setAccessible( true );
 		}
 		$this->assertSame( 'soft', $sound->invoke( $settings, 'LOUD' ) );
+		$this->assertSame( 'scroll', $trigger->invoke( $settings, 'scroll' ) );
+		$this->assertSame( 'delay', $trigger->invoke( $settings, 'javascript:alert(1)' ) );
 	}
 
 	public function test_deepseek_request_uses_chat_completions_without_exposing_reasoning(): void {
@@ -200,7 +204,7 @@ final class CoreSecurityTest extends TestCase {
 	}
 
 	public function test_administrative_label_uses_current_plugin_version(): void {
-		$this->assertSame( 'DS AI Chatbot v0.5.26', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
+		$this->assertSame( 'DS AI Chatbot v0.5.27', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
 	}
 
 	public function test_settings_remain_the_default_plugin_submenu(): void {
@@ -225,7 +229,7 @@ final class CoreSecurityTest extends TestCase {
 			)
 		);
 
-		$this->assertSame( 'WP DS AI Chatbot v0.5.26', $plugins[ $plugin_file ]['Name'] );
-		$this->assertSame( 'WP DS AI Chatbot v0.5.26', $plugins[ $plugin_file ]['Title'] );
+		$this->assertSame( 'WP DS AI Chatbot v0.5.27', $plugins[ $plugin_file ]['Name'] );
+		$this->assertSame( 'WP DS AI Chatbot v0.5.27', $plugins[ $plugin_file ]['Title'] );
 	}
 }

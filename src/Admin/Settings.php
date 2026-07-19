@@ -81,6 +81,9 @@ final class Settings {
 				'welcome_message'         => __( 'Hello! How can I help you?', 'wp-ds-aichatbot' ),
 				'message_placeholder'     => __( 'Type your message…', 'wp-ds-aichatbot' ),
 				'reply_sound'             => 'soft',
+				'intro_trigger'           => 'delay',
+				'intro_delay_seconds'     => 10,
+				'bot_avatar_id'           => 0,
 				'rate_limit_requests'     => 10,
 				'rate_limit_window'       => 60,
 				'daily_request_limit'     => 500,
@@ -303,6 +306,9 @@ final class Settings {
 		$this->add_field( 'welcome_message', __( 'Welcome message', 'wp-ds-aichatbot' ), 'textarea' );
 		$this->add_field( 'message_placeholder', __( 'Message input placeholder', 'wp-ds-aichatbot' ), 'text' );
 		$this->add_field( 'reply_sound', __( 'Reply notification sound', 'wp-ds-aichatbot' ), 'sound_select' );
+		$this->add_field( 'intro_trigger', __( 'Intro bubble trigger', 'wp-ds-aichatbot' ), 'intro_trigger_select' );
+		$this->add_field( 'intro_delay_seconds', __( 'Intro bubble delay (seconds)', 'wp-ds-aichatbot' ), 'number' );
+		$this->add_field( 'bot_avatar_id', __( 'Chatbot avatar', 'wp-ds-aichatbot' ), 'media' );
 		$this->add_field( 'rate_limit_requests', __( 'Requests per window', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'rate_limit_window', __( 'Rate-limit window (seconds)', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'daily_request_limit', __( 'AI requests per 24 hours', 'wp-ds-aichatbot' ), 'number' );
@@ -367,6 +373,9 @@ final class Settings {
 			'welcome_message'         => sanitize_textarea_field( $input['welcome_message'] ?? '' ),
 			'message_placeholder'     => sanitize_text_field( $input['message_placeholder'] ?? '' ),
 			'reply_sound'             => $this->sanitize_reply_sound( $input['reply_sound'] ?? 'soft' ),
+			'intro_trigger'           => $this->sanitize_intro_trigger( $input['intro_trigger'] ?? 'delay' ),
+			'intro_delay_seconds'     => min( 300, max( 0, absint( $input['intro_delay_seconds'] ?? 10 ) ) ),
+			'bot_avatar_id'           => absint( $input['bot_avatar_id'] ?? 0 ),
 			'rate_limit_requests'     => min( 100, max( 1, absint( $input['rate_limit_requests'] ?? 10 ) ) ),
 			'rate_limit_window'       => min( HOUR_IN_SECONDS, max( 10, absint( $input['rate_limit_window'] ?? 60 ) ) ),
 			'daily_request_limit'     => min( 100000, absint( $input['daily_request_limit'] ?? 500 ) ),
@@ -425,6 +434,19 @@ final class Settings {
 		$allowed = array( 'off', 'soft', 'chime', 'pop' );
 
 		return in_array( $value, $allowed, true ) ? $value : 'soft';
+	}
+
+	/**
+	 * Restrict the intro bubble to supported browser triggers.
+	 *
+	 * @param mixed $value Submitted trigger ID.
+	 * @return string
+	 */
+	private function sanitize_intro_trigger( $value ): string {
+		$value   = sanitize_key( is_string( $value ) ? $value : '' );
+		$allowed = array( 'delay', 'scroll', 'exit', 'immediate', 'disabled' );
+
+		return in_array( $value, $allowed, true ) ? $value : 'delay';
 	}
 
 	/**
@@ -778,6 +800,16 @@ final class Settings {
 			return;
 		}
 
+		if ( 'intro_trigger_select' === $args['type'] ) {
+			$this->render_intro_trigger_select( $name, (string) $options[ $key ] );
+			return;
+		}
+
+		if ( 'media' === $args['type'] ) {
+			$this->render_avatar_field( $name, absint( $options[ $key ] ) );
+			return;
+		}
+
 		if ( 'checkbox' === $args['type'] ) {
 			$descriptions = array(
 				'global_enabled'       => __( 'Show the chatbot globally in the site footer.', 'wp-ds-aichatbot' ),
@@ -827,7 +859,7 @@ final class Settings {
 		}
 
 		if ( 'number' === $args['type'] ) {
-			$minimum = 'daily_request_limit' === $key ? 0 : 1;
+			$minimum = in_array( $key, array( 'daily_request_limit', 'intro_delay_seconds' ), true ) ? 0 : 1;
 
 			printf(
 				'<input class="small-text" type="number" min="%1$d" step="1" name="%2$s" value="%3$d">',
@@ -1022,6 +1054,62 @@ final class Settings {
 			esc_html__( 'Play', 'wp-ds-aichatbot' ),
 			esc_html__( 'A short quiet sound plays only after the assistant replies.', 'wp-ds-aichatbot' )
 		);
+	}
+
+	/**
+	 * Render the automatic intro bubble trigger selector.
+	 *
+	 * @param string $name    Input name.
+	 * @param string $current Selected trigger ID.
+	 * @return void
+	 */
+	private function render_intro_trigger_select( string $name, string $current ): void {
+		$options = array(
+			'delay'     => __( 'After a delay', 'wp-ds-aichatbot' ),
+			'scroll'    => __( 'After 50% page scroll', 'wp-ds-aichatbot' ),
+			'exit'      => __( 'On exit intent', 'wp-ds-aichatbot' ),
+			'immediate' => __( 'Immediately', 'wp-ds-aichatbot' ),
+			'disabled'  => __( 'Do not show automatically', 'wp-ds-aichatbot' ),
+		);
+
+		printf( '<select name="%1$s">', esc_attr( $name ) );
+		foreach ( $options as $value => $label ) {
+			printf(
+				'<option value="%1$s" %2$s>%3$s</option>',
+				esc_attr( $value ),
+				selected( $current, $value, false ),
+				esc_html( $label )
+			);
+		}
+		echo '</select>';
+		printf(
+			'<p class="description">%s</p>',
+			esc_html__( 'The name request remains inside the chat when a visitor opens it before the bubble appears.', 'wp-ds-aichatbot' )
+		);
+	}
+
+	/**
+	 * Render the WordPress media-library avatar picker.
+	 *
+	 * @param string $name          Input name.
+	 * @param int    $attachment_id Selected attachment ID.
+	 * @return void
+	 */
+	private function render_avatar_field( string $name, int $attachment_id ): void {
+		$default_url = WPDSAC_URL . 'wp-chatbot.svg';
+		$avatar_url  = $attachment_id ? wp_get_attachment_image_url( $attachment_id, 'thumbnail' ) : '';
+		$avatar_url  = $avatar_url ? $avatar_url : $default_url;
+		?>
+		<div class="wpdsac-avatar-control" data-wpdsac-avatar-control data-wpdsac-default-avatar="<?php echo esc_url( $default_url ); ?>">
+			<img src="<?php echo esc_url( $avatar_url ); ?>" width="64" height="64" alt="" data-wpdsac-avatar-preview>
+			<input type="hidden" name="<?php echo esc_attr( $name ); ?>" value="<?php echo absint( $attachment_id ); ?>" data-wpdsac-avatar-id>
+			<div>
+				<button type="button" class="button" data-wpdsac-avatar-select><?php esc_html_e( 'Choose avatar', 'wp-ds-aichatbot' ); ?></button>
+				<button type="button" class="button-link-delete" data-wpdsac-avatar-remove<?php echo $attachment_id ? '' : ' hidden'; ?>><?php esc_html_e( 'Remove avatar', 'wp-ds-aichatbot' ); ?></button>
+			</div>
+		</div>
+		<p class="description"><?php esc_html_e( 'The avatar appears beside every assistant message, like in WhatsApp or Telegram.', 'wp-ds-aichatbot' ); ?></p>
+		<?php
 	}
 
 	/**

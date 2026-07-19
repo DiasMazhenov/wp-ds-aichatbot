@@ -140,14 +140,25 @@
 
 	const appendMessage = (chat, message, role) => {
 		const messages = chat.querySelector('.wpdsac-chat__messages');
+		const row = document.createElement('div');
 		const item = document.createElement('p');
+		row.className = `wpdsac-chat__message-row wpdsac-chat__message-row--${role}`;
 		item.className = `wpdsac-chat__message wpdsac-chat__message--${role}`;
 		if (role === 'bot') {
+			const avatar = document.createElement('img');
+			avatar.className = 'wpdsac-chat__avatar';
+			avatar.src = chat.dataset.wpdsacAvatarUrl || '';
+			avatar.alt = '';
+			avatar.width = 32;
+			avatar.height = 32;
+			avatar.decoding = 'async';
+			row.appendChild(avatar);
 			appendLinkedText(item, message);
 		} else {
 			item.textContent = message;
 		}
-		messages.appendChild(item);
+		row.appendChild(item);
+		messages.appendChild(row);
 		messages.scrollTop = messages.scrollHeight;
 	};
 
@@ -165,12 +176,68 @@
 		if (conversation) {
 			conversation.hidden = false;
 		}
+		chat.querySelectorAll('[data-wpdsac-message-template]').forEach((message) => {
+			message.textContent = message.dataset.wpdsacMessageTemplate
+				.split('{username}').join(name)
+				.split('(username)').join(name);
+		});
 		if (leadName && name) {
 			leadName.value = name;
 		}
 		if (intro) {
 			intro.hidden = true;
 		}
+	};
+
+	const showIntroBubble = (chat) => {
+		const intro = chat.querySelector('[data-wpdsac-intro-bubble]');
+		const expanded = chat.querySelector('.wpdsac-chat__toggle')?.getAttribute('aria-expanded') === 'true';
+
+		if (intro && !expanded && !getVisitorName()) {
+			intro.hidden = false;
+		}
+	};
+
+	const scheduleIntroBubble = (chat) => {
+		if (getVisitorName()) {
+			return;
+		}
+
+		const trigger = chat.dataset.wpdsacIntroTrigger || 'delay';
+		const delay = Math.max(0, Math.min(300, Number.parseInt(chat.dataset.wpdsacIntroDelay || '10', 10))) * 1000;
+
+		if (trigger === 'disabled') {
+			return;
+		}
+		if (trigger === 'immediate') {
+			showIntroBubble(chat);
+			return;
+		}
+		if (trigger === 'scroll') {
+			const onScroll = () => {
+				const pageHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+				if (pageHeight > 0 && (window.scrollY + window.innerHeight) / pageHeight >= 0.5) {
+					window.removeEventListener('scroll', onScroll);
+					showIntroBubble(chat);
+				}
+			};
+			window.addEventListener('scroll', onScroll, {passive: true});
+			onScroll();
+			return;
+		}
+		if (trigger === 'exit' && !window.matchMedia('(pointer: coarse)').matches) {
+			const onExit = (event) => {
+				if (event.clientY > 0) {
+					return;
+				}
+				document.removeEventListener('mouseout', onExit);
+				showIntroBubble(chat);
+			};
+			document.addEventListener('mouseout', onExit);
+			return;
+		}
+
+		window.setTimeout(() => showIntroBubble(chat), delay);
 	};
 
 	const setExpanded = (chat, expanded) => {
@@ -181,6 +248,10 @@
 		chat.classList.toggle('is-expanded', expanded);
 
 		if (expanded) {
+			const intro = chat.querySelector('[data-wpdsac-intro-bubble]');
+			if (intro) {
+				intro.hidden = true;
+			}
 			const name = getVisitorName();
 			if (name) {
 				revealConversation(chat, name);
@@ -195,6 +266,8 @@
 		const name = getVisitorName();
 		if (name) {
 			revealConversation(chat, name);
+		} else {
+			scheduleIntroBubble(chat);
 		}
 	});
 
@@ -308,6 +381,7 @@
 		event.preventDefault();
 
 		const button = form.querySelector('button[type="submit"]');
+		const chat = form.closest('[data-wpdsac-chat]');
 		const lead = form.closest('[data-wpdsac-lead]');
 		const status = lead.querySelector('[data-wpdsac-lead-status]');
 		const name = form.elements.name.value.trim();

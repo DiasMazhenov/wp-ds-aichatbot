@@ -53,6 +53,7 @@ assert.match(adminScript, /wpdsac_credential_payload/);
 assert.match(adminScript, /Credential preflight/);
 assert.match(adminScript, /removeProperty\('display'\)/);
 assert.match(adminScript, /wpdsacAdminTheme/);
+assert.match(adminScript, /window\.wp\.media/);
 assert.match(adminStyles, /wpdsac-admin-theme-dark/);
 assert.doesNotMatch(adminScript, /providerTargets/);
 assert.match(settingsPhp, /data-wpdsac-provider-field/);
@@ -75,11 +76,18 @@ assert.match(chatScript, /wpdsacVisitorName/);
 assert.match(chatScript, /createOscillator/);
 assert.match(chatStyles, /white-space:\s*normal !important/);
 assert.match(chatScript, /visitor_name/);
+assert.match(chatScript, /scheduleIntroBubble/);
+assert.match(chatScript, /wpdsacAvatarUrl/);
+assert.match(chatScript, /wpdsacMessageTemplate/);
+assert.match(chatStyles, /backdrop-filter:\s*blur/);
+assert.match(chatStyles, /wpdsac-chat__message-row/);
 assert.match(settingsPhp, /reply_sound/);
 assert.match(settingsPhp, /\{username\}/);
 assert.match(providerManagerPhp, /Visitor name \(untrusted profile data\)/);
 assert.match(chatbotTemplate, /data-wpdsac-open-lead/);
 assert.match(chatbotTemplate, /data-wpdsac-name-form/);
+assert.match(chatbotTemplate, /data-wpdsac-intro-trigger/);
+assert.match(chatbotTemplate, /wpdsac-chat__avatar/);
 assert.match(leadNotifierPhp, /wp_mail/);
 assert.match(settingsPhp, /Knowledge/);
 assert.match(settingsPhp, /prompt_guard_enabled/);
@@ -112,7 +120,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.26',
+    plugin_version: '0.5.27',
     db_version: '6',
     rate_limit_table: true,
     request_lock_table: true,

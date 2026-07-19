@@ -399,6 +399,52 @@
     });
   }
 
+	const avatarControl = document.querySelector('[data-wpdsac-avatar-control]');
+
+	if (avatarControl && window.wp?.media) {
+		const avatarId = avatarControl.querySelector('[data-wpdsac-avatar-id]');
+		const avatarPreview = avatarControl.querySelector('[data-wpdsac-avatar-preview]');
+		const selectAvatar = avatarControl.querySelector('[data-wpdsac-avatar-select]');
+		const removeAvatar = avatarControl.querySelector('[data-wpdsac-avatar-remove]');
+		let mediaFrame = null;
+
+		const updateAvatar = (id, url) => {
+			const hasAvatar = Number.parseInt(id, 10) > 0;
+			avatarId.value = id;
+			avatarPreview.src = url;
+			removeAvatar.hidden = !hasAvatar;
+			document.querySelectorAll('[data-wpdsac-admin-avatar]').forEach((image) => {
+				image.src = url;
+			});
+			avatarId.dispatchEvent(new Event('change', {bubbles: true}));
+		};
+
+		selectAvatar.addEventListener('click', () => {
+			if (!mediaFrame) {
+				mediaFrame = window.wp.media({
+					title: window.wpdsacAdmin?.chooseAvatar || 'Select chatbot avatar',
+					button: {text: window.wpdsacAdmin?.useAvatar || 'Use this avatar'},
+					library: {type: 'image'},
+					multiple: false,
+				});
+
+				mediaFrame.on('select', () => {
+					const attachment = mediaFrame.state().get('selection').first()?.toJSON();
+					if (!attachment) {
+						return;
+					}
+					updateAvatar(attachment.id, attachment.sizes?.thumbnail?.url || attachment.url);
+				});
+			}
+
+			mediaFrame.open();
+		});
+
+		removeAvatar.addEventListener('click', () => {
+			updateAvatar('0', avatarControl.dataset.wpdsacDefaultAvatar);
+		});
+	}
+
   const preview = document.querySelector('[data-wpdsac-preview]');
 
   if (!preview) {

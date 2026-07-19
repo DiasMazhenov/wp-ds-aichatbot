@@ -49,13 +49,21 @@ final class Renderer {
 	 * @return string
 	 */
 	public function render( array $args = array() ): string {
-		$options = wp_parse_args( $args, Settings::get() );
-		$view    = array(
+		$options    = wp_parse_args( $args, Settings::get() );
+		$avatar_url = ! empty( $options['bot_avatar_id'] ) ? wp_get_attachment_image_url( absint( $options['bot_avatar_id'] ), 'thumbnail' ) : '';
+		$avatar_url = $avatar_url ? $avatar_url : WPDSAC_URL . 'wp-chatbot.svg';
+		$triggers   = array( 'delay', 'scroll', 'exit', 'immediate', 'disabled' );
+		$trigger    = sanitize_key( (string) $options['intro_trigger'] );
+		$trigger    = in_array( $trigger, $triggers, true ) ? $trigger : 'delay';
+		$view       = array(
 			'id'                  => wp_unique_id( 'wpdsac-chat-' ),
 			'title'               => sanitize_text_field( (string) $options['title'] ),
 			'welcome_message'     => sanitize_textarea_field( (string) $options['welcome_message'] ),
 			'message_placeholder' => sanitize_text_field( (string) $options['message_placeholder'] ),
 			'reply_sound'         => sanitize_key( (string) $options['reply_sound'] ),
+			'intro_trigger'       => $trigger,
+			'intro_delay'         => min( 300, max( 0, absint( $options['intro_delay_seconds'] ) ) ),
+			'avatar_url'          => $avatar_url,
 			'expanded'            => ! empty( $options['expanded'] ),
 			'appearance'          => Appearance::inline_style( $options ),
 			'position_class'      => Appearance::position_class( $options ),
