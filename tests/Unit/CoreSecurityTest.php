@@ -8,6 +8,7 @@
 use DiasMazhenov\WPDsAiChatbot\Api\LeadController;
 use DiasMazhenov\WPDsAiChatbot\Api\SessionToken;
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
+use DiasMazhenov\WPDsAiChatbot\Admin\PluginList;
 use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
 use DiasMazhenov\WPDsAiChatbot\AI\DeepSeekProvider;
 use DiasMazhenov\WPDsAiChatbot\Chat\Appearance;
@@ -135,6 +136,21 @@ final class CoreSecurityTest extends TestCase {
 	}
 
 	public function test_administrative_label_uses_current_plugin_version(): void {
-		$this->assertSame( 'DS AI Chatbot v0.5.11', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
+		$this->assertSame( 'DS AI Chatbot v0.5.12', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
+	}
+
+	public function test_plugins_screen_name_contains_current_version(): void {
+		$plugin_file = 'wp-ds-aichatbot/wp-ds-aichatbot.php';
+		$plugins     = ( new PluginList() )->append_version(
+			array(
+				$plugin_file => array(
+					'Name'  => 'WP DS AI Chatbot',
+					'Title' => 'WP DS AI Chatbot',
+				),
+			)
+		);
+
+		$this->assertSame( 'WP DS AI Chatbot v0.5.12', $plugins[ $plugin_file ]['Name'] );
+		$this->assertSame( 'WP DS AI Chatbot v0.5.12', $plugins[ $plugin_file ]['Title'] );
 	}
 }

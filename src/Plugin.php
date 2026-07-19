@@ -10,6 +10,7 @@ namespace DiasMazhenov\WPDsAiChatbot;
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 use DiasMazhenov\WPDsAiChatbot\Admin\KnowledgePage;
 use DiasMazhenov\WPDsAiChatbot\Admin\LeadsPage;
+use DiasMazhenov\WPDsAiChatbot\Admin\PluginList;
 use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
 use DiasMazhenov\WPDsAiChatbot\AI\AnthropicProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\DeepSeekProvider;
@@ -124,6 +125,7 @@ final class Plugin {
 		( new Integration( $renderer ) )->register_hooks();
 
 		if ( is_admin() ) {
+			( new PluginList() )->register_hooks();
 			( new KnowledgePage( $post_indexer, $pdf_indexer, $knowledge ) )->register_hooks();
 			( new LeadsPage( $leads ) )->register_hooks();
 		}
