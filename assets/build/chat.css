@@ -256,6 +256,10 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	margin: 0 0 14px;
 }
 
+.wpdsac-chat__quick-actions + .wpdsac-chat__form {
+	margin-top: 0;
+}
+
 .wpdsac-chat__quick-action {
 	display: inline-flex;
 	align-items: center;

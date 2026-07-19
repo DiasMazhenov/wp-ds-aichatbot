@@ -93,7 +93,16 @@ assert.match(settingsPhp, /reply_sound/);
 assert.match(settingsPhp, /\{username\}/);
 assert.match(providerManagerPhp, /Visitor name \(untrusted profile data\)/);
 assert.match(chatbotTemplate, /data-wpdsac-open-lead/);
-assert.match(chatbotTemplate, /data-wpdsac-name-form/);
+assert.doesNotMatch(chatbotTemplate, /data-wpdsac-name-form/);
+assert.match(chatbotTemplate, /data-wpdsac-quick-actions/);
+assert.ok(
+  chatbotTemplate.indexOf('data-wpdsac-quick-actions') < chatbotTemplate.indexOf('data-wpdsac-form'),
+  'Quick actions should be rendered before the message form.',
+);
+assert.doesNotMatch(chatbotTemplate, /name="email"/);
+assert.match(chatScript, /hideQuickAction/);
+assert.match(chatScript, /openLeadForm/);
+assert.match(chatbotTemplate, /name="phone"[^>]+required/);
 assert.match(chatbotTemplate, /data-wpdsac-intro-trigger/);
 assert.match(chatbotTemplate, /wpdsac-chat__avatar/);
 assert.match(leadNotifierPhp, /wp_mail/);
@@ -128,7 +137,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.30',
+    plugin_version: '0.5.31',
     db_version: '6',
     rate_limit_table: true,
     request_lock_table: true,
@@ -240,7 +249,7 @@ try {
 		body: JSON.stringify({
 			session: session.body.token,
 			name: 'Runtime Lead',
-			email: 'runtime-lead@example.test',
+			phone: '+7 700 000 00 00',
 			consent: false,
 			website: '',
 		}),
@@ -253,7 +262,7 @@ try {
 		body: JSON.stringify({
 			session: session.body.token,
 			name: 'Runtime Lead',
-			email: 'runtime-lead@example.test',
+			phone: '+7 700 000 00 00',
 			consent: true,
 			website: '',
 		}),

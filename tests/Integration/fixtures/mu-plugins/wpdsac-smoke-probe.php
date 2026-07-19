@@ -487,7 +487,6 @@ function wpdsac_test_probe(): WP_REST_Response {
 	}
 
 	$lead_settings                        = is_array( $settings ) ? $settings : array();
-	$lead_settings['leads_enabled']       = true;
 	$lead_settings['lead_consent_text']   = 'I consent to a follow-up about my request.';
 	$lead_settings['lead_retention_days'] = 1;
 	$lead_settings['lead_notification_email'] = 'owner@example.test';
@@ -501,7 +500,6 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$lead_mail_sent = ( new \DiasMazhenov\WPDsAiChatbot\Data\LeadNotifier() )->send(
 		array(
 			'name'       => 'Lead Test',
-			'email'      => 'lead@example.test',
 			'phone'      => '+7 700 123 45 67',
 			'request'    => 'Please call me.',
 			'transcript' => 'Visitor: Hello',
@@ -512,8 +510,9 @@ function wpdsac_test_probe(): WP_REST_Response {
 
 	$lead_html     = do_shortcode( '[ds_ai_chatbot]' );
 	$lead_rendered = false !== strpos( $lead_html, 'data-wpdsac-lead-form' )
-		&& false !== strpos( $lead_html, 'data-wpdsac-name-form' )
+		&& false === strpos( $lead_html, 'data-wpdsac-name-form' )
 		&& false !== strpos( $lead_html, 'data-wpdsac-open-lead' )
+		&& false !== strpos( $lead_html, 'data-wpdsac-quick-actions' )
 		&& false !== strpos( $lead_html, 'href="tel:+77001234567"' )
 		&& false !== strpos( $lead_html, 'I consent to a follow-up' );
 	$lead_email    = 'wpdsac-lead-' . wp_generate_password( 8, false ) . '@example.test';

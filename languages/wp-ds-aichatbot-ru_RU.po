@@ -781,8 +781,8 @@ msgstr "Сообщений пока нет."
 msgid "Request"
 msgstr "Заявка"
 
-msgid "When contact collection is enabled, the chatbot stores the submitted name, email address, phone number, request text, consent text, and submission time for the configured retention period. The submitted chat transcript is emailed to the configured administrator address but is not stored with the lead. IP addresses and raw chat session identifiers are not stored. Contact requests can be exported or erased using the WordPress privacy tools."
-msgstr "Когда сбор заявок включён, чат-бот хранит имя, email, номер телефона, текст заявки, текст согласия и время отправки в течение заданного срока. Переписка отправляется на настроенный адрес администратора, но не хранится вместе с заявкой. IP-адреса и исходные идентификаторы сессий не сохраняются. Заявки можно экспортировать или удалить инструментами приватности WordPress."
+msgid "When a visitor chooses to leave contact details, the chatbot stores the submitted name, phone number, request text, consent text, and submission time for the configured retention period. The submitted chat transcript is emailed to the configured administrator address but is not stored with the lead. IP addresses and raw chat session identifiers are not stored."
+msgstr "Когда посетитель решает оставить контакты, чат-бот хранит имя, номер телефона, текст заявки, текст согласия и время отправки в течение заданного срока. Переписка отправляется на настроенный адрес администратора, но не хранится вместе с заявкой. IP-адреса и исходные идентификаторы сессий не сохраняются."
 msgid "Light mode"
 msgstr "Светлая тема"
 
@@ -860,3 +860,18 @@ msgstr "Использовать этот аватар"
 
 msgid "The avatar appears beside every assistant message, like in WhatsApp or Telegram."
 msgstr "Аватар показывается возле каждого сообщения ассистента, как в WhatsApp или Telegram."
+
+msgid "Call button URL"
+msgstr "URL кнопки звонка"
+
+msgid "Request button URL"
+msgstr "URL кнопки заявки"
+
+msgid "Leave empty to use the built-in action. The Call button also accepts a tel: URL."
+msgstr "Оставьте пустым для встроенного действия. Кнопка звонка также принимает URL формата tel:."
+
+msgid "Enter your name and a valid phone number."
+msgstr "Укажите имя и корректный номер телефона."
+
+msgid "Please leave your name and phone number, and we will contact you."
+msgstr "Оставьте, пожалуйста, ваше имя и номер телефона — мы свяжемся с вами."

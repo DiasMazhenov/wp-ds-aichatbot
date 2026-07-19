@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.30
+Stable tag: 0.5.31
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,7 +20,7 @@ Each request includes a sanitized, bounded copy of the current browser chat hist
 
 The Design tab includes separate colors for the header, panel, assistant and visitor messages, input and send button; layout, typography, radii, spacing, shadow and launcher size controls; and open/collapsed live preview. The same appearance applies to global, shortcode, and Elementor chatbots. The collapsed chatbot is a compact circular launcher.
 
-Optional lead collection adds a name/email/phone form inside the chat with required consent, editable quick actions, bounded retention, scheduled cleanup, rate limits, email notifications with the submitted transcript, and WordPress privacy export/erasure.
+Contact collection appears only after the visitor explicitly requests contact or presses the request action. The assistant asks for a required name and phone number, while consent, bounded retention, scheduled cleanup, rate limits, administrator email notifications, and a bounded transcript remain enforced.
 
 An optional knowledge layer indexes published WordPress pages, posts, administrator-managed FAQs, WooCommerce products, and selected text PDFs into a dedicated table. Relevant bounded fragments are added as untrusted reference context before any configured AI provider is called.
 
@@ -33,6 +33,13 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.31 =
+* Remove the mandatory pre-chat name gate and open the conversation immediately.
+* Show the name and required phone form only after explicit contact intent, with an assistant prompt before it.
+* Place quick actions directly above the message input and hide each action after it is used.
+* Add editable Call and Request URLs; an empty Request URL keeps the built-in contact form.
+* Remove the Contact form in chat toggle and the visitor email field.
 
 = 0.5.30 =
 * Deterministically remove a repeated provider greeting after the assistant has already greeted in the current conversation.

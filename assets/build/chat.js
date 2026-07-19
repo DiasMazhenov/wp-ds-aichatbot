@@ -6,6 +6,7 @@
 	const sessionStorageKey = 'wpdsacSessionToken';
 	const visitorNameStorageKey = 'wpdsacVisitorName';
 	const conversationHistoryStorageKey = 'wpdsacConversationHistory';
+	const hiddenQuickActionsStorageKey = 'wpdsacHiddenQuickActions';
 	const conversationLifetime = 24 * 60 * 60 * 1000;
 	let audioContext = null;
 
@@ -165,6 +166,12 @@
 	};
 
 	const getVisitorName = () => window.sessionStorage.getItem(visitorNameStorageKey) || '';
+	const formatVisitorTemplate = (template, name = '') => template
+		.split('{username}').join(name)
+		.split('(username)').join(name)
+		.replace(/\s+([!?,.:;])/gu, '$1')
+		.replace(/[ \t]{2,}/g, ' ')
+		.trim();
 
 	const getConversationHistory = (chat) => {
 		const entries = Array.from(chat.querySelectorAll('.wpdsac-chat__messages .wpdsac-chat__message'));
@@ -235,6 +242,7 @@
 
 		if (stored.expired) {
 			window.sessionStorage.removeItem(sessionStorageKey);
+			window.sessionStorage.removeItem(hiddenQuickActionsStorageKey);
 		}
 
 		if (!Array.isArray(history) || history.length === 0) {
@@ -259,37 +267,30 @@
 		}
 
 		const name = getVisitorName();
-		const welcome = (chat.dataset.wpdsacWelcomeMessage || '')
-			.split('{username}').join(name)
-			.split('(username)').join(name);
+		const welcome = formatVisitorTemplate(chat.dataset.wpdsacWelcomeMessage || '', name);
 		const messages = chat.querySelector('.wpdsac-chat__messages');
 		window.sessionStorage.removeItem(sessionStorageKey);
+		window.sessionStorage.removeItem(hiddenQuickActionsStorageKey);
 		messages.textContent = '';
 		appendMessage(chat, welcome, 'bot');
 	};
 
 	const revealConversation = (chat, name) => {
-		const gate = chat.querySelector('[data-wpdsac-name-gate]');
 		const conversation = chat.querySelector('[data-wpdsac-conversation]');
 		const leadName = chat.querySelector('[data-wpdsac-lead-form] [name="name"]');
 		const intro = chat.querySelector('[data-wpdsac-intro-bubble]');
 
-		if (gate) {
-			gate.hidden = true;
-		}
 		if (conversation) {
 			conversation.hidden = false;
 		}
 		chat.querySelectorAll('[data-wpdsac-message-template]').forEach((message) => {
-			message.textContent = message.dataset.wpdsacMessageTemplate
-				.split('{username}').join(name)
-				.split('(username)').join(name);
+			message.textContent = formatVisitorTemplate(message.dataset.wpdsacMessageTemplate, name);
 		});
+		if (intro) {
+			intro.textContent = formatVisitorTemplate(chat.dataset.wpdsacWelcomeMessage || '', name);
+		}
 		if (leadName && name) {
 			leadName.value = name;
-		}
-		if (intro) {
-			intro.hidden = true;
 		}
 	};
 
@@ -297,16 +298,12 @@
 		const intro = chat.querySelector('[data-wpdsac-intro-bubble]');
 		const expanded = chat.querySelector('.wpdsac-chat__toggle')?.getAttribute('aria-expanded') === 'true';
 
-		if (intro && !expanded && !getVisitorName()) {
+		if (intro && !expanded && getStoredConversation().entries.length <= 1) {
 			intro.hidden = false;
 		}
 	};
 
 	const scheduleIntroBubble = (chat) => {
-		if (getVisitorName()) {
-			return;
-		}
-
 		const trigger = chat.dataset.wpdsacIntroTrigger || 'delay';
 		const delay = Math.max(0, Math.min(300, Number.parseInt(chat.dataset.wpdsacIntroDelay || '10', 10))) * 1000;
 
@@ -356,24 +353,76 @@
 			if (intro) {
 				intro.hidden = true;
 			}
-			const name = getVisitorName();
-			if (name) {
-				revealConversation(chat, name);
-				chat.querySelector('[data-wpdsac-form] input')?.focus();
-			} else {
-				chat.querySelector('[data-wpdsac-name-form] input')?.focus();
-			}
+			revealConversation(chat, getVisitorName());
+			chat.querySelector('[data-wpdsac-form] input')?.focus();
 		}
+	};
+
+	const getHiddenQuickActions = () => {
+		try {
+			const actions = JSON.parse(window.sessionStorage.getItem(hiddenQuickActionsStorageKey) || '[]');
+			return Array.isArray(actions) ? actions : [];
+		} catch (error) {
+			return [];
+		}
+	};
+
+	const hideQuickAction = (action) => {
+		if (!action) {
+			return;
+		}
+
+		action.hidden = true;
+		const actionId = action.dataset.wpdsacQuickAction;
+		const hiddenActions = Array.from(new Set([...getHiddenQuickActions(), actionId]));
+
+		try {
+			window.sessionStorage.setItem(hiddenQuickActionsStorageKey, JSON.stringify(hiddenActions));
+		} catch (error) {
+			// The action remains hidden on the current page.
+		}
+
+		const container = action.closest('[data-wpdsac-quick-actions]');
+		if (container && !container.querySelector('[data-wpdsac-quick-action]:not([hidden])')) {
+			container.hidden = true;
+		}
+	};
+
+	const restoreQuickActions = (chat) => {
+		const hiddenActions = getHiddenQuickActions();
+		chat.querySelectorAll('[data-wpdsac-quick-action]').forEach((action) => {
+			if (hiddenActions.includes(action.dataset.wpdsacQuickAction)) {
+				action.hidden = true;
+			}
+		});
+
+		const container = chat.querySelector('[data-wpdsac-quick-actions]');
+		if (container && !container.querySelector('[data-wpdsac-quick-action]:not([hidden])')) {
+			container.hidden = true;
+		}
+	};
+
+	const openLeadForm = (chat) => {
+		const lead = chat.querySelector('[data-wpdsac-lead]');
+		if (!lead) {
+			return;
+		}
+
+		if (lead.hidden) {
+			appendMessage(chat, lead.dataset.wpdsacLeadPrompt || '', 'bot');
+			persistConversationHistory(chat);
+		}
+
+		lead.hidden = false;
+		lead.querySelector('input:not([type="hidden"])')?.focus();
+		lead.scrollIntoView({behavior: 'smooth', block: 'nearest'});
 	};
 
 	document.querySelectorAll('[data-wpdsac-chat]').forEach((chat) => {
 		restoreConversationHistory(chat);
-		const name = getVisitorName();
-		if (name) {
-			revealConversation(chat, name);
-		} else {
-			scheduleIntroBubble(chat);
-		}
+		restoreQuickActions(chat);
+		revealConversation(chat, getVisitorName());
+		scheduleIntroBubble(chat);
 	});
 
 	document.addEventListener('click', (event) => {
@@ -389,36 +438,17 @@
 		setExpanded(chat, toggle.matches('[data-wpdsac-intro-bubble]') ? true : !expanded);
 	});
 
-	document.addEventListener('submit', (event) => {
-		const form = event.target.closest('[data-wpdsac-name-form]');
-		if (!form) {
-			return;
-		}
-
-		event.preventDefault();
-		const name = form.elements.visitor_name.value.trim();
-		if (!name) {
-			form.reportValidity();
-			return;
-		}
-
-		window.sessionStorage.setItem(visitorNameStorageKey, name.slice(0, 100));
-		const chat = form.closest('[data-wpdsac-chat]');
-		revealConversation(chat, name);
-		chat.querySelector('[data-wpdsac-form] input')?.focus();
-	});
-
 	document.addEventListener('click', (event) => {
-		const button = event.target.closest('[data-wpdsac-open-lead]');
-		if (!button) {
+		const action = event.target.closest('[data-wpdsac-quick-action]');
+		if (!action) {
 			return;
 		}
 
-		const chat = button.closest('[data-wpdsac-chat]');
-		const lead = chat.querySelector('[data-wpdsac-lead]');
-		lead.hidden = false;
-		lead.querySelector('input:not([type="hidden"])')?.focus();
-		lead.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+		hideQuickAction(action);
+
+		if (action.matches('[data-wpdsac-open-lead]')) {
+			openLeadForm(action.closest('[data-wpdsac-chat]'));
+		}
 	});
 
 	document.addEventListener('submit', async (event) => {
@@ -443,12 +473,12 @@
 
 		button.disabled = true;
 
-		if (/\b(оставить\s+заявк[а-яё]*|связаться|перезвон[а-яё]*|contact\s+me|leave\s+(a\s+)?request|call\s+me)\b/iu.test(message)) {
+		if (/\b(оставить\s+(?:заявк[а-яё]*|контакт[а-яё]*)|хочу\s+оставить\s+(?:номер|телефон)|связаться|перезвон[а-яё]*|contact\s+me|leave\s+(?:my\s+contacts?|a\s+request)|call\s+me)\b/iu.test(message)) {
 			appendMessage(chat, message, 'user');
-			persistConversationHistory(chat);
 			input.value = '';
 			button.disabled = false;
-			chat.querySelector('[data-wpdsac-open-lead]')?.click();
+			hideQuickAction(chat.querySelector('[data-wpdsac-quick-action="lead"]'));
+			openLeadForm(chat);
 			return;
 		}
 
@@ -494,14 +524,13 @@
 		const lead = form.closest('[data-wpdsac-lead]');
 		const status = lead.querySelector('[data-wpdsac-lead-status]');
 		const name = form.elements.name.value.trim();
-		const email = form.elements.email.value.trim();
 		const phone = form.elements.phone.value.trim();
 		const leadRequest = form.elements.request.value.trim();
 		const consent = form.elements.consent.checked;
 		const website = form.elements.website.value.trim();
 
-		if (!email || !consent || button.disabled) {
-			status.textContent = !email ? (strings.leadEmailRequired || '') : '';
+		if (!name || !phone || !consent || button.disabled) {
+			status.textContent = !name || !phone ? (strings.leadPhoneRequired || '') : '';
 			form.reportValidity();
 			return;
 		}
@@ -518,7 +547,6 @@
 			const response = await request('/lead', {
 				session,
 				name,
-				email,
 				phone,
 				request: leadRequest,
 				transcript,
@@ -527,7 +555,11 @@
 			});
 
 			form.hidden = true;
-			status.textContent = response.message || '';
+			window.sessionStorage.setItem(visitorNameStorageKey, name.slice(0, 100));
+			appendMessage(chat, response.message || '', 'bot');
+			persistConversationHistory(chat);
+			playReplySound(chat.dataset.wpdsacReplySound || 'off');
+			status.textContent = '';
 		} catch (error) {
 			if (error.status === 401) {
 				window.sessionStorage.removeItem(sessionStorageKey);

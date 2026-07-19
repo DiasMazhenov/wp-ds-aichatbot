@@ -91,12 +91,11 @@ final class Settings {
 				'knowledge_max_chunks'    => 4,
 				'logging_enabled'         => false,
 				'log_retention_days'      => 30,
-				'leads_enabled'           => false,
-				'name_prompt'             => __( 'Hello! What is your name?', 'wp-ds-aichatbot' ),
-				'name_submit_label'       => __( 'Start chat', 'wp-ds-aichatbot' ),
 				'quick_call_label'        => __( 'Call', 'wp-ds-aichatbot' ),
+				'quick_call_url'          => '',
 				'quick_lead_label'        => __( 'Leave a request', 'wp-ds-aichatbot' ),
-				'lead_prompt'             => __( 'Would you like us to contact you?', 'wp-ds-aichatbot' ),
+				'quick_lead_url'          => '',
+				'lead_prompt'             => __( 'Please leave your name and phone number, and we will contact you.', 'wp-ds-aichatbot' ),
 				'lead_submit_label'       => __( 'Send request', 'wp-ds-aichatbot' ),
 				'lead_notification_email' => get_option( 'admin_email', '' ),
 				'lead_consent_text'       => __( 'I agree that my contact details may be stored and used to respond to my request.', 'wp-ds-aichatbot' ),
@@ -316,11 +315,10 @@ final class Settings {
 		$this->add_field( 'knowledge_max_chunks', __( 'Knowledge fragments per answer', 'wp-ds-aichatbot' ), 'number', 'wpdsac_knowledge' );
 		$this->add_field( 'logging_enabled', __( 'Conversation logging', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_privacy' );
 		$this->add_field( 'log_retention_days', __( 'Log retention (days)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_privacy' );
-		$this->add_field( 'leads_enabled', __( 'Contact form in chat', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_leads' );
-		$this->add_field( 'name_prompt', __( 'Name request text', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
-		$this->add_field( 'name_submit_label', __( 'Start chat button', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
 		$this->add_field( 'quick_call_label', __( 'Call button text', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
+		$this->add_field( 'quick_call_url', __( 'Call button URL', 'wp-ds-aichatbot' ), 'url', 'wpdsac_leads' );
 		$this->add_field( 'quick_lead_label', __( 'Request button text', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
+		$this->add_field( 'quick_lead_url', __( 'Request button URL', 'wp-ds-aichatbot' ), 'url', 'wpdsac_leads' );
 		$this->add_field( 'lead_prompt', __( 'Contact prompt', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
 		$this->add_field( 'lead_submit_label', __( 'Submit request button', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
 		$this->add_field( 'lead_notification_email', __( 'Notification email', 'wp-ds-aichatbot' ), 'email', 'wpdsac_leads' );
@@ -362,8 +360,6 @@ final class Settings {
 		$lead_prompt  = '' !== $lead_prompt ? $lead_prompt : $defaults['lead_prompt'];
 		$lead_consent = sanitize_textarea_field( $input['lead_consent_text'] ?? '' );
 		$lead_consent = '' !== $lead_consent ? $lead_consent : $defaults['lead_consent_text'];
-		$name_prompt  = sanitize_text_field( $input['name_prompt'] ?? '' );
-		$name_prompt  = '' !== $name_prompt ? $name_prompt : $defaults['name_prompt'];
 		$refusal      = sanitize_text_field( $input['guard_refusal_message'] ?? '' );
 		$refusal      = '' !== $refusal ? $refusal : $defaults['guard_refusal_message'];
 
@@ -383,11 +379,10 @@ final class Settings {
 			'knowledge_max_chunks'    => min( 8, max( 1, absint( $input['knowledge_max_chunks'] ?? 4 ) ) ),
 			'logging_enabled'         => ! empty( $input['logging_enabled'] ),
 			'log_retention_days'      => min( 365, max( 1, absint( $input['log_retention_days'] ?? 30 ) ) ),
-			'leads_enabled'           => ! empty( $input['leads_enabled'] ),
-			'name_prompt'             => $this->limit_text( $name_prompt, 160 ),
-			'name_submit_label'       => $this->label_or_default( $input['name_submit_label'] ?? '', $defaults['name_submit_label'] ),
 			'quick_call_label'        => $this->label_or_default( $input['quick_call_label'] ?? '', $defaults['quick_call_label'] ),
+			'quick_call_url'          => esc_url_raw( (string) ( $input['quick_call_url'] ?? '' ), array( 'http', 'https', 'tel', 'sms' ) ),
 			'quick_lead_label'        => $this->label_or_default( $input['quick_lead_label'] ?? '', $defaults['quick_lead_label'] ),
+			'quick_lead_url'          => esc_url_raw( (string) ( $input['quick_lead_url'] ?? '' ), array( 'http', 'https' ) ),
 			'lead_prompt'             => $lead_prompt,
 			'lead_submit_label'       => $this->label_or_default( $input['lead_submit_label'] ?? '', $defaults['lead_submit_label'] ),
 			'lead_notification_email' => sanitize_email( $input['lead_notification_email'] ?? '' ),
@@ -815,7 +810,6 @@ final class Settings {
 				'global_enabled'       => __( 'Show the chatbot globally in the site footer.', 'wp-ds-aichatbot' ),
 				'knowledge_enabled'    => __( 'Add relevant indexed pages, posts, knowledge entries, and administrator text to AI requests.', 'wp-ds-aichatbot' ),
 				'logging_enabled'      => __( 'Store successful conversations for the configured retention period. Disabled by default.', 'wp-ds-aichatbot' ),
-				'leads_enabled'        => __( 'Show a name/email form with required consent inside the chat. Disabled by default.', 'wp-ds-aichatbot' ),
 				'deepseek_thinking'    => __( 'Enable deeper reasoning. This can increase response time and token usage.', 'wp-ds-aichatbot' ),
 				'prompt_guard_enabled' => __( 'Block obvious instruction overrides, hidden-prompt requests, model probing, and configured off-topic requests before contacting the AI provider.', 'wp-ds-aichatbot' ),
 			);
@@ -876,6 +870,16 @@ final class Settings {
 				esc_attr( $name ),
 				esc_attr( (string) $options[ $key ] ),
 				esc_html__( 'A new request and its chat transcript will be sent to this address.', 'wp-ds-aichatbot' )
+			);
+			return;
+		}
+
+		if ( 'url' === $args['type'] ) {
+			printf(
+				'<input class="regular-text" type="url" name="%1$s" value="%2$s" placeholder="https://…"><p class="description">%3$s</p>',
+				esc_attr( $name ),
+				esc_attr( (string) $options[ $key ] ),
+				esc_html__( 'Leave empty to use the built-in action. The Call button also accepts a tel: URL.', 'wp-ds-aichatbot' )
 			);
 			return;
 		}

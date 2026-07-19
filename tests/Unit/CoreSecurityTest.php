@@ -77,11 +77,13 @@ final class CoreSecurityTest extends TestCase {
 		$controller = $reflection->newInstanceWithoutConstructor();
 
 		$this->assertTrue( $controller->validate_name( str_repeat( 'a', 100 ) ) );
+		$this->assertFalse( $controller->validate_name( '' ) );
 		$this->assertFalse( $controller->validate_name( str_repeat( 'a', 101 ) ) );
 		$this->assertTrue( $controller->validate_honeypot( '' ) );
 		$this->assertFalse( $controller->validate_honeypot( 'https://spam.test' ) );
 		$this->assertFalse( $controller->validate_session( str_repeat( 'a', 1025 ) . '.' ) );
 		$this->assertTrue( $controller->validate_phone( '+7 (700) 123-45-67' ) );
+		$this->assertFalse( $controller->validate_phone( '' ) );
 		$this->assertFalse( $controller->validate_phone( '+7<script>' ) );
 		$this->assertTrue( $controller->validate_request( str_repeat( 'a', 4000 ) ) );
 		$this->assertFalse( $controller->validate_request( str_repeat( 'a', 4001 ) ) );
@@ -255,7 +257,7 @@ final class CoreSecurityTest extends TestCase {
 	}
 
 	public function test_administrative_label_uses_current_plugin_version(): void {
-		$this->assertSame( 'DS AI Chatbot v0.5.30', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
+		$this->assertSame( 'DS AI Chatbot v0.5.31', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
 	}
 
 	public function test_settings_remain_the_default_plugin_submenu(): void {
@@ -280,7 +282,7 @@ final class CoreSecurityTest extends TestCase {
 			)
 		);
 
-		$this->assertSame( 'WP DS AI Chatbot v0.5.30', $plugins[ $plugin_file ]['Name'] );
-		$this->assertSame( 'WP DS AI Chatbot v0.5.30', $plugins[ $plugin_file ]['Title'] );
+		$this->assertSame( 'WP DS AI Chatbot v0.5.31', $plugins[ $plugin_file ]['Name'] );
+		$this->assertSame( 'WP DS AI Chatbot v0.5.31', $plugins[ $plugin_file ]['Title'] );
 	}
 }

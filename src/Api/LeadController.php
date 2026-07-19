@@ -105,11 +105,6 @@ final class LeadController {
 						'sanitize_callback' => 'sanitize_text_field',
 						'validate_callback' => array( $this, 'validate_name' ),
 					),
-					'email'      => array(
-						'type'              => 'string',
-						'default'           => '',
-						'sanitize_callback' => 'sanitize_email',
-					),
 					'phone'      => array(
 						'type'              => 'string',
 						'default'           => '',
@@ -154,7 +149,7 @@ final class LeadController {
 	}
 
 	/**
-	 * Validate optional name length.
+	 * Validate a required name.
 	 *
 	 * @param mixed $value Raw name.
 	 * @return bool
@@ -164,17 +159,17 @@ final class LeadController {
 			return false;
 		}
 
-		return self::length( $value ) <= 100;
+		return '' !== trim( $value ) && self::length( $value ) <= 100;
 	}
 
 	/**
-	 * Validate an optional phone number.
+	 * Validate a required phone number.
 	 *
 	 * @param mixed $value Raw phone number.
 	 * @return bool
 	 */
 	public function validate_phone( $value ): bool {
-		return is_string( $value ) && self::length( $value ) <= 50 && 1 === preg_match( '/^[0-9+()\-\s]*$/', $value );
+		return is_string( $value ) && '' !== trim( $value ) && self::length( $value ) <= 50 && 1 === preg_match( '/^[0-9+()\-\s]*$/', $value );
 	}
 
 	/**
@@ -208,22 +203,12 @@ final class LeadController {
 	}
 
 	/**
-	 * Validate signed session and feature state.
+	 * Validate the signed session.
 	 *
 	 * @param \WP_REST_Request $request REST request.
 	 * @return bool|\WP_Error
 	 */
 	public function permissions_check( \WP_REST_Request $request ) {
-		$options = Settings::get();
-
-		if ( empty( $options['leads_enabled'] ) ) {
-			return new \WP_Error(
-				'wpdsac_leads_disabled',
-				__( 'Lead collection is not enabled.', 'wp-ds-aichatbot' ),
-				array( 'status' => 404 )
-			);
-		}
-
 		$session_id = $this->tokens->validate( (string) $request->get_param( 'session' ) );
 
 		if ( is_wp_error( $session_id ) ) {
@@ -250,13 +235,13 @@ final class LeadController {
 			);
 		}
 
-		$email = sanitize_email( (string) $request->get_param( 'email' ) );
+		$name  = sanitize_text_field( (string) $request->get_param( 'name' ) );
 		$phone = sanitize_text_field( (string) $request->get_param( 'phone' ) );
 
-		if ( '' === $email || ! is_email( $email ) ) {
+		if ( ! $this->validate_name( $name ) || ! $this->validate_phone( $phone ) ) {
 			return new \WP_Error(
-				'wpdsac_lead_email_required',
-				__( 'Enter a valid email address.', 'wp-ds-aichatbot' ),
+				'wpdsac_lead_phone_required',
+				__( 'Enter your name and a valid phone number.', 'wp-ds-aichatbot' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -280,8 +265,8 @@ final class LeadController {
 		$saved   = $this->repository->save(
 			$this->session_id,
 			get_current_user_id(),
-			(string) $request->get_param( 'name' ),
-			$email,
+			$name,
+			'',
 			$phone,
 			(string) $request->get_param( 'request' ),
 			(string) $options['lead_consent_text'],
@@ -296,11 +281,10 @@ final class LeadController {
 			);
 		}
 
-		do_action( 'wpdsac_lead_created', sanitize_email( (string) $request->get_param( 'email' ) ), $this->session_id );
+		do_action( 'wpdsac_lead_created', $phone, $this->session_id );
 		$notified = $this->notifier->send(
 			array(
-				'name'       => (string) $request->get_param( 'name' ),
-				'email'      => $email,
+				'name'       => $name,
 				'phone'      => $phone,
 				'request'    => (string) $request->get_param( 'request' ),
 				'transcript' => (string) $request->get_param( 'transcript' ),

@@ -31,7 +31,6 @@ final class LeadNotifier {
 		}
 
 		$name       = sanitize_text_field( $lead['name'] ?? '' );
-		$email      = sanitize_email( $lead['email'] ?? '' );
 		$phone      = sanitize_text_field( $lead['phone'] ?? '' );
 		$request    = $this->bounded_text( $lead['request'] ?? '', 4000 );
 		$transcript = $this->bounded_text( $lead['transcript'] ?? '', 20000 );
@@ -40,13 +39,12 @@ final class LeadNotifier {
 			__( 'New chatbot request from %s', 'wp-ds-aichatbot' ),
 			'' !== $name ? $name : __( 'website visitor', 'wp-ds-aichatbot' )
 		);
-		$body    = implode(
+		$body = implode(
 			"\n",
 			array(
 				__( 'A visitor submitted a contact request in the chatbot.', 'wp-ds-aichatbot' ),
 				'',
 				__( 'Name:', 'wp-ds-aichatbot' ) . ' ' . $name,
-				__( 'Email:', 'wp-ds-aichatbot' ) . ' ' . $email,
 				__( 'Phone:', 'wp-ds-aichatbot' ) . ' ' . $phone,
 				__( 'Request:', 'wp-ds-aichatbot' ) . ' ' . $request,
 				'',
@@ -54,13 +52,7 @@ final class LeadNotifier {
 				'' !== $transcript ? $transcript : __( 'No messages yet.', 'wp-ds-aichatbot' ),
 			)
 		);
-		$headers = array( 'Content-Type: text/plain; charset=UTF-8' );
-
-		if ( '' !== $email && is_email( $email ) ) {
-			$headers[] = 'Reply-To: ' . $email;
-		}
-
-		return wp_mail( $to, sanitize_text_field( $subject ), $body, $headers );
+		return wp_mail( $to, sanitize_text_field( $subject ), $body, array( 'Content-Type: text/plain; charset=UTF-8' ) );
 	}
 
 	/**

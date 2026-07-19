@@ -157,7 +157,7 @@ final class LeadPrivacy {
 			wp_kses_post(
 				sprintf(
 					'<p>%s</p>',
-					esc_html__( 'When contact collection is enabled, the chatbot stores the submitted name, email address, phone number, request text, consent text, and submission time for the configured retention period. The submitted chat transcript is emailed to the configured administrator address but is not stored with the lead. IP addresses and raw chat session identifiers are not stored. Contact requests can be exported or erased using the WordPress privacy tools.', 'wp-ds-aichatbot' )
+					esc_html__( 'When a visitor chooses to leave contact details, the chatbot stores the submitted name, phone number, request text, consent text, and submission time for the configured retention period. The submitted chat transcript is emailed to the configured administrator address but is not stored with the lead. IP addresses and raw chat session identifiers are not stored.', 'wp-ds-aichatbot' )
 				)
 			)
 		);
