@@ -5,6 +5,61 @@
 	const strings = config.strings || {};
 	const sessionStorageKey = 'wpdsacSessionToken';
 	const visitorNameStorageKey = 'wpdsacVisitorName';
+	let audioContext = null;
+
+	const ensureAudioContext = () => {
+		const AudioContext = window.AudioContext || window.webkitAudioContext;
+		if (!AudioContext) {
+			return null;
+		}
+
+		if (!audioContext) {
+			audioContext = new AudioContext();
+		}
+		if (audioContext.state === 'suspended') {
+			audioContext.resume().catch(() => {});
+		}
+
+		return audioContext;
+	};
+
+	const playTone = (context, frequency, delay, duration, volume, wave = 'sine', endFrequency = frequency) => {
+		const start = context.currentTime + delay;
+		const end = start + duration;
+		const oscillator = context.createOscillator();
+		const gain = context.createGain();
+
+		oscillator.type = wave;
+		oscillator.frequency.setValueAtTime(frequency, start);
+		oscillator.frequency.exponentialRampToValueAtTime(endFrequency, end);
+		gain.gain.setValueAtTime(0.0001, start);
+		gain.gain.exponentialRampToValueAtTime(volume, start + 0.015);
+		gain.gain.exponentialRampToValueAtTime(0.0001, end);
+		oscillator.connect(gain);
+		gain.connect(context.destination);
+		oscillator.start(start);
+		oscillator.stop(end);
+	};
+
+	const playReplySound = (sound) => {
+		if (!sound || sound === 'off') {
+			return;
+		}
+
+		const context = ensureAudioContext();
+		if (!context) {
+			return;
+		}
+
+		if (sound === 'chime') {
+			playTone(context, 660, 0, 0.11, 0.018);
+			playTone(context, 880, 0.07, 0.14, 0.015);
+		} else if (sound === 'pop') {
+			playTone(context, 420, 0, 0.1, 0.02, 'triangle', 680);
+		} else {
+			playTone(context, 620, 0, 0.12, 0.025);
+		}
+	};
 
 	const request = async (path, body = {}) => {
 		const headers = {
@@ -150,6 +205,7 @@
 		}
 
 		const chat = toggle.closest('[data-wpdsac-chat]');
+		ensureAudioContext();
 		const headerToggle = chat.querySelector('.wpdsac-chat__toggle');
 		const expanded = headerToggle.getAttribute('aria-expanded') === 'true';
 		setExpanded(chat, toggle.matches('[data-wpdsac-intro-bubble]') ? true : !expanded);
@@ -205,6 +261,8 @@
 			return;
 		}
 
+		ensureAudioContext();
+
 		button.disabled = true;
 
 		if (/\b(оставить\s+заявк[а-яё]*|связаться|перезвон[а-яё]*|contact\s+me|leave\s+(a\s+)?request|call\s+me)\b/iu.test(message)) {
@@ -220,10 +278,15 @@
 		try {
 			const session = await getSessionToken();
 			status.textContent = strings.sending || '';
-			const response = await request('/chat', {session, message});
+			const response = await request('/chat', {
+				session,
+				message,
+				visitor_name: getVisitorName(),
+			});
 
 			appendMessage(chat, message, 'user');
 			appendMessage(chat, response.reply, 'bot');
+			playReplySound(chat.dataset.wpdsacReplySound || 'off');
 			input.value = '';
 			status.textContent = '';
 		} catch (error) {

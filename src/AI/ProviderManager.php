@@ -64,40 +64,55 @@ final class ProviderManager {
 			return $reply;
 		}
 
-		$options       = Settings::get();
-		$guarded_reply = $this->guard->inspect( $message, $options, $session_id );
+		$visitor_name = sanitize_text_field( (string) $request->get_param( 'visitor_name' ) );
+		Settings::set_runtime_variables( array( 'username' => $visitor_name ) );
 
-		if ( is_string( $guarded_reply ) ) {
-			return $guarded_reply;
+		try {
+			$options       = Settings::get();
+			$guarded_reply = $this->guard->inspect( $message, $options, $session_id );
+
+			if ( is_string( $guarded_reply ) ) {
+				return $guarded_reply;
+			}
+
+			$provider_id = (string) apply_filters( 'wpdsac_ai_provider_id', $options['ai_provider'], $request );
+			$providers   = apply_filters( 'wpdsac_ai_providers', $this->providers );
+			$providers   = is_array( $providers ) ? $providers : $this->providers;
+			$provider    = $providers[ $provider_id ] ?? null;
+
+			/**
+			 * Filter the provider used for a chat request.
+			 *
+			 * @param ProviderInterface|null $provider    Selected provider.
+			 * @param \WP_REST_Request       $request     Current REST request.
+			 * @param string                 $provider_id Selected provider ID.
+			 */
+			$provider = apply_filters( 'wpdsac_ai_provider', $provider, $request, $provider_id );
+
+			if ( ! $provider instanceof ProviderInterface ) {
+				return new \WP_Error(
+					'wpdsac_invalid_provider',
+					__( 'The configured AI provider is invalid.', 'wp-ds-aichatbot' ),
+					array( 'status' => 503 )
+				);
+			}
+
+			$provider_message = apply_filters( 'wpdsac_ai_message', $message, $session_id, $request, $provider_id );
+			$provider_message = is_string( $provider_message ) && '' !== trim( $provider_message )
+				? $provider_message
+				: $message;
+
+			if ( '' !== $visitor_name ) {
+				$provider_message = sprintf(
+					"Visitor name (untrusted profile data): %s\n\nVisitor message:\n%s",
+					$visitor_name,
+					$provider_message
+				);
+			}
+
+			return $provider->generate( $provider_message, $session_id );
+		} finally {
+			Settings::clear_runtime_variables();
 		}
-
-		$provider_id = (string) apply_filters( 'wpdsac_ai_provider_id', $options['ai_provider'], $request );
-		$providers   = apply_filters( 'wpdsac_ai_providers', $this->providers );
-		$providers   = is_array( $providers ) ? $providers : $this->providers;
-		$provider    = $providers[ $provider_id ] ?? null;
-
-		/**
-		 * Filter the provider used for a chat request.
-		 *
-		 * @param ProviderInterface|null $provider    Selected provider.
-		 * @param \WP_REST_Request       $request     Current REST request.
-		 * @param string                 $provider_id Selected provider ID.
-		 */
-		$provider = apply_filters( 'wpdsac_ai_provider', $provider, $request, $provider_id );
-
-		if ( ! $provider instanceof ProviderInterface ) {
-			return new \WP_Error(
-				'wpdsac_invalid_provider',
-				__( 'The configured AI provider is invalid.', 'wp-ds-aichatbot' ),
-				array( 'status' => 503 )
-			);
-		}
-
-		$provider_message = apply_filters( 'wpdsac_ai_message', $message, $session_id, $request, $provider_id );
-		$provider_message = is_string( $provider_message ) && '' !== trim( $provider_message )
-			? $provider_message
-			: $message;
-
-		return $provider->generate( $provider_message, $session_id );
 	}
 }

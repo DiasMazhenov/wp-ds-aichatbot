@@ -82,17 +82,23 @@ final class ChatController {
 				'callback'            => array( $this, 'respond' ),
 				'permission_callback' => array( $this, 'permissions_check' ),
 				'args'                => array(
-					'session' => array(
+					'session'      => array(
 						'type'              => 'string',
 						'required'          => true,
 						'sanitize_callback' => 'sanitize_text_field',
 						'validate_callback' => array( $this, 'validate_session_token' ),
 					),
-					'message' => array(
+					'message'      => array(
 						'type'              => 'string',
 						'required'          => true,
 						'sanitize_callback' => 'sanitize_textarea_field',
 						'validate_callback' => array( $this, 'validate_message' ),
+					),
+					'visitor_name' => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+						'validate_callback' => array( $this, 'validate_visitor_name' ),
 					),
 				),
 			)
@@ -141,6 +147,22 @@ final class ChatController {
 		$length = function_exists( 'mb_strlen' ) ? mb_strlen( $value ) : strlen( $value );
 
 		return $length <= 2000;
+	}
+
+	/**
+	 * Validate the optional visitor name used by instruction templates.
+	 *
+	 * @param mixed $value Raw visitor name.
+	 * @return bool
+	 */
+	public function validate_visitor_name( $value ): bool {
+		if ( ! is_string( $value ) ) {
+			return false;
+		}
+
+		$length = function_exists( 'mb_strlen' ) ? mb_strlen( $value ) : strlen( $value );
+
+		return $length <= 100;
 	}
 
 	/**

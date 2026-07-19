@@ -57,6 +57,10 @@
 	outline-offset: 2px;
 }
 
+.wpdsac-sound-preview {
+	margin-left: 8px !important;
+}
+
 .wpdsac-settings-brand > img {
 	flex: 0 0 auto;
 	border-radius: 10px;

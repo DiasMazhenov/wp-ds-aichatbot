@@ -27,6 +27,10 @@ const chatScript = await readFile(
   join(projectRoot, 'assets/build/chat.js'),
   'utf8'
 );
+const chatStyles = await readFile(
+  join(projectRoot, 'assets/build/chat.css'),
+  'utf8'
+);
 const settingsPhp = await readFile(join(projectRoot, 'src/Admin/Settings.php'), 'utf8');
 const faqPhp = await readFile(join(projectRoot, 'src/Knowledge/FaqPostType.php'), 'utf8');
 const manualSourcePhp = await readFile(join(projectRoot, 'src/Knowledge/ManualSource.php'), 'utf8');
@@ -68,6 +72,12 @@ assert.match(contactSourcePhp, /wpdsac_contact_information/);
 assert.match(answerEnricherPhp, /source_url/);
 assert.match(chatScript, /noopener noreferrer/);
 assert.match(chatScript, /wpdsacVisitorName/);
+assert.match(chatScript, /createOscillator/);
+assert.match(chatStyles, /white-space:\s*normal !important/);
+assert.match(chatScript, /visitor_name/);
+assert.match(settingsPhp, /reply_sound/);
+assert.match(settingsPhp, /\{username\}/);
+assert.match(providerManagerPhp, /Visitor name \(untrusted profile data\)/);
 assert.match(chatbotTemplate, /data-wpdsac-open-lead/);
 assert.match(chatbotTemplate, /data-wpdsac-name-form/);
 assert.match(leadNotifierPhp, /wp_mail/);
@@ -102,7 +112,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.25',
+    plugin_version: '0.5.26',
     db_version: '6',
     rate_limit_table: true,
     request_lock_table: true,
@@ -118,6 +128,7 @@ try {
     shortcode_escaped: true,
     global_widget_rendered: true,
     custom_message_placeholder_rendered: true,
+    reply_sound_rendered: true,
     appearance_rendered: true,
     appearance_positioned: true,
     appearance_sanitized: true,

@@ -55,6 +55,7 @@ final class Renderer {
 			'title'               => sanitize_text_field( (string) $options['title'] ),
 			'welcome_message'     => sanitize_textarea_field( (string) $options['welcome_message'] ),
 			'message_placeholder' => sanitize_text_field( (string) $options['message_placeholder'] ),
+			'reply_sound'         => sanitize_key( (string) $options['reply_sound'] ),
 			'expanded'            => ! empty( $options['expanded'] ),
 			'appearance'          => Appearance::inline_style( $options ),
 			'position_class'      => Appearance::position_class( $options ),

@@ -9,7 +9,7 @@ define( 'ABSPATH', __DIR__ . '/' );
 define( 'DAY_IN_SECONDS', 86400 );
 define( 'MINUTE_IN_SECONDS', 60 );
 define( 'WPDSAC_PATH', dirname( __DIR__, 2 ) . '/' );
-define( 'WPDSAC_VERSION', '0.5.25' );
+define( 'WPDSAC_VERSION', '0.5.26' );
 define( 'WPDSAC_FILE', WPDSAC_PATH . 'wp-ds-aichatbot.php' );
 
 $GLOBALS['wpdsac_test_options'] = array();
@@ -80,6 +80,13 @@ function get_option( string $name, $default = false ) {
 	return array_key_exists( $name, $GLOBALS['wpdsac_test_options'] )
 		? $GLOBALS['wpdsac_test_options'][ $name ]
 		: $default;
+}
+
+function wp_parse_args( $args, $defaults = array() ): array {
+	$args     = is_array( $args ) ? $args : array();
+	$defaults = is_array( $defaults ) ? $defaults : array();
+
+	return array_merge( $defaults, $args );
 }
 
 function add_settings_error( string $setting, string $code, string $message ): void {

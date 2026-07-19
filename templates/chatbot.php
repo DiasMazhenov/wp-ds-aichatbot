@@ -27,6 +27,7 @@ if ( ! $view['show_toggle_icon'] ) {
 	class="<?php echo esc_attr( $classes ); ?>"
 	style="<?php echo esc_attr( $view['appearance'] ); ?>"
 	data-wpdsac-chat
+	data-wpdsac-reply-sound="<?php echo esc_attr( $view['reply_sound'] ); ?>"
 >
 	<button type="button" class="wpdsac-chat__intro-bubble" data-wpdsac-intro-bubble>
 		<?php echo esc_html( $view['name_prompt'] ); ?>

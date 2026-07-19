@@ -37,12 +37,15 @@
 	display: none !important;
 }
 
-.wpdsac-chat__intro-bubble {
+.wpdsac-chat .wpdsac-chat__intro-bubble {
 	position: absolute;
 	right: 0;
 	bottom: calc(var(--wpdsac-launcher-size) + 12px);
-	width: max-content;
-	max-width: min(280px, calc(100vw - 32px));
+	box-sizing: border-box;
+	width: min(320px, calc(100vw - 32px));
+	min-width: 0 !important;
+	max-width: calc(100vw - 32px);
+	height: auto !important;
 	padding: 12px 16px;
 	border: 1px solid var(--wpdsac-border);
 	border-radius: 16px 16px 4px;
@@ -50,7 +53,12 @@
 	box-shadow: 0 12px 32px rgb(23 32 51 / var(--wpdsac-shadow-opacity));
 	color: var(--wpdsac-text);
 	font: inherit;
+	line-height: 1.4;
 	text-align: left;
+	white-space: normal !important;
+	overflow: hidden;
+	overflow-wrap: anywhere;
+	word-break: normal;
 	cursor: pointer;
 }
 

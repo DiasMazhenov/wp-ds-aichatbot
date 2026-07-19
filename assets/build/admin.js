@@ -55,6 +55,54 @@
   const tabs = Array.from(document.querySelectorAll('[data-wpdsac-tab]'));
   const panels = Array.from(document.querySelectorAll('[data-wpdsac-panel]'));
   const storageKey = 'wpdsacActiveSettingsTab';
+  let previewAudioContext = null;
+
+  const playSoundPreview = (sound) => {
+    if (!sound || sound === 'off') {
+      return;
+    }
+
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) {
+      return;
+    }
+
+    previewAudioContext = previewAudioContext || new AudioContext();
+    if (previewAudioContext.state === 'suspended') {
+      previewAudioContext.resume().catch(() => {});
+    }
+
+    const tone = (frequency, delay, duration, volume, wave = 'sine', endFrequency = frequency) => {
+      const start = previewAudioContext.currentTime + delay;
+      const end = start + duration;
+      const oscillator = previewAudioContext.createOscillator();
+      const gain = previewAudioContext.createGain();
+      oscillator.type = wave;
+      oscillator.frequency.setValueAtTime(frequency, start);
+      oscillator.frequency.exponentialRampToValueAtTime(endFrequency, end);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(volume, start + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, end);
+      oscillator.connect(gain);
+      gain.connect(previewAudioContext.destination);
+      oscillator.start(start);
+      oscillator.stop(end);
+    };
+
+    if (sound === 'chime') {
+      tone(660, 0, 0.11, 0.018);
+      tone(880, 0.07, 0.14, 0.015);
+    } else if (sound === 'pop') {
+      tone(420, 0, 0.1, 0.02, 'triangle', 680);
+    } else {
+      tone(620, 0, 0.12, 0.025);
+    }
+  };
+
+  document.querySelector('[data-wpdsac-sound-preview]')?.addEventListener('click', () => {
+    const sound = document.querySelector('[data-wpdsac-sound-select]')?.value || 'off';
+    playSoundPreview(sound);
+  });
 
   const activateTab = (tabId, moveFocus = false) => {
     if (!tabs.some((tab) => tab.dataset.wpdsacTab === tabId)) {

@@ -598,6 +598,7 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'shortcode_escaped'           => false === stripos( $shortcode_html, '<script' ),
 			'global_widget_rendered'      => false !== strpos( $global_html, 'wpdsac-chat' ),
 			'custom_message_placeholder_rendered' => false !== strpos( $global_html, 'placeholder="Ask about delivery"' ),
+			'reply_sound_rendered'        => false !== strpos( $global_html, 'data-wpdsac-reply-sound="soft"' ),
 			'appearance_rendered'         => false !== strpos( $global_html, '--wpdsac-accent:#123456;' )
 				&& false !== strpos( $global_html, '--wpdsac-user-message:#654321;' )
 				&& false !== strpos( $global_html, '--wpdsac-width:512px;' )

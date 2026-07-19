@@ -22,6 +22,13 @@ final class Settings {
 	public const PAGE_SLUG   = 'wpdsac-settings';
 
 	/**
+	 * Sanitized variables available only during the current AI request.
+	 *
+	 * @var array<string, string>
+	 */
+	private static $runtime_variables = array();
+
+	/**
 	 * Appearance settings module.
 	 *
 	 * @var AppearanceSettings
@@ -73,6 +80,7 @@ final class Settings {
 				'title'                   => __( 'AI Assistant', 'wp-ds-aichatbot' ),
 				'welcome_message'         => __( 'Hello! How can I help you?', 'wp-ds-aichatbot' ),
 				'message_placeholder'     => __( 'Type your message…', 'wp-ds-aichatbot' ),
+				'reply_sound'             => 'soft',
 				'rate_limit_requests'     => 10,
 				'rate_limit_window'       => 60,
 				'daily_request_limit'     => 500,
@@ -124,7 +132,51 @@ final class Settings {
 			$value['ai_max_output_tokens'] = $value['openai_max_output_tokens'];
 		}
 
-		return wp_parse_args( $value, self::defaults() );
+		$options = wp_parse_args( $value, self::defaults() );
+
+		foreach ( self::$runtime_variables as $name => $replacement ) {
+			$options['ai_instructions'] = str_replace(
+				array( '{' . $name . '}', '(' . $name . ')' ),
+				$replacement,
+				(string) $options['ai_instructions']
+			);
+		}
+
+		return $options;
+	}
+
+	/**
+	 * Set bounded request-only template variables.
+	 *
+	 * @param array<string, string> $variables Runtime variables.
+	 * @return void
+	 */
+	public static function set_runtime_variables( array $variables ): void {
+		self::$runtime_variables = array();
+
+		foreach ( $variables as $name => $value ) {
+			$name  = sanitize_key( $name );
+			$value = sanitize_text_field( $value );
+
+			if ( '' !== $name && '' !== $value ) {
+				self::$runtime_variables[ $name ] = self::limit_runtime_value( $value );
+			}
+		}
+	}
+
+	/** Clear request-only template variables after provider execution. */
+	public static function clear_runtime_variables(): void {
+		self::$runtime_variables = array();
+	}
+
+	/**
+	 * Limit one runtime value to a safe length.
+	 *
+	 * @param string $value Sanitized value.
+	 * @return string
+	 */
+	private static function limit_runtime_value( string $value ): string {
+		return function_exists( 'mb_substr' ) ? mb_substr( $value, 0, 100 ) : substr( $value, 0, 100 );
 	}
 
 	/**
@@ -250,6 +302,7 @@ final class Settings {
 		$this->add_field( 'title', __( 'Title', 'wp-ds-aichatbot' ), 'text' );
 		$this->add_field( 'welcome_message', __( 'Welcome message', 'wp-ds-aichatbot' ), 'textarea' );
 		$this->add_field( 'message_placeholder', __( 'Message input placeholder', 'wp-ds-aichatbot' ), 'text' );
+		$this->add_field( 'reply_sound', __( 'Reply notification sound', 'wp-ds-aichatbot' ), 'sound_select' );
 		$this->add_field( 'rate_limit_requests', __( 'Requests per window', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'rate_limit_window', __( 'Rate-limit window (seconds)', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'daily_request_limit', __( 'AI requests per 24 hours', 'wp-ds-aichatbot' ), 'number' );
@@ -313,6 +366,7 @@ final class Settings {
 			'title'                   => sanitize_text_field( $input['title'] ?? '' ),
 			'welcome_message'         => sanitize_textarea_field( $input['welcome_message'] ?? '' ),
 			'message_placeholder'     => sanitize_text_field( $input['message_placeholder'] ?? '' ),
+			'reply_sound'             => $this->sanitize_reply_sound( $input['reply_sound'] ?? 'soft' ),
 			'rate_limit_requests'     => min( 100, max( 1, absint( $input['rate_limit_requests'] ?? 10 ) ) ),
 			'rate_limit_window'       => min( HOUR_IN_SECONDS, max( 10, absint( $input['rate_limit_window'] ?? 60 ) ) ),
 			'daily_request_limit'     => min( 100000, absint( $input['daily_request_limit'] ?? 500 ) ),
@@ -358,6 +412,19 @@ final class Settings {
 		$value = $this->limit_text( sanitize_text_field( is_string( $value ) ? $value : '' ), 60 );
 
 		return '' !== $value ? $value : $fallback;
+	}
+
+	/**
+	 * Restrict the reply sound to built-in quiet notification tones.
+	 *
+	 * @param mixed $value Submitted sound ID.
+	 * @return string
+	 */
+	private function sanitize_reply_sound( $value ): string {
+		$value   = sanitize_key( is_string( $value ) ? $value : '' );
+		$allowed = array( 'off', 'soft', 'chime', 'pop' );
+
+		return in_array( $value, $allowed, true ) ? $value : 'soft';
 	}
 
 	/**
@@ -706,6 +773,11 @@ final class Settings {
 			return;
 		}
 
+		if ( 'sound_select' === $args['type'] ) {
+			$this->render_sound_select( $name, (string) $options[ $key ] );
+			return;
+		}
+
 		if ( 'checkbox' === $args['type'] ) {
 			$descriptions = array(
 				'global_enabled'       => __( 'Show the chatbot globally in the site footer.', 'wp-ds-aichatbot' ),
@@ -742,6 +814,13 @@ final class Settings {
 				printf(
 					'<p class="description">%s</p>',
 					esc_html__( 'Describe this website and list allowed topics or keywords. When filled, unrelated questions are blocked before the AI request.', 'wp-ds-aichatbot' )
+				);
+			}
+
+			if ( 'ai_instructions' === $key ) {
+				printf(
+					'<p class="description">%s</p>',
+					esc_html__( 'Use {username} to insert the visitor name. The (username) alias is also supported.', 'wp-ds-aichatbot' )
 				);
 			}
 			return;
@@ -911,6 +990,38 @@ final class Settings {
 		}
 
 		echo '</select>';
+	}
+
+	/**
+	 * Render the built-in reply notification sound selector.
+	 *
+	 * @param string $name    Input name.
+	 * @param string $current Selected sound ID.
+	 * @return void
+	 */
+	private function render_sound_select( string $name, string $current ): void {
+		$options = array(
+			'off'   => __( 'No sound', 'wp-ds-aichatbot' ),
+			'soft'  => __( 'Soft tone', 'wp-ds-aichatbot' ),
+			'chime' => __( 'Short chime', 'wp-ds-aichatbot' ),
+			'pop'   => __( 'Soft pop', 'wp-ds-aichatbot' ),
+		);
+
+		printf( '<select name="%1$s" data-wpdsac-sound-select>', esc_attr( $name ) );
+		foreach ( $options as $value => $label ) {
+			printf(
+				'<option value="%1$s" %2$s>%3$s</option>',
+				esc_attr( $value ),
+				selected( $current, $value, false ),
+				esc_html( $label )
+			);
+		}
+		echo '</select>';
+		printf(
+			'<button type="button" class="button wpdsac-sound-preview" data-wpdsac-sound-preview>%s</button><p class="description">%s</p>',
+			esc_html__( 'Play', 'wp-ds-aichatbot' ),
+			esc_html__( 'A short quiet sound plays only after the assistant replies.', 'wp-ds-aichatbot' )
+		);
 	}
 
 	/**
