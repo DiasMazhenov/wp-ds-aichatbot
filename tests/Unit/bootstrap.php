@@ -9,7 +9,7 @@ define( 'ABSPATH', __DIR__ . '/' );
 define( 'DAY_IN_SECONDS', 86400 );
 define( 'MINUTE_IN_SECONDS', 60 );
 define( 'WPDSAC_PATH', dirname( __DIR__, 2 ) . '/' );
-define( 'WPDSAC_VERSION', '0.5.20' );
+define( 'WPDSAC_VERSION', '0.5.21' );
 define( 'WPDSAC_FILE', WPDSAC_PATH . 'wp-ds-aichatbot.php' );
 
 $GLOBALS['wpdsac_test_options'] = array();
@@ -88,6 +88,14 @@ function add_settings_error( string $setting, string $code, string $message ): v
 
 function sanitize_key( $value ): string {
 	return strtolower( (string) preg_replace( '/[^a-z0-9_\-]/i', '', (string) $value ) );
+}
+
+function sanitize_text_field( $value ): string {
+	return trim( strip_tags( (string) $value ) );
+}
+
+function do_action( string $hook, ...$args ): void {
+	unset( $hook, $args );
 }
 
 require_once WPDSAC_PATH . 'src/Support/Autoloader.php';

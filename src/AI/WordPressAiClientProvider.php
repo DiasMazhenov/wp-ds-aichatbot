@@ -32,8 +32,13 @@ final class WordPressAiClientProvider implements ProviderInterface {
 			);
 		}
 
-		$options = Settings::get();
-		$result  = wp_ai_client_prompt( $message )
+		$options                    = Settings::get();
+		$options['ai_instructions'] = PromptGuard::protected_instructions(
+			(string) $options['ai_instructions'],
+			(string) $options['topic_scope'],
+			(string) $options['guard_refusal_message']
+		);
+		$result                     = wp_ai_client_prompt( $message )
 			->using_system_instruction( (string) $options['ai_instructions'] )
 			->using_max_tokens( (int) $options['ai_max_output_tokens'] )
 			->generate_text();

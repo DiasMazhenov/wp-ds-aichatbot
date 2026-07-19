@@ -612,3 +612,21 @@ msgstr "Нет"
 
 msgid "Settings were saved, but the selected provider still has no API key. Open the browser console and run wpdsacDebugProvider()."
 msgstr "Настройки сохранены, но у выбранного провайдера всё ещё нет API-ключа. Откройте консоль браузера и выполните wpdsacDebugProvider()."
+
+msgid "Prompt injection protection"
+msgstr "Защита от промпт-инъекций"
+
+msgid "Allowed topics and keywords"
+msgstr "Разрешённые темы и ключевые слова"
+
+msgid "Blocked request response"
+msgstr "Ответ на заблокированный запрос"
+
+msgid "I can only help with questions related to this website."
+msgstr "Я могу помочь только с вопросами, относящимися к этому сайту."
+
+msgid "Block obvious instruction overrides, hidden-prompt requests, model probing, and configured off-topic requests before contacting the AI provider."
+msgstr "Блокировать попытки подменить инструкции, запросы скрытого промпта, вопросы о модели и настроенные вопросы не по теме до обращения к AI-провайдеру."
+
+msgid "Describe this website and list allowed topics or keywords. When filled, unrelated questions are blocked before the AI request."
+msgstr "Опишите сайт и перечислите разрешённые темы или ключевые слова. После заполнения вопросы не по теме будут блокироваться до обращения к AI."

@@ -24,12 +24,21 @@ final class ProviderManager {
 	private $providers;
 
 	/**
+	 * Deterministic request guard.
+	 *
+	 * @var PromptGuard
+	 */
+	private $guard;
+
+	/**
 	 * Store the provider registry.
 	 *
 	 * @param array<string, ProviderInterface> $providers Registered providers by ID.
+	 * @param PromptGuard                      $guard     Request guard.
 	 */
-	public function __construct( array $providers ) {
+	public function __construct( array $providers, PromptGuard $guard ) {
 		$this->providers = $providers;
+		$this->guard     = $guard;
 	}
 
 	/**
@@ -55,7 +64,13 @@ final class ProviderManager {
 			return $reply;
 		}
 
-		$options     = Settings::get();
+		$options       = Settings::get();
+		$guarded_reply = $this->guard->inspect( $message, $options, $session_id );
+
+		if ( is_string( $guarded_reply ) ) {
+			return $guarded_reply;
+		}
+
 		$provider_id = (string) apply_filters( 'wpdsac_ai_provider_id', $options['ai_provider'], $request );
 		$providers   = apply_filters( 'wpdsac_ai_providers', $this->providers );
 		$providers   = is_array( $providers ) ? $providers : $this->providers;

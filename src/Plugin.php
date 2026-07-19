@@ -17,6 +17,7 @@ use DiasMazhenov\WPDsAiChatbot\AI\DeepSeekProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\GeminiProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\OpenAIProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\OpenRouterProvider;
+use DiasMazhenov\WPDsAiChatbot\AI\PromptGuard;
 use DiasMazhenov\WPDsAiChatbot\AI\ProviderManager;
 use DiasMazhenov\WPDsAiChatbot\AI\WordPressAiClientProvider;
 use DiasMazhenov\WPDsAiChatbot\Api\ChatController;
@@ -100,7 +101,8 @@ final class Plugin {
 				'openrouter'   => new OpenRouterProvider( $credentials ),
 				'deepseek'     => new DeepSeekProvider( $credentials ),
 				'wordpress_ai' => new WordPressAiClientProvider(),
-			)
+			),
+			new PromptGuard()
 		);
 
 		Migrator::maybe_migrate();
