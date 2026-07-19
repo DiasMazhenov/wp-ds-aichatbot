@@ -14,7 +14,8 @@ defined( 'ABSPATH' ) || exit;
  */
 final class CredentialResolver {
 
-	public const OPTION_NAME = 'wpdsac_openai_api_key';
+	public const OPTION_NAME        = 'wpdsac_openai_api_key';
+	public const CREDENTIALS_OPTION = 'wpdsac_provider_credentials';
 
 	private const PROVIDERS = array(
 		'openai'     => array(
@@ -73,6 +74,14 @@ final class CredentialResolver {
 
 		if ( is_string( $environment_key ) && '' !== trim( $environment_key ) ) {
 			return trim( $environment_key );
+		}
+
+		$credentials = get_option( self::CREDENTIALS_OPTION, array() );
+		$credentials = is_array( $credentials ) ? $credentials : array();
+		$stored_key  = $credentials[ $provider ] ?? '';
+
+		if ( is_string( $stored_key ) && '' !== trim( $stored_key ) ) {
+			return trim( $stored_key );
 		}
 
 		$stored_key = get_option( $config['option'], '' );

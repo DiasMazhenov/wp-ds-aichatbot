@@ -154,7 +154,7 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.17` исправляет транспорт API-ключа: admin JavaScript явно добавляет непустой credential в `wpdsac_credentials[provider]`, а PHP handler поддерживает новый и legacy-форматы. Диагностика без секрета фиксирует `credentialSubmitted` и `storageVerified`.
+Версия `0.5.18` принудительно держит «Настройки» первым/default submenu перед FAQ. Скрытие неактивных provider rows больше не зависит от DOM-структуры WordPress. Credential передаётся JSON-payload и хранится в отдельном non-autoload bundle option; legacy options остаются fallback.
 
 GitHub Actions run `29664260145` полностью прошёл: PHPUnit PHP 7.4/8.3, PHP lint 7.4/8.1/8.3, WPCS, WordPress/Elementor integration и package. Artifact `8435277185` содержит installable ZIP для commit `aaf3120`.
 

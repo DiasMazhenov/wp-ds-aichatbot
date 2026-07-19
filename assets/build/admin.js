@@ -117,6 +117,7 @@
     };
 
     console.info('[WP DS AI Chatbot] Safe provider diagnostics', diagnostics);
+    console.info('[WP DS AI Chatbot] Safe provider diagnostics JSON', JSON.stringify(diagnostics));
     return diagnostics;
   };
 
@@ -129,6 +130,7 @@
       const active = row.classList.contains(`wpdsac-provider-setting--${providerSelect.value}`);
       row.hidden = !active;
       row.setAttribute('aria-hidden', active ? 'false' : 'true');
+      row.style.setProperty('display', active ? '' : 'none', active ? '' : 'important');
     });
 
     renderProviderDiagnostics(providerDiagnostics[providerSelect.value]);
@@ -168,6 +170,20 @@
           formData.set(`wpdsac_credentials[${provider}]`, input.value);
         }
       });
+
+      const activeCredential = settingsForm.querySelector(
+        `[data-wpdsac-api-key][data-wpdsac-provider="${providerSelect?.value || ''}"]`
+      );
+
+      if (activeCredential?.value) {
+        formData.set(
+          'wpdsac_credential_payload',
+          JSON.stringify({
+            provider: providerSelect.value,
+            credential: activeCredential.value,
+          })
+        );
+      }
 
       formData.set('action', 'wpdsac_save_settings');
       formData.set('nonce', window.wpdsacAdmin.nonce);
@@ -231,6 +247,10 @@
           message: error.message || window.wpdsacAdmin.errorText,
           diagnostics: error.diagnostics || window.wpdsacDebugProvider(),
         });
+        console.error(
+          '[WP DS AI Chatbot] Settings save diagnostics JSON',
+          JSON.stringify(error.diagnostics || window.wpdsacDebugProvider())
+        );
 
         if (saveStatus) {
           saveStatus.className = 'wpdsac-save-note is-error';

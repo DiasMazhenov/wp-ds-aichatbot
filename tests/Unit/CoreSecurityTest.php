@@ -125,6 +125,7 @@ final class CoreSecurityTest extends TestCase {
 	public function test_blank_api_key_submission_preserves_saved_key(): void {
 		$saved_key = str_repeat( 'x', 32 );
 		$GLOBALS['wpdsac_test_options']['wpdsac_deepseek_api_key'] = $saved_key;
+		$GLOBALS['wpdsac_test_options'][ CredentialResolver::CREDENTIALS_OPTION ] = array( 'deepseek' => $saved_key );
 
 		$settings = new Settings();
 
@@ -141,7 +142,18 @@ final class CoreSecurityTest extends TestCase {
 	}
 
 	public function test_administrative_label_uses_current_plugin_version(): void {
-		$this->assertSame( 'DS AI Chatbot v0.5.17', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
+		$this->assertSame( 'DS AI Chatbot v0.5.18', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
+	}
+
+	public function test_settings_remain_the_default_plugin_submenu(): void {
+		$GLOBALS['submenu'][ Settings::PAGE_SLUG ] = array(
+			array( 'AI FAQ', 'manage_options', 'edit.php?post_type=wpdsac_faq' ),
+			array( 'Settings', 'manage_options', Settings::PAGE_SLUG ),
+		);
+
+		( new Settings() )->ensure_settings_first();
+
+		$this->assertSame( Settings::PAGE_SLUG, $GLOBALS['submenu'][ Settings::PAGE_SLUG ][0][2] );
 	}
 
 	public function test_plugins_screen_name_contains_current_version(): void {
@@ -155,7 +167,7 @@ final class CoreSecurityTest extends TestCase {
 			)
 		);
 
-		$this->assertSame( 'WP DS AI Chatbot v0.5.17', $plugins[ $plugin_file ]['Name'] );
-		$this->assertSame( 'WP DS AI Chatbot v0.5.17', $plugins[ $plugin_file ]['Title'] );
+		$this->assertSame( 'WP DS AI Chatbot v0.5.18', $plugins[ $plugin_file ]['Name'] );
+		$this->assertSame( 'WP DS AI Chatbot v0.5.18', $plugins[ $plugin_file ]['Title'] );
 	}
 }

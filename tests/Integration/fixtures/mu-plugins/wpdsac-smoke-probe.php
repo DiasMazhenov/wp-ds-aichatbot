@@ -159,6 +159,11 @@ function wpdsac_test_probe(): WP_REST_Response {
 		'[ds_ai_chatbot title="Smoke &amp; Test" welcome_message="&lt;script&gt;alert(1)&lt;/script&gt;"]'
 	);
 	$all_options    = wp_load_alloptions();
+	$credential_store = get_option( 'wpdsac_provider_credentials', array() );
+	$test_credential  = str_repeat( 'x', 32 );
+	update_option( 'wpdsac_provider_credentials', array( 'deepseek' => $test_credential ), false );
+	$credential_bundle_resolved = $test_credential === ( new \DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver() )->get_api_key( 'deepseek' );
+	update_option( 'wpdsac_provider_credentials', is_array( $credential_store ) ? $credential_store : array(), false );
 
 	$global_settings                    = is_array( $settings ) ? $settings : array();
 	$global_settings['global_enabled']  = true;
@@ -478,6 +483,7 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'appearance_sanitized'        => $appearance_sanitized,
 			'admin_preview_assets'        => $admin_preview_assets,
 			'ajax_save_registered'        => $ajax_save_registered,
+			'credential_bundle_resolved'  => $credential_bundle_resolved,
 			'deepseek_registered'         => $deepseek_registered,
 			'knowledge_indexed'           => $knowledge_indexed,
 			'knowledge_retrieved'         => $knowledge_retrieved,
@@ -542,6 +548,7 @@ function wpdsac_test_uninstall(): WP_REST_Response {
 			'options_removed' => false === get_option( 'wpdsac_settings', false )
 				&& false === get_option( 'wpdsac_pdf_attachment_ids', false )
 				&& false === get_option( 'wpdsac_deepseek_api_key', false )
+				&& false === get_option( 'wpdsac_provider_credentials', false )
 				&& false === get_option( 'wpdsac_db_version', false ),
 			'cron_removed'    => false === wp_next_scheduled( 'wpdsac_cleanup_rate_limits' )
 				&& false === wp_next_scheduled( 'wpdsac_cleanup_conversations' )

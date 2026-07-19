@@ -43,6 +43,7 @@ final class Settings {
 	public function register_hooks(): void {
 		add_action( 'admin_init', array( $this, 'register' ) );
 		add_action( 'admin_menu', array( $this, 'add_page' ) );
+		add_action( 'admin_menu', array( $this, 'ensure_settings_first' ), 999 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_menu_icon_style' ) );
 		add_action( 'admin_enqueue_scripts', array( $this->appearance, 'enqueue_assets' ) );
 		add_action( 'wp_ajax_wpdsac_save_settings', array( $this, 'save_ajax' ) );
@@ -183,6 +184,7 @@ final class Settings {
 		);
 
 		$resolver = new CredentialResolver();
+		add_option( CredentialResolver::CREDENTIALS_OPTION, array(), '', false );
 
 		foreach ( CredentialResolver::provider_ids() as $provider_id ) {
 			add_option( $resolver->option_name( $provider_id ), '', '', false );
@@ -366,6 +368,17 @@ final class Settings {
 		$submitted    = array();
 		$credentials  = isset( $_POST['wpdsac_credentials'] ) ? wp_unslash( $_POST['wpdsac_credentials'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Each value is validated by sanitize_api_key().
 		$credentials  = is_array( $credentials ) ? $credentials : array();
+		$payload_json = isset( $_POST['wpdsac_credential_payload'] ) ? wp_unslash( $_POST['wpdsac_credential_payload'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Decoded and validated against the provider/key schema below.
+		$payload      = is_string( $payload_json ) ? json_decode( $payload_json, true ) : null;
+
+		if ( is_array( $payload ) ) {
+			$payload_provider = sanitize_key( $payload['provider'] ?? '' );
+			$payload_key      = $payload['credential'] ?? '';
+
+			if ( in_array( $payload_provider, CredentialResolver::provider_ids(), true ) && is_string( $payload_key ) ) {
+				$credentials[ $payload_provider ] = $payload_key;
+			}
+		}
 
 		foreach ( CredentialResolver::provider_ids() as $provider_id ) {
 			$option             = $resolver->option_name( $provider_id );
@@ -377,7 +390,7 @@ final class Settings {
 			}
 
 			$raw_key                   = $has_structured_key ? $credentials[ $provider_id ] : wp_unslash( $_POST[ $option ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Validated by sanitize_api_key() against length and whitespace constraints.
-			$api_keys[ $option ]       = $this->sanitize_api_key( $raw_key, $provider_id );
+			$api_keys[ $provider_id ]  = $this->sanitize_api_key( $raw_key, $provider_id );
 			$submitted[ $provider_id ] = is_string( $raw_key ) && '' !== trim( $raw_key );
 		}
 
@@ -392,9 +405,15 @@ final class Settings {
 
 		update_option( self::OPTION_NAME, $settings, false );
 
-		foreach ( $api_keys as $option => $api_key ) {
-			update_option( $option, $api_key, false );
+		$credential_store = get_option( CredentialResolver::CREDENTIALS_OPTION, array() );
+		$credential_store = is_array( $credential_store ) ? $credential_store : array();
+
+		foreach ( $api_keys as $provider_id => $api_key ) {
+			$credential_store[ $provider_id ] = $api_key;
+			update_option( $resolver->option_name( $provider_id ), $api_key, false );
 		}
+
+		update_option( CredentialResolver::CREDENTIALS_OPTION, $credential_store, false );
 
 		$diagnostics                        = self::provider_diagnostics( (string) $settings['ai_provider'], $settings );
 		$diagnostics['credentialSubmitted'] = ! empty( $submitted[ $settings['ai_provider'] ] );
@@ -442,6 +461,34 @@ final class Settings {
 			self::PAGE_SLUG,
 			array( $this, 'render_page' )
 		);
+	}
+
+	/**
+	 * Keep the settings screen as the first/default plugin submenu.
+	 *
+	 * @return void
+	 */
+	public function ensure_settings_first(): void {
+		global $submenu;
+
+		if ( empty( $submenu[ self::PAGE_SLUG ] ) || ! is_array( $submenu[ self::PAGE_SLUG ] ) ) {
+			return;
+		}
+
+		$settings_item = null;
+
+		foreach ( $submenu[ self::PAGE_SLUG ] as $index => $item ) {
+			if ( isset( $item[2] ) && self::PAGE_SLUG === $item[2] ) {
+				$settings_item = $item;
+				unset( $submenu[ self::PAGE_SLUG ][ $index ] );
+				break;
+			}
+		}
+
+		if ( is_array( $settings_item ) ) {
+			$submenu[ self::PAGE_SLUG ] = array_values( $submenu[ self::PAGE_SLUG ] ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Reordering this plugin's registered submenu entries only.
+			array_unshift( $submenu[ self::PAGE_SLUG ], $settings_item );
+		}
 	}
 
 	/**

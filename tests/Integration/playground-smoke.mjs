@@ -36,11 +36,13 @@ assert.match(adminScript, /wpdsacActiveSettingsTab/);
 assert.match(adminScript, /wpdsac_save_settings/);
 assert.match(adminScript, /wpdsacDebugProvider/);
 assert.match(adminScript, /wpdsac_credentials/);
+assert.match(adminScript, /wpdsac_credential_payload/);
 assert.match(adminStyles, /wpdsac-provider-setting\[hidden\]/);
 assert.match(chatScript, /REST request failed/);
 assert.match(settingsPhp, /add_menu_page/);
 assert.match(settingsPhp, /wp-menu-image img/);
 assert.match(settingsPhp, /add_submenu_page/);
+assert.match(settingsPhp, /ensure_settings_first/);
 assert.match(faqPhp, /Settings::PAGE_SLUG/);
 
 const playground = await runCLI({
@@ -67,7 +69,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.17',
+    plugin_version: '0.5.18',
     db_version: '5',
     rate_limit_table: true,
     request_lock_table: true,
@@ -88,6 +90,7 @@ try {
     appearance_sanitized: true,
     admin_preview_assets: true,
     ajax_save_registered: true,
+    credential_bundle_resolved: true,
     deepseek_registered: true,
     knowledge_indexed: true,
     knowledge_retrieved: true,

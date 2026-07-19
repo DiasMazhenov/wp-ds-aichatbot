@@ -34,6 +34,7 @@ final class Activator {
 		}
 
 		add_option( Settings::OPTION_NAME, Settings::defaults(), '', false );
+		add_option( CredentialResolver::CREDENTIALS_OPTION, array(), '', false );
 
 		$credentials = new CredentialResolver();
 
