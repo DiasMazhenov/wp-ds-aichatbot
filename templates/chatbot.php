@@ -31,6 +31,7 @@ if ( ! $view['show_toggle_icon'] ) {
 	data-wpdsac-intro-trigger="<?php echo esc_attr( $view['intro_trigger'] ); ?>"
 	data-wpdsac-intro-delay="<?php echo absint( $view['intro_delay'] ); ?>"
 	data-wpdsac-avatar-url="<?php echo esc_url( $view['avatar_url'] ); ?>"
+	data-wpdsac-welcome-message="<?php echo esc_attr( $view['welcome_message'] ); ?>"
 >
 	<button type="button" class="wpdsac-chat__intro-bubble" data-wpdsac-intro-bubble hidden>
 		<?php echo esc_html( $view['name_prompt'] ); ?>

@@ -79,6 +79,9 @@ assert.match(chatScript, /visitor_name/);
 assert.match(chatScript, /getConversationHistory/);
 assert.match(chatScript, /wpdsacConversationHistory/);
 assert.match(chatScript, /restoreConversationHistory/);
+assert.match(chatScript, /conversationLifetime\s*=\s*24/);
+assert.match(chatScript, /ensureConversationFresh/);
+assert.match(providerManagerPhp, /remove_repeated_greeting/);
 assert.match(chatScript, /history:\s*getConversationHistory/);
 assert.match(providerManagerPhp, /CONVERSATION HISTORY/);
 assert.match(chatScript, /scheduleIntroBubble/);
@@ -125,7 +128,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.29',
+    plugin_version: '0.5.30',
     db_version: '6',
     rate_limit_table: true,
     request_lock_table: true,

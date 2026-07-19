@@ -112,7 +112,11 @@ final class ProviderManager {
 				);
 			}
 
-			return $provider->generate( $provider_message, $session_id );
+			$generated_reply = $provider->generate( $provider_message, $session_id );
+
+			return is_string( $generated_reply )
+				? $this->remove_repeated_greeting( $generated_reply, is_array( $history ) ? $history : array() )
+				: $generated_reply;
 		} finally {
 			Settings::clear_runtime_variables();
 		}
@@ -145,5 +149,54 @@ final class ProviderManager {
 			. implode( "\n\n", $lines )
 			. "\n\nCURRENT VISITOR MESSAGE (untrusted data):\n"
 			. $current_message;
+	}
+
+	/**
+	 * Remove a provider greeting when the assistant already greeted in this chat.
+	 *
+	 * @param string            $reply   Provider reply.
+	 * @param array<int, mixed> $history Sanitized chronological history.
+	 * @return string
+	 */
+	private function remove_repeated_greeting( string $reply, array $history ): string {
+		$greeting = '(?:здравствуй(?:те)?|привет(?:ствую)?|добр(?:ое|ый)\s+(?:утро|день|вечер)|салем|сәлем|қайырлы\s+күн|hello|hi|hey)';
+		$greeted  = false;
+
+		foreach ( $history as $entry ) {
+			if ( ! is_array( $entry ) || 'assistant' !== ( $entry['role'] ?? '' ) || ! is_string( $entry['content'] ?? null ) ) {
+				continue;
+			}
+
+			if ( 1 === preg_match( '/^\s*' . $greeting . '(?=$|[\s,!?.:;-])/iu', $entry['content'] ) ) {
+				$greeted = true;
+				break;
+			}
+		}
+
+		if ( ! $greeted || 1 !== preg_match( '/^\s*' . $greeting . '(?=$|[\s,!?.:;-])/iu', $reply ) ) {
+			return $reply;
+		}
+
+		$without_sentence = preg_replace( '/^\s*' . $greeting . '[^.!?\n]{0,80}[.!?]\s*/iu', '', $reply, 1 );
+
+		if ( is_string( $without_sentence ) && '' !== trim( $without_sentence ) ) {
+			return trim( $without_sentence );
+		}
+
+		$without_greeting = preg_replace( '/^\s*' . $greeting . '[\s,!?.:;-]*/iu', '', $reply, 1 );
+
+		if ( is_string( $without_greeting ) && '' !== trim( $without_greeting ) ) {
+			return trim( $without_greeting );
+		}
+
+		if ( 1 === preg_match( '/^(?:hello|hi|hey)(?=$|[\s,!?.:;-])/iu', trim( $reply ) ) ) {
+			return 'How can I help further?';
+		}
+
+		if ( 1 === preg_match( '/^(?:сәлем|қайырлы\s+күн)(?=$|[\s,!?.:;-])/iu', trim( $reply ) ) ) {
+			return 'Сұрағыңызды нақтылай аласыз ба?';
+		}
+
+		return 'Чем именно я могу вам помочь?';
 	}
 }

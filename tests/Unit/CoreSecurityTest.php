@@ -125,11 +125,14 @@ final class CoreSecurityTest extends TestCase {
 	}
 
 	public function test_provider_receives_chronological_untrusted_conversation_history(): void {
-		$manager = new ProviderManager( array(), new PromptGuard() );
-		$method  = ( new ReflectionClass( $manager ) )->getMethod( 'with_conversation_history' );
+		$manager     = new ProviderManager( array(), new PromptGuard() );
+		$reflection  = new ReflectionClass( $manager );
+		$method      = $reflection->getMethod( 'with_conversation_history' );
+		$deduplicate = $reflection->getMethod( 'remove_repeated_greeting' );
 
 		if ( PHP_VERSION_ID < 80100 ) {
 			$method->setAccessible( true );
+			$deduplicate->setAccessible( true );
 		}
 
 		$message = $method->invoke(
@@ -145,6 +148,22 @@ final class CoreSecurityTest extends TestCase {
 		$this->assertStringContainsString( 'Assistant: Hello, Dana!', $message );
 		$this->assertStringContainsString( 'Visitor: Tell me about delivery.', $message );
 		$this->assertStringEndsWith( 'Do you deliver today?', $message );
+		$this->assertSame(
+			'Чем я могу вам помочь?',
+			$deduplicate->invoke(
+				$manager,
+				'Здравствуйте! Чем я могу вам помочь?',
+				array( array( 'role' => 'assistant', 'content' => 'Салем Серега! Чем я могу Вам помочь?' ) )
+			)
+		);
+		$this->assertSame(
+			'Здравствуйте! Чем я могу вам помочь?',
+			$deduplicate->invoke(
+				$manager,
+				'Здравствуйте! Чем я могу вам помочь?',
+				array( array( 'role' => 'assistant', 'content' => 'Расскажите подробнее.' ) )
+			)
+		);
 	}
 
 	public function test_deepseek_request_uses_chat_completions_without_exposing_reasoning(): void {
@@ -236,7 +255,7 @@ final class CoreSecurityTest extends TestCase {
 	}
 
 	public function test_administrative_label_uses_current_plugin_version(): void {
-		$this->assertSame( 'DS AI Chatbot v0.5.29', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
+		$this->assertSame( 'DS AI Chatbot v0.5.30', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
 	}
 
 	public function test_settings_remain_the_default_plugin_submenu(): void {
@@ -261,7 +280,7 @@ final class CoreSecurityTest extends TestCase {
 			)
 		);
 
-		$this->assertSame( 'WP DS AI Chatbot v0.5.29', $plugins[ $plugin_file ]['Name'] );
-		$this->assertSame( 'WP DS AI Chatbot v0.5.29', $plugins[ $plugin_file ]['Title'] );
+		$this->assertSame( 'WP DS AI Chatbot v0.5.30', $plugins[ $plugin_file ]['Name'] );
+		$this->assertSame( 'WP DS AI Chatbot v0.5.30', $plugins[ $plugin_file ]['Title'] );
 	}
 }

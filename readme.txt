@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.29
+Stable tag: 0.5.30
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,10 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.30 =
+* Deterministically remove a repeated provider greeting after the assistant has already greeted in the current conversation.
+* Expire browser conversation memory after 24 hours so a new-day greeting is allowed again.
 
 = 0.5.29 =
 * Send bounded current-session conversation history to every AI provider and retain it across page navigation in the same tab.

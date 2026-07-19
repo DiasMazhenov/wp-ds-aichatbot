@@ -6,6 +6,7 @@
 	const sessionStorageKey = 'wpdsacSessionToken';
 	const visitorNameStorageKey = 'wpdsacVisitorName';
 	const conversationHistoryStorageKey = 'wpdsacConversationHistory';
+	const conversationLifetime = 24 * 60 * 60 * 1000;
 	let audioContext = null;
 
 	const ensureAudioContext = () => {
@@ -188,11 +189,40 @@
 		return history;
 	};
 
+	const getStoredConversation = () => {
+		const fallback = {startedAt: Date.now(), entries: [], expired: false};
+
+		try {
+			const stored = JSON.parse(window.sessionStorage.getItem(conversationHistoryStorageKey) || 'null');
+
+			if (Array.isArray(stored)) {
+				return {startedAt: Date.now(), entries: stored, expired: false};
+			}
+
+			if (!stored || !Array.isArray(stored.entries) || !Number.isFinite(stored.startedAt)) {
+				return fallback;
+			}
+
+			if (Date.now() - stored.startedAt >= conversationLifetime) {
+				window.sessionStorage.removeItem(conversationHistoryStorageKey);
+				return {...fallback, expired: true};
+			}
+
+			return stored;
+		} catch (error) {
+			return fallback;
+		}
+	};
+
 	const persistConversationHistory = (chat) => {
 		try {
+			const stored = getStoredConversation();
 			window.sessionStorage.setItem(
 				conversationHistoryStorageKey,
-				JSON.stringify(getConversationHistory(chat))
+				JSON.stringify({
+					startedAt: stored.startedAt,
+					entries: getConversationHistory(chat),
+				})
 			);
 		} catch (error) {
 			// The current page conversation still works when browser storage is unavailable.
@@ -200,12 +230,11 @@
 	};
 
 	const restoreConversationHistory = (chat) => {
-		let history = [];
+		const stored = getStoredConversation();
+		const history = stored.entries;
 
-		try {
-			history = JSON.parse(window.sessionStorage.getItem(conversationHistoryStorageKey) || '[]');
-		} catch (error) {
-			history = [];
+		if (stored.expired) {
+			window.sessionStorage.removeItem(sessionStorageKey);
 		}
 
 		if (!Array.isArray(history) || history.length === 0) {
@@ -222,6 +251,21 @@
 
 			appendMessage(chat, entry.content.slice(0, 4000), entry.role === 'assistant' ? 'bot' : 'user');
 		});
+	};
+
+	const ensureConversationFresh = (chat) => {
+		if (!getStoredConversation().expired) {
+			return;
+		}
+
+		const name = getVisitorName();
+		const welcome = (chat.dataset.wpdsacWelcomeMessage || '')
+			.split('{username}').join(name)
+			.split('(username)').join(name);
+		const messages = chat.querySelector('.wpdsac-chat__messages');
+		window.sessionStorage.removeItem(sessionStorageKey);
+		messages.textContent = '';
+		appendMessage(chat, welcome, 'bot');
 	};
 
 	const revealConversation = (chat, name) => {
@@ -411,6 +455,7 @@
 		status.textContent = strings.connecting || '';
 
 		try {
+			ensureConversationFresh(chat);
 			const session = await getSessionToken();
 			status.textContent = strings.sending || '';
 			const response = await request('/chat', {
