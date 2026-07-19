@@ -94,6 +94,85 @@
     updateProviderFields();
   }
 
+  const settingsForm = document.querySelector('[data-wpdsac-settings-form]');
+  const saveStatus = document.querySelector('[data-wpdsac-save-status]');
+
+  if (settingsForm && window.wpdsacAdmin) {
+    const markUnsaved = () => {
+      if (saveStatus) {
+        saveStatus.className = 'wpdsac-save-note is-unsaved';
+        saveStatus.textContent = window.wpdsacAdmin.unsavedText;
+      }
+    };
+
+    settingsForm.addEventListener('input', markUnsaved);
+    settingsForm.addEventListener('change', markUnsaved);
+
+    settingsForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const submitButton = settingsForm.querySelector('[type="submit"]');
+      const originalButtonText = submitButton ? submitButton.value : '';
+      const formData = new FormData(settingsForm);
+
+      formData.set('action', 'wpdsac_save_settings');
+      formData.set('nonce', window.wpdsacAdmin.nonce);
+
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.value = window.wpdsacAdmin.savingText;
+      }
+
+      if (saveStatus) {
+        saveStatus.className = 'wpdsac-save-note is-saving';
+        saveStatus.textContent = window.wpdsacAdmin.savingText;
+      }
+
+      try {
+        const response = await fetch(window.wpdsacAdmin.ajaxUrl, {
+          method: 'POST',
+          credentials: 'same-origin',
+          body: formData,
+        });
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result?.data?.message || window.wpdsacAdmin.errorText);
+        }
+
+        document.querySelectorAll('[data-wpdsac-api-key]').forEach((input) => {
+          if (!input.value) {
+            return;
+          }
+
+          input.value = '';
+          input.placeholder = window.wpdsacAdmin.savedKeyText;
+
+          const keyStatus = input.parentElement?.querySelector('[data-wpdsac-key-status]');
+
+          if (keyStatus) {
+            keyStatus.hidden = false;
+          }
+        });
+
+        if (saveStatus) {
+          saveStatus.className = 'wpdsac-save-note is-success';
+          saveStatus.textContent = result.data?.message || window.wpdsacAdmin.savedText;
+        }
+      } catch (error) {
+        if (saveStatus) {
+          saveStatus.className = 'wpdsac-save-note is-error';
+          saveStatus.textContent = error.message || window.wpdsacAdmin.errorText;
+        }
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.value = originalButtonText;
+        }
+      }
+    });
+  }
+
   const preview = document.querySelector('[data-wpdsac-preview]');
 
   if (!preview) {

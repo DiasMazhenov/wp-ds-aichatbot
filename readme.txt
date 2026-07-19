@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.12
+Stable tag: 0.5.13
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,11 +26,17 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 
 1. Upload the plugin ZIP through Plugins > Add New > Upload Plugin.
 2. Activate WP DS AI Chatbot.
-3. Open Settings > DS AI Chatbot and select a provider.
+3. Open DS AI Chatbot > Settings and select a provider.
 4. Configure the provider key through wp-config.php, an environment variable, or the write-only settings field.
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.13 =
+* Consolidate all plugin pages under one top-level WordPress administration menu.
+* Add a complete Russian interface translation.
+* Redesign the settings screen and restore side-by-side appearance controls with a sticky live preview.
+* Save settings securely through AJAX without reloading the page.
 
 = 0.5.12 =
 * Show the current version directly in the bold plugin name on the WordPress Plugins screen.

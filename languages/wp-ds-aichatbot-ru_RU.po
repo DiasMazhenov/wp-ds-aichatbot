@@ -1,0 +1,590 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WP DS AI Chatbot\n"
+"PO-Revision-Date: 2026-07-19 21:00+0500\n"
+"Last-Translator: Dias Mazhenov\n"
+"Language-Team: Russian\n"
+"Language: ru_RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+msgid "A chat request is already in progress. Please wait."
+msgstr "Запрос уже выполняется. Пожалуйста, подождите."
+
+msgid "AI Assistant"
+msgstr "AI-ассистент"
+
+msgid "AI FAQ"
+msgstr "AI FAQ"
+
+msgid "AI FAQs"
+msgstr "AI FAQ"
+
+msgid "AI chatbot contact requests"
+msgstr "Заявки из AI-чатбота"
+
+msgid "AI chatbot conversations"
+msgstr "Диалоги AI-чатбота"
+
+msgid "AI provider"
+msgstr "AI-провайдер"
+
+msgid "AI providers"
+msgstr "AI-провайдеры"
+
+msgid "AI requests per 24 hours"
+msgstr "AI-запросов за 24 часа"
+
+msgid "API key saved. Leave this field empty to keep it."
+msgstr "API-ключ сохранён. Оставьте поле пустым, чтобы не менять его."
+
+msgid "Add AI FAQ"
+msgstr "Добавить AI FAQ"
+
+msgid "Add relevant indexed pages, posts, and AI FAQs to AI requests."
+msgstr "Добавлять к AI-запросам подходящие страницы, записи и FAQ из индекса."
+
+msgid "Adjust the shared design used by global, shortcode, and Elementor chatbots."
+msgstr "Настройте общий дизайн для глобального чата, шорткода и Elementor."
+
+msgid "Anthropic API key"
+msgstr "API-ключ Anthropic"
+
+msgid "Anthropic model"
+msgstr "Модель Anthropic"
+
+msgid "Appearance changes are previewed before saving and apply to global, shortcode, and Elementor chatbots."
+msgstr "Изменения видны до сохранения и применяются к глобальному чату, шорткоду и Elementor."
+
+msgid "Appearance"
+msgstr "Дизайн"
+
+msgid "Assistant instructions"
+msgstr "Инструкции ассистента"
+
+msgid "Assistant message"
+msgstr "Сообщение ассистента"
+
+msgid "Assistant message text"
+msgstr "Текст сообщения ассистента"
+
+msgid "Borders"
+msgstr "Границы"
+
+msgid "Bottom left"
+msgstr "Снизу слева"
+
+msgid "Bottom offset (px)"
+msgstr "Отступ снизу (px)"
+
+msgid "Bottom right"
+msgstr "Снизу справа"
+
+msgid "Categories: %s"
+msgstr "Категории: %s"
+
+msgid "Chat display"
+msgstr "Отображение чата"
+
+msgid "Chat width (px)"
+msgstr "Ширина чата (px)"
+
+msgid "Chatbot settings"
+msgstr "Настройки чатбота"
+
+msgid "Choose one provider. Only its connection fields are shown."
+msgstr "Выберите провайдера — ниже появятся только его параметры подключения."
+
+msgid "Choose whether conversations are stored and how long they are retained."
+msgstr "Укажите, сохранять ли диалоги и как долго их хранить."
+
+msgid "Collapsed circle"
+msgstr "Свёрнутый круг"
+
+msgid "Collapsed circle size (px)"
+msgstr "Размер свёрнутого круга (px)"
+
+msgid "Collect contact requests only after explicit visitor consent."
+msgstr "Собирайте контакты только после явного согласия посетителя."
+
+msgid "Colors"
+msgstr "Цвета"
+
+msgid "Configure the chatbot, AI providers, knowledge, and privacy from one place."
+msgstr "Управляйте чатботом, AI-провайдерами, базой знаний и приватностью в одном месте."
+
+msgid "Configured — enter a new key to replace it"
+msgstr "Ключ настроен — введите новый для замены"
+
+msgid "Could not save settings. Please try again."
+msgstr "Не удалось сохранить настройки. Попробуйте ещё раз."
+
+msgid "Connecting…"
+msgstr "Подключение…"
+
+msgid "Consent"
+msgstr "Согласие"
+
+msgid "Consent is required before contact details can be saved."
+msgstr "Перед сохранением контактов необходимо согласие."
+
+msgid "Consent text"
+msgstr "Текст согласия"
+
+msgid "Contact details could not be saved. Please try again."
+msgstr "Не удалось сохранить контакты. Попробуйте ещё раз."
+
+msgid "Contact form in chat"
+msgstr "Форма контактов в чате"
+
+msgid "Contact prompt"
+msgstr "Приглашение оставить контакты"
+
+msgid "Content"
+msgstr "Содержимое"
+
+msgid "Control where the chatbot appears and what visitors see first."
+msgstr "Настройте размещение чатбота и первое сообщение для посетителя."
+
+msgid "Controls and shapes"
+msgstr "Форма элементов"
+
+msgid "Conversation logging"
+msgstr "Журнал диалогов"
+
+msgid "Conversation privacy"
+msgstr "Приватность диалогов"
+
+msgid "DS AI Chatbot"
+msgstr "DS AI Chatbot"
+
+msgid "DS AI Chatbot v%s"
+msgstr "DS AI Chatbot v%s"
+
+msgid "DS AI Knowledge"
+msgstr "База знаний DS AI"
+
+msgid "DS AI Leads"
+msgstr "Лиды DS AI"
+
+msgid "DeepSeek API key"
+msgstr "API-ключ DeepSeek"
+
+msgid "DeepSeek model"
+msgstr "Модель DeepSeek"
+
+msgid "DeepSeek thinking mode"
+msgstr "Режим рассуждений DeepSeek"
+
+msgid "Disabled in plugin settings"
+msgstr "Отключено в настройках плагина"
+
+msgid "Edit AI FAQ"
+msgstr "Редактировать AI FAQ"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Enable deeper reasoning. This can increase response time and token usage."
+msgstr "Включить углублённое рассуждение. Ответы могут стать дольше и дороже."
+
+msgid "Enabled"
+msgstr "Включено"
+
+msgid "Expanded header radius (px)"
+msgstr "Скругление шапки (px)"
+
+msgid "Expires"
+msgstr "Истекает"
+
+msgid "Font size (px)"
+msgstr "Размер шрифта (px)"
+
+msgid "Font style"
+msgstr "Стиль шрифта"
+
+msgid "Gemini API key"
+msgstr "API-ключ Gemini"
+
+msgid "Gemini model"
+msgstr "Модель Gemini"
+
+msgid "General"
+msgstr "Основные"
+
+msgid "Global chatbot"
+msgstr "Глобальный чатбот"
+
+msgid "Global position"
+msgstr "Положение на сайте"
+
+msgid "Header and launcher"
+msgstr "Шапка и круглая кнопка"
+
+msgid "Header text and icon"
+msgstr "Текст и иконка шапки"
+
+msgid "Hello! How can I help you?"
+msgstr "Салем! Чем я могу вам помочь?"
+
+msgid "Horizontal offset (px)"
+msgstr "Горизонтальный отступ (px)"
+
+msgid "I agree that my contact details may be stored and used to respond to my request."
+msgstr "Я согласен на хранение и использование моих контактных данных для ответа на обращение."
+
+msgid "Icon in expanded header"
+msgstr "Иконка в открытой шапке"
+
+msgid "Input and button radius (px)"
+msgstr "Скругление поля и кнопки (px)"
+
+msgid "Knowledge"
+msgstr "База знаний"
+
+msgid "Knowledge base"
+msgstr "База знаний"
+
+msgid "Knowledge fragments per answer"
+msgstr "Фрагментов знаний на один ответ"
+
+msgid "Knowledge index updated from %d sources."
+msgstr "Индекс знаний обновлён из %d источников."
+
+msgid "Layout and typography"
+msgstr "Размеры и типографика"
+
+msgid "Lead collection"
+msgstr "Сбор лидов"
+
+msgid "Lead collection is not enabled."
+msgstr "Сбор лидов не включён."
+
+msgid "Lead retention (days)"
+msgstr "Хранение лидов (дней)"
+
+msgid "Leads"
+msgstr "Лиды"
+
+msgid "Live preview"
+msgstr "Предпросмотр"
+
+msgid "Log retention (days)"
+msgstr "Хранение диалогов (дней)"
+
+msgid "Main text"
+msgstr "Основной текст"
+
+msgid "Maximum output tokens"
+msgstr "Максимум токенов в ответе"
+
+msgid "Message"
+msgstr "Сообщение"
+
+msgid "Message input"
+msgstr "Поле сообщения"
+
+msgid "Message input text"
+msgstr "Текст в поле сообщения"
+
+msgid "Message radius (px)"
+msgstr "Скругление сообщений (px)"
+
+msgid "Messages area height (px)"
+msgstr "Высота области сообщений (px)"
+
+msgid "Modern sans-serif"
+msgstr "Современный без засечек"
+
+msgid "Monospace"
+msgstr "Моноширинный"
+
+msgid "Name"
+msgstr "Имя"
+
+msgid "New AI FAQ"
+msgstr "Новый AI FAQ"
+
+msgid "No AI FAQs found."
+msgstr "AI FAQ не найдены."
+
+msgid "No PDF attachments were found in the Media Library."
+msgstr "В медиабиблиотеке нет PDF-файлов."
+
+msgid "No leads have been collected."
+msgstr "Лидов пока нет."
+
+msgid "Open"
+msgstr "Открытый чат"
+
+msgid "OpenAI API key"
+msgstr "API-ключ OpenAI"
+
+msgid "OpenAI model"
+msgstr "Модель OpenAI"
+
+msgid "OpenRouter API key"
+msgstr "API-ключ OpenRouter"
+
+msgid "OpenRouter model"
+msgstr "Модель OpenRouter"
+
+msgid "PDF document"
+msgstr "PDF-документ"
+
+msgid "PDF knowledge sources"
+msgstr "PDF-источники знаний"
+
+msgid "PDF sources updated: %1$d indexed, %2$d skipped."
+msgstr "PDF-источники обновлены: %1$d проиндексировано, %2$d пропущено."
+
+msgid "Panel"
+msgstr "Панель чата"
+
+msgid "Panel padding (px)"
+msgstr "Внутренний отступ панели (px)"
+
+msgid "Panel radius (px)"
+msgstr "Скругление панели (px)"
+
+msgid "Panel shadow (%)"
+msgstr "Интенсивность тени (%)"
+
+msgid "Plugin activation failed"
+msgstr "Не удалось активировать плагин"
+
+msgid "Preview state"
+msgstr "Состояние предпросмотра"
+
+msgid "Price: %s"
+msgstr "Цена: %s"
+
+msgid "Privacy"
+msgstr "Приватность"
+
+msgid "Provider"
+msgstr "Провайдер"
+
+msgid "Published pages, posts, AI FAQs, WooCommerce products, and selected PDFs are split into bounded fragments and stored in a dedicated non-autoloaded table."
+msgstr "Опубликованные страницы, записи, AI FAQ, товары WooCommerce и выбранные PDF разбиваются на фрагменты и хранятся в отдельной таблице базы данных."
+
+msgid "Rate-limit window (seconds)"
+msgstr "Период ограничения запросов (секунд)"
+
+msgid "Recent consented contact requests. Expired rows are removed automatically."
+msgstr "Последние заявки, отправленные с согласием. Просроченные записи удаляются автоматически."
+
+msgid "Reindex website knowledge"
+msgstr "Переиндексировать знания сайта"
+
+msgid "Requests per window"
+msgstr "Запросов за период"
+
+msgid "Retrieval:"
+msgstr "Использование знаний:"
+
+msgid "Role"
+msgstr "Роль"
+
+msgid "Rounded"
+msgstr "Скруглённый"
+
+msgid "SKU: %s"
+msgstr "Артикул: %s"
+
+msgid "Save and index selected PDFs"
+msgstr "Сохранить и индексировать PDF"
+
+msgid "Save settings"
+msgstr "Сохранить настройки"
+
+msgid "Saving settings…"
+msgstr "Сохранение…"
+
+msgid "Saving contact details…"
+msgstr "Сохраняем контакты…"
+
+msgid "Search AI FAQs"
+msgstr "Искать AI FAQ"
+
+msgid "Select PDF knowledge sources"
+msgstr "Выберите PDF-источники знаний"
+
+msgid "Select text-based PDFs from the Media Library. Scanned images require OCR before upload. Maximum 50 files and 10 MB per file."
+msgstr "Выберите текстовые PDF из медиабиблиотеки. Для сканов заранее выполните OCR. Не более 50 файлов по 10 МБ."
+
+msgid "Send"
+msgstr "Отправить"
+
+msgid "Send button"
+msgstr "Кнопка отправки"
+
+msgid "Send button text"
+msgstr "Текст кнопки отправки"
+
+msgid "Send contact details"
+msgstr "Отправить контакты"
+
+msgid "Sending…"
+msgstr "Отправка…"
+
+msgid "Settings"
+msgstr "Настройки"
+
+msgid "Settings saved."
+msgstr "Настройки сохранены."
+
+msgid "Show a name/email form with required consent inside the chat. Disabled by default."
+msgstr "Показывать в чате форму имени и email с обязательным согласием. По умолчанию выключено."
+
+msgid "Show the chatbot globally in the site footer."
+msgstr "Показывать чатбот на всех страницах сайта."
+
+msgid "Show the decorative icon beside the title when the chat is open."
+msgstr "Показывать декоративную иконку рядом с заголовком открытого чата."
+
+msgid "Status text"
+msgstr "Служебный текст"
+
+msgid "Stock status: %s"
+msgstr "Наличие: %s"
+
+msgid "Store successful conversations for the configured retention period. Disabled by default."
+msgstr "Хранить успешные диалоги в течение указанного срока. По умолчанию выключено."
+
+msgid "Stored fragments:"
+msgstr "Сохранено фрагментов:"
+
+msgid "Submitted"
+msgstr "Отправлено"
+
+msgid "System"
+msgstr "Системный"
+
+msgid "Thank you. Your contact details were saved."
+msgstr "Спасибо. Ваши контактные данные сохранены."
+
+msgid "The AI provider API key format is invalid."
+msgstr "Неверный формат API-ключа AI-провайдера."
+
+msgid "The AI provider is not configured yet."
+msgstr "AI-провайдер ещё не настроен."
+
+msgid "The AI service is busy. Please try again later."
+msgstr "AI-сервис перегружен. Попробуйте немного позже."
+
+msgid "The AI service is temporarily unavailable."
+msgstr "AI-сервис временно недоступен."
+
+msgid "The chat request failed. Please try again."
+msgstr "Не удалось отправить запрос. Попробуйте ещё раз."
+
+msgid "The chat session has expired."
+msgstr "Сессия чата истекла."
+
+msgid "The chat session is invalid."
+msgstr "Сессия чата недействительна."
+
+msgid "The configured AI provider is invalid."
+msgstr "Выбран некорректный AI-провайдер."
+
+msgid "The daily AI request budget has been reached. Please try again later."
+msgstr "Суточный лимит AI-запросов исчерпан. Попробуйте позже."
+
+msgid "The key is supplied by wp-config.php or the server environment and cannot be changed here."
+msgstr "Ключ задан через wp-config.php или окружение сервера и не может быть изменён здесь."
+
+msgid "The saved key is never displayed. Prefer the provider-specific WPDSAC_*_API_KEY constant or environment variable."
+msgstr "Сохранённый ключ не выводится на экран. Для production предпочтительнее константа WPDSAC_*_API_KEY или переменная окружения."
+
+msgid "The selected AI provider is not configured yet."
+msgstr "Выбранный AI-провайдер ещё не настроен."
+
+msgid "There are unsaved changes."
+msgstr "Есть несохранённые изменения."
+
+msgid "Time"
+msgstr "Время"
+
+msgid "Title"
+msgstr "Заголовок"
+
+msgid "Too many chat requests. Please try again later."
+msgstr "Слишком много запросов. Попробуйте позже."
+
+msgid "Too many contact submissions. Please try again later."
+msgstr "Слишком много отправок формы. Попробуйте позже."
+
+msgid "Type your message…"
+msgstr "Введите сообщение…"
+
+msgid "Unsaved changes apply only after saving."
+msgstr "Изменения вступят в силу после сохранения."
+
+msgid "Use indexed website content as reference material for every provider."
+msgstr "Используйте проиндексированный контент сайта с любым AI-провайдером."
+
+msgid "Use the global title"
+msgstr "Использовать общий заголовок"
+
+msgid "Use the global welcome message"
+msgstr "Использовать общее приветствие"
+
+msgid "Use website knowledge"
+msgstr "Использовать знания сайта"
+
+msgid "Visitor message"
+msgstr "Сообщение посетителя"
+
+msgid "Visitor message text"
+msgstr "Текст сообщения посетителя"
+
+msgid "WP DS AI Chatbot"
+msgstr "WP DS AI Chatbot"
+
+msgid "WP DS AI Chatbot contact requests"
+msgstr "Заявки WP DS AI Chatbot"
+
+msgid "WP DS AI Chatbot conversations"
+msgstr "Диалоги WP DS AI Chatbot"
+
+msgid "WP DS AI Chatbot requires Elementor %s or newer for its Elementor widget."
+msgstr "Для виджета WP DS AI Chatbot требуется Elementor %s или новее."
+
+msgid "WP DS AI Chatbot requires PHP 7.4 or newer."
+msgstr "Для WP DS AI Chatbot требуется PHP 7.4 или новее."
+
+msgid "Website"
+msgstr "Сайт"
+
+msgid "Welcome message"
+msgstr "Приветственное сообщение"
+
+msgid "When contact collection is enabled, the chatbot stores the submitted name, email address, the consent text shown at submission, and the submission time for the configured retention period. IP addresses and raw chat session identifiers are not stored. Contact requests can be exported or erased using the WordPress privacy tools."
+msgstr "Когда сбор контактов включён, чатбот хранит имя, email, текст согласия и время отправки в течение заданного срока. IP-адреса и исходные идентификаторы сессий не сохраняются. Заявки можно экспортировать или удалить инструментами приватности WordPress."
+
+msgid "When conversation logging is enabled, chatbot messages are stored for the configured retention period. Session identifiers are stored only as one-way hashes. Logs associated with authenticated WordPress users can be exported or erased using the WordPress privacy tools. Anonymous logs cannot be linked back to an email address."
+msgstr "Когда журнал диалогов включён, сообщения хранятся в течение заданного срока. Идентификаторы сессий сохраняются только как необратимые хэши. Диалоги авторизованных пользователей можно экспортировать или удалить инструментами приватности WordPress. Анонимные диалоги нельзя связать с email."
+
+msgid "WordPress AI Client (WordPress 7.0+)"
+msgstr "AI-клиент WordPress (WordPress 7.0+)"
+
+msgid "WordPress AI Client requires WordPress 7.0 or newer and a configured connector."
+msgstr "Для AI-клиента требуется WordPress 7.0 или новее и настроенный коннектор."
+
+msgid "Would you like us to contact you?"
+msgstr "Хотите, чтобы мы связались с вами?"
+
+msgid "You are a concise and helpful website support assistant. Reply in the same language as the visitor."
+msgstr "Вы — полезный консультант сайта. Отвечайте кратко и на языке посетителя."
+
+msgid "You are not allowed to manage PDF knowledge sources."
+msgstr "У вас нет прав для управления PDF-источниками знаний."
+
+msgid "You are not allowed to manage the knowledge index."
+msgstr "У вас нет прав для управления индексом знаний."
+
+msgid "You are not allowed to change these settings."
+msgstr "У вас нет прав для изменения этих настроек."

@@ -191,9 +191,10 @@ function wpdsac_test_probe(): WP_REST_Response {
 		&& 'bottom_right' === $sanitized_appearance['global_position'];
 
 	$appearance_controller = new \DiasMazhenov\WPDsAiChatbot\Admin\AppearanceSettings();
-	$appearance_controller->enqueue_assets( 'settings_page_wpdsac-settings' );
+	$appearance_controller->enqueue_assets( 'toplevel_page_wpdsac-settings' );
 	$admin_preview_assets = wp_style_is( 'wpdsac-admin', 'enqueued' )
 		&& wp_script_is( 'wpdsac-admin', 'enqueued' );
+	$ajax_save_registered = false !== has_action( 'wp_ajax_wpdsac_save_settings' );
 	$deepseek_registered = in_array(
 		'deepseek',
 		\DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver::provider_ids(),
@@ -213,6 +214,9 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$knowledge_retrieved = false;
 	$knowledge_augmented = false;
 	$faq_registered = post_type_exists( \DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType::POST_TYPE );
+	$faq_type       = get_post_type_object( \DiasMazhenov\WPDsAiChatbot\Knowledge\FaqPostType::POST_TYPE );
+	$faq_under_plugin_menu = $faq_type instanceof WP_Post_Type
+		&& \DiasMazhenov\WPDsAiChatbot\Admin\Settings::PAGE_SLUG === $faq_type->show_in_menu;
 	$faq_indexed = false;
 	$pdf_indexed = false;
 	$pdf_option_non_autoloaded = false;
@@ -471,11 +475,13 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'appearance_positioned'       => false !== strpos( $global_html, 'wpdsac-position--bottom-left' ),
 			'appearance_sanitized'        => $appearance_sanitized,
 			'admin_preview_assets'        => $admin_preview_assets,
+			'ajax_save_registered'        => $ajax_save_registered,
 			'deepseek_registered'         => $deepseek_registered,
 			'knowledge_indexed'           => $knowledge_indexed,
 			'knowledge_retrieved'         => $knowledge_retrieved,
 			'knowledge_augmented'         => $knowledge_augmented,
 			'faq_registered'              => $faq_registered,
+			'faq_under_plugin_menu'       => $faq_under_plugin_menu,
 			'faq_indexed'                 => $faq_indexed,
 			'pdf_indexed'                 => $pdf_indexed,
 			'pdf_option_non_autoloaded'   => $pdf_option_non_autoloaded,

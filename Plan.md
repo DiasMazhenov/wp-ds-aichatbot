@@ -154,7 +154,7 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.12` дополнительно выводит текущую версию непосредственно в жирном названии плагина на стандартном экране WordPress Plugins. После автоматических проверок остаются внешние ручные проверки: Elementor editor iframe на установленном сайте и реальный provider smoke с пользовательскими API credentials.
+Версия `0.5.13` объединяет все административные экраны под одним пунктом `DS AI Chatbot`, добавляет полный русский language pack, перерабатывает интерфейс настроек и возвращает удобную визуальную настройку с sticky live preview. Сохранение работает через capability/nonce-protected AJAX без перезагрузки страницы. После автоматических проверок остаются внешние ручные проверки: Elementor editor iframe на установленном сайте и реальный provider smoke с пользовательскими API credentials.
 
 GitHub Actions run `29664260145` полностью прошёл: PHPUnit PHP 7.4/8.3, PHP lint 7.4/8.1/8.3, WPCS, WordPress/Elementor integration и package. Artifact `8435277185` содержит installable ZIP для commit `aaf3120`.
 

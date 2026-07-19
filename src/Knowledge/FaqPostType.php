@@ -7,6 +7,7 @@
 
 namespace DiasMazhenov\WPDsAiChatbot\Knowledge;
 
+use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 use DiasMazhenov\WPDsAiChatbot\Support\PluginInfo;
 
 defined( 'ABSPATH' ) || exit;
@@ -67,7 +68,7 @@ final class FaqPostType {
 				'publicly_queryable'  => false,
 				'exclude_from_search' => true,
 				'show_ui'             => true,
-				'show_in_menu'        => 'tools.php',
+				'show_in_menu'        => Settings::PAGE_SLUG,
 				'show_in_rest'        => true,
 				'map_meta_cap'        => false,
 				'capabilities'        => $capabilities,

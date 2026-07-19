@@ -203,3 +203,8 @@
 - В `0.5.11` вкладка дизайна разделена на Colors, Layout and typography, Controls and shapes; добавлены отдельные цвета сообщений/поля/кнопки, font preset, высота истории, padding, shadow opacity и отдельные радиусы.
 - Свёрнутый чат теперь отображается круглым launcher с настраиваемым размером 44–96 px; live preview умеет переключаться между открытым и свёрнутым состояниями.
 - Версия `0.5.12`: отдельный `Admin\PluginList` через `all_plugins` меняет только display metadata текущего плагина и показывает `WP DS AI Chatbot v{WPDSAC_VERSION}` непосредственно в жирном названии на экране Plugins.
+- Версия `0.5.13`: Settings стал верхнеуровневым admin menu; Settings, Knowledge, приватный FAQ CPT и Leads собраны в одном dropdown вместо Settings/Tools.
+- Добавлен полный `ru_RU` gettext pack (`.po` + compiled `.mo`) для админки, Elementor, frontend-сообщений и публичных ошибок; textdomain загружается на `init` priority 0.
+- Вкладка дизайна снова использует двухколоночный workspace: компактные раскрывающиеся группы контролов слева и крупный sticky live preview справа; на узких экранах колонки складываются.
+- Настройки сохраняются без перезагрузки через `wp_ajax_wpdsac_save_settings`; handler требует `manage_options`, проверяет nonce и повторно использует существующие sanitization schemas. `options.php` остаётся fallback без JavaScript.
+- AJAX handler явно сохраняет write-only API key каждого direct provider в его отдельную non-autoload option. Валидация выполняется до любой записи, чтобы ошибка ключа не оставляла частично обновлённые настройки.

@@ -72,9 +72,10 @@ final class KnowledgePage {
 	public function add_page(): void {
 		$label = PluginInfo::versioned_label( __( 'DS AI Knowledge', 'wp-ds-aichatbot' ) );
 
-		add_management_page(
+		add_submenu_page(
+			Settings::PAGE_SLUG,
 			esc_html( $label ),
-			esc_html( $label ),
+			esc_html__( 'Knowledge base', 'wp-ds-aichatbot' ),
 			'manage_options',
 			'wpdsac-knowledge',
 			array( $this, 'render_page' )
@@ -107,8 +108,8 @@ final class KnowledgePage {
 			)
 		);
 		?>
-		<div class="wrap">
-			<h1><?php echo esc_html( PluginInfo::versioned_label( __( 'DS AI Knowledge', 'wp-ds-aichatbot' ) ) ); ?></h1>
+		<div class="wrap wpdsac-admin-page wpdsac-knowledge-page">
+			<h1><?php echo esc_html( PluginInfo::versioned_label( __( 'Knowledge base', 'wp-ds-aichatbot' ) ) ); ?></h1>
 			<?php if ( null !== $indexed ) : ?>
 				<div class="notice notice-success is-dismissible"><p>
 					<?php

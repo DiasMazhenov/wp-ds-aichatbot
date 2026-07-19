@@ -19,6 +19,7 @@ defined( 'ABSPATH' ) || exit;
 final class Settings {
 
 	public const OPTION_NAME = 'wpdsac_settings';
+	public const PAGE_SLUG   = 'wpdsac-settings';
 
 	/**
 	 * Appearance settings module.
@@ -43,6 +44,7 @@ final class Settings {
 		add_action( 'admin_init', array( $this, 'register' ) );
 		add_action( 'admin_menu', array( $this, 'add_page' ) );
 		add_action( 'admin_enqueue_scripts', array( $this->appearance, 'enqueue_assets' ) );
+		add_action( 'wp_ajax_wpdsac_save_settings', array( $this, 'save_ajax' ) );
 	}
 
 	/**
@@ -278,16 +280,78 @@ final class Settings {
 	}
 
 	/**
+	 * Save plugin settings without reloading the administration page.
+	 *
+	 * @return void
+	 */
+	public function save_ajax(): void {
+		check_ajax_referer( 'wpdsac_save_settings', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error(
+				array( 'message' => __( 'You are not allowed to change these settings.', 'wp-ds-aichatbot' ) ),
+				403
+			);
+		}
+
+		$raw_settings = isset( $_POST[ self::OPTION_NAME ] ) ? wp_unslash( $_POST[ self::OPTION_NAME ] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized by the fixed settings schema below.
+		$settings     = $this->sanitize( $raw_settings );
+		$resolver     = new CredentialResolver();
+		$api_keys     = array();
+
+		foreach ( CredentialResolver::provider_ids() as $provider_id ) {
+			$option = $resolver->option_name( $provider_id );
+
+			if ( ! isset( $_POST[ $option ] ) ) {
+				continue;
+			}
+
+			$raw_key             = wp_unslash( $_POST[ $option ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Validated by sanitize_api_key() against length and whitespace constraints.
+			$api_keys[ $option ] = $this->sanitize_api_key( $raw_key, $provider_id );
+		}
+
+		$errors = get_settings_errors();
+
+		if ( array() !== $errors ) {
+			wp_send_json_error(
+				array( 'message' => wp_strip_all_tags( (string) $errors[0]['message'] ) ),
+				400
+			);
+		}
+
+		update_option( self::OPTION_NAME, $settings, false );
+
+		foreach ( $api_keys as $option => $api_key ) {
+			update_option( $option, $api_key, false );
+		}
+
+		wp_send_json_success(
+			array( 'message' => __( 'Settings saved.', 'wp-ds-aichatbot' ) )
+		);
+	}
+
+	/**
 	 * Add the settings page.
 	 *
 	 * @return void
 	 */
 	public function add_page(): void {
-		add_options_page(
+		add_menu_page(
 			esc_html( PluginInfo::versioned_label( __( 'WP DS AI Chatbot', 'wp-ds-aichatbot' ) ) ),
 			esc_html( PluginInfo::versioned_label( __( 'DS AI Chatbot', 'wp-ds-aichatbot' ) ) ),
 			'manage_options',
-			'wpdsac-settings',
+			self::PAGE_SLUG,
+			array( $this, 'render_page' ),
+			WPDSAC_URL . 'wp-chatbot.svg',
+			58
+		);
+
+		add_submenu_page(
+			self::PAGE_SLUG,
+			esc_html( PluginInfo::versioned_label( __( 'WP DS AI Chatbot', 'wp-ds-aichatbot' ) ) ),
+			esc_html__( 'Settings', 'wp-ds-aichatbot' ),
+			'manage_options',
+			self::PAGE_SLUG,
 			array( $this, 'render_page' )
 		);
 	}
@@ -313,9 +377,12 @@ final class Settings {
 		?>
 		<div class="wrap wpdsac-settings-wrap">
 			<div class="wpdsac-settings-header">
-				<div>
+				<div class="wpdsac-settings-brand">
+					<img src="<?php echo esc_url( WPDSAC_URL . 'wp-chatbot.svg' ); ?>" width="46" height="46" alt="">
+					<div>
 					<h1><?php esc_html_e( 'WP DS AI Chatbot', 'wp-ds-aichatbot' ); ?></h1>
 					<p><?php esc_html_e( 'Configure the chatbot, AI providers, knowledge, and privacy from one place.', 'wp-ds-aichatbot' ); ?></p>
+					</div>
 				</div>
 				<span class="wpdsac-version"><?php echo esc_html( 'v' . WPDSAC_VERSION ); ?></span>
 			</div>
@@ -343,7 +410,7 @@ final class Settings {
 				<?php $this->render_tab_panel( 'leads', $tabs['leads'], array( 'wpdsac_leads' ) ); ?>
 				<div class="wpdsac-settings-actions">
 					<?php submit_button( __( 'Save settings', 'wp-ds-aichatbot' ), 'primary', 'submit', false ); ?>
-					<span class="wpdsac-save-note"><?php esc_html_e( 'Unsaved changes apply only after saving.', 'wp-ds-aichatbot' ); ?></span>
+					<span class="wpdsac-save-note" data-wpdsac-save-status aria-live="polite"><?php esc_html_e( 'Unsaved changes apply only after saving.', 'wp-ds-aichatbot' ); ?></span>
 				</div>
 			</form>
 		</div>
@@ -380,19 +447,42 @@ final class Settings {
 				<p><?php echo esc_html( $descriptions[ $tab_id ] ?? '' ); ?></p>
 			</header>
 			<?php
-			foreach ( $section_ids as $section_id ) {
-				if ( count( $section_ids ) > 1 && isset( $section_titles[ $section_id ] ) ) {
-					printf( '<h3 class="wpdsac-settings-subheading">%s</h3>', esc_html( $section_titles[ $section_id ] ) );
-				}
-
-				do_settings_fields( 'wpdsac-settings', $section_id );
-			}
-
 			if ( $include_preview ) {
-				$this->appearance->render_preview();
+				$this->render_appearance_workspace( $section_ids, $section_titles );
+			} else {
+				foreach ( $section_ids as $section_id ) {
+					do_settings_fields( 'wpdsac-settings', $section_id );
+				}
 			}
 			?>
 		</section>
+		<?php
+	}
+
+	/**
+	 * Render compact appearance controls beside a persistent live preview.
+	 *
+	 * @param array<int, string>    $section_ids    Appearance section IDs.
+	 * @param array<string, string> $section_titles Appearance section titles.
+	 * @return void
+	 */
+	private function render_appearance_workspace( array $section_ids, array $section_titles ): void {
+		?>
+		<div class="wpdsac-appearance-workspace">
+			<div class="wpdsac-appearance-controls">
+				<?php foreach ( $section_ids as $index => $section_id ) : ?>
+					<details class="wpdsac-control-group" <?php echo 0 === $index ? 'open' : ''; ?>>
+						<summary><?php echo esc_html( $section_titles[ $section_id ] ?? '' ); ?></summary>
+						<div class="wpdsac-control-group__body">
+							<?php do_settings_fields( 'wpdsac-settings', $section_id ); ?>
+						</div>
+					</details>
+				<?php endforeach; ?>
+			</div>
+			<div class="wpdsac-appearance-preview">
+				<?php $this->appearance->render_preview(); ?>
+			</div>
+		</div>
 		<?php
 	}
 
@@ -514,7 +604,7 @@ final class Settings {
 		$disabled = in_array( $source, array( 'constant', 'environment' ), true );
 
 		printf(
-			'<input class="regular-text" type="password" name="%1$s" value="" autocomplete="new-password" placeholder="%2$s" %3$s>',
+			'<input class="regular-text" type="password" name="%1$s" value="" autocomplete="new-password" placeholder="%2$s" %3$s data-wpdsac-api-key>',
 			esc_attr( $resolver->option_name( $provider ) ),
 			esc_attr( 'missing' === $source ? '' : __( 'Configured — enter a new key to replace it', 'wp-ds-aichatbot' ) ),
 			disabled( $disabled, true, false )
@@ -526,12 +616,11 @@ final class Settings {
 				esc_html__( 'The key is supplied by wp-config.php or the server environment and cannot be changed here.', 'wp-ds-aichatbot' )
 			);
 		} else {
-			if ( 'option' === $source ) {
-				printf(
-					'<p class="description"><strong>%s</strong></p>',
-					esc_html__( 'API key saved. Leave this field empty to keep it.', 'wp-ds-aichatbot' )
-				);
-			}
+			printf(
+				'<p class="description" data-wpdsac-key-status %1$s><strong>%2$s</strong></p>',
+				'option' === $source ? '' : 'hidden',
+				esc_html__( 'API key saved. Leave this field empty to keep it.', 'wp-ds-aichatbot' )
+			);
 
 			printf(
 				'<p class="description">%s</p>',

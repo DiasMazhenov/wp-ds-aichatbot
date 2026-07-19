@@ -19,10 +19,16 @@ const adminScript = await readFile(
   join(projectRoot, 'assets/build/admin.js'),
   'utf8'
 );
+const settingsPhp = await readFile(join(projectRoot, 'src/Admin/Settings.php'), 'utf8');
+const faqPhp = await readFile(join(projectRoot, 'src/Knowledge/FaqPostType.php'), 'utf8');
 
 assert.match(adminScript, /data-wpdsac-tab/);
 assert.match(adminScript, /data-wpdsac-provider-select/);
 assert.match(adminScript, /wpdsacActiveSettingsTab/);
+assert.match(adminScript, /wpdsac_save_settings/);
+assert.match(settingsPhp, /add_menu_page/);
+assert.match(settingsPhp, /add_submenu_page/);
+assert.match(faqPhp, /Settings::PAGE_SLUG/);
 
 const playground = await runCLI({
   command: 'server',
@@ -48,7 +54,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.12',
+    plugin_version: '0.5.13',
     db_version: '5',
     rate_limit_table: true,
     request_lock_table: true,
@@ -67,11 +73,13 @@ try {
     appearance_positioned: true,
     appearance_sanitized: true,
     admin_preview_assets: true,
+    ajax_save_registered: true,
     deepseek_registered: true,
     knowledge_indexed: true,
     knowledge_retrieved: true,
     knowledge_augmented: true,
     faq_registered: true,
+    faq_under_plugin_menu: true,
     faq_indexed: true,
     pdf_indexed: true,
     pdf_option_non_autoloaded: true,

@@ -71,23 +71,32 @@ final class AppearanceSettings {
 	 * @return void
 	 */
 	public function enqueue_assets( string $hook_suffix ): void {
-		if ( 'settings_page_wpdsac-settings' !== $hook_suffix ) {
+		$is_settings_page = 'toplevel_page_' . Settings::PAGE_SLUG === $hook_suffix;
+		$is_plugin_page   = $is_settings_page || false !== strpos( $hook_suffix, 'wpdsac-' );
+
+		if ( ! $is_plugin_page ) {
 			return;
 		}
 
-		wp_enqueue_style(
-			'wpdsac-admin-chat-preview',
-			WPDSAC_URL . 'assets/build/chat.css',
-			array(),
-			WPDSAC_VERSION
-		);
+		if ( $is_settings_page ) {
+			wp_enqueue_style(
+				'wpdsac-admin-chat-preview',
+				WPDSAC_URL . 'assets/build/chat.css',
+				array(),
+				WPDSAC_VERSION
+			);
+		}
 
 		wp_enqueue_style(
 			'wpdsac-admin',
 			WPDSAC_URL . 'assets/build/admin.css',
-			array( 'wpdsac-admin-chat-preview' ),
+			$is_settings_page ? array( 'wpdsac-admin-chat-preview' ) : array(),
 			WPDSAC_VERSION
 		);
+
+		if ( ! $is_settings_page ) {
+			return;
+		}
 
 		wp_enqueue_script(
 			'wpdsac-admin',
@@ -95,6 +104,20 @@ final class AppearanceSettings {
 			array(),
 			WPDSAC_VERSION,
 			true
+		);
+
+		wp_localize_script(
+			'wpdsac-admin',
+			'wpdsacAdmin',
+			array(
+				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+				'nonce'        => wp_create_nonce( 'wpdsac_save_settings' ),
+				'savingText'   => __( 'Saving settings…', 'wp-ds-aichatbot' ),
+				'savedText'    => __( 'Settings saved.', 'wp-ds-aichatbot' ),
+				'errorText'    => __( 'Could not save settings. Please try again.', 'wp-ds-aichatbot' ),
+				'savedKeyText' => __( 'API key saved. Leave this field empty to keep it.', 'wp-ds-aichatbot' ),
+				'unsavedText'  => __( 'There are unsaved changes.', 'wp-ds-aichatbot' ),
+			)
 		);
 	}
 

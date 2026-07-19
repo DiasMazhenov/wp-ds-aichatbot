@@ -130,7 +130,7 @@ final class Plugin {
 			( new LeadsPage( $leads ) )->register_hooks();
 		}
 
-		add_action( 'init', array( $this, 'load_textdomain' ) );
+		add_action( 'init', array( $this, 'load_textdomain' ), 0 );
 		add_action( 'wp_footer', array( $renderer, 'render_global' ) );
 	}
 

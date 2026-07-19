@@ -50,9 +50,10 @@ final class LeadsPage {
 	public function add_page(): void {
 		$label = PluginInfo::versioned_label( __( 'DS AI Leads', 'wp-ds-aichatbot' ) );
 
-		add_management_page(
+		add_submenu_page(
+			Settings::PAGE_SLUG,
 			esc_html( $label ),
-			esc_html( $label ),
+			esc_html__( 'Leads', 'wp-ds-aichatbot' ),
 			'manage_options',
 			'wpdsac-leads',
 			array( $this, 'render_page' )
@@ -71,7 +72,7 @@ final class LeadsPage {
 
 		$rows = $this->repository->latest();
 		?>
-		<div class="wrap">
+		<div class="wrap wpdsac-admin-page wpdsac-leads-page">
 			<h1><?php echo esc_html( PluginInfo::versioned_label( __( 'DS AI Leads', 'wp-ds-aichatbot' ) ) ); ?></h1>
 			<p><?php esc_html_e( 'Recent consented contact requests. Expired rows are removed automatically.', 'wp-ds-aichatbot' ); ?></p>
 			<table class="widefat striped">

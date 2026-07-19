@@ -1,47 +1,63 @@
 .wpdsac-settings-wrap {
-	max-width: 1120px;
+	max-width: 1280px;
+	margin-right: 28px;
+	color: #242a31;
 }
 
 .wpdsac-settings-header {
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
-	gap: 24px;
-	padding: 24px 0 18px;
+	gap: 28px;
+	padding: 28px 0 20px;
 }
 
 .wpdsac-settings-header h1 {
 	padding: 0;
-	font-size: 26px;
-	letter-spacing: -0.02em;
+	font-size: 28px;
+	font-weight: 650;
+	letter-spacing: -0.025em;
+	line-height: 1.15;
+}
+
+.wpdsac-settings-brand {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+
+.wpdsac-settings-brand > img {
+	flex: 0 0 auto;
+	border-radius: 10px;
+	box-shadow: 0 8px 20px rgba(14, 98, 222, 0.14);
 }
 
 .wpdsac-settings-header p,
 .wpdsac-panel-header p {
-	max-width: 65ch;
-	margin: 6px 0 0;
-	color: #646970;
+	max-width: 68ch;
+	margin: 7px 0 0;
+	color: #66717e;
 	font-size: 14px;
-	line-height: 1.5;
+	line-height: 1.55;
 }
 
 .wpdsac-version {
-	margin-top: 4px;
-	padding: 4px 9px;
-	border: 1px solid #dcdcde;
-	border-radius: 999px;
+	margin-top: 3px;
+	padding: 5px 9px;
+	border: 1px solid #d7dce1;
+	border-radius: 6px;
 	background: #fff;
-	color: #50575e;
+	color: #59636f;
 	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 	font-size: 12px;
 }
 
 .wpdsac-settings-tabs {
 	display: flex;
-	gap: 4px;
+	gap: 22px;
 	overflow-x: auto;
-	margin: 0 0 24px;
-	border-bottom: 1px solid #c3c4c7;
+	margin: 0 0 26px;
+	border-bottom: 1px solid #cfd5db;
 	scrollbar-width: thin;
 }
 
@@ -49,10 +65,10 @@
 	position: relative;
 	flex: 0 0 auto;
 	margin: 0;
-	padding: 11px 14px 12px;
+	padding: 11px 1px 13px;
 	border: 0;
 	background: transparent;
-	color: #50575e;
+	color: #66717e;
 	font-size: 14px;
 	font-weight: 600;
 	cursor: pointer;
@@ -60,20 +76,20 @@
 
 .wpdsac-settings-tab::after {
 	position: absolute;
-	right: 12px;
+	right: 0;
 	bottom: -1px;
-	left: 12px;
+	left: 0;
 	height: 2px;
 	background: transparent;
 	content: "";
 }
 
 .wpdsac-settings-tab:hover {
-	color: #1d2327;
+	color: #242a31;
 }
 
 .wpdsac-settings-tab[aria-selected="true"] {
-	color: #135e96;
+	color: #145b8f;
 }
 
 .wpdsac-settings-tab[aria-selected="true"]::after {
@@ -81,17 +97,17 @@
 }
 
 .wpdsac-settings-tab:focus-visible {
-	border-radius: 4px;
+	border-radius: 3px;
 	outline: 2px solid #2271b1;
-	outline-offset: -2px;
+	outline-offset: 3px;
 }
 
 .wpdsac-settings-panel {
-	max-width: 920px;
-	padding: 24px 28px 28px;
-	border: 1px solid #dcdcde;
-	border-radius: 8px;
-	background: #fff;
+	max-width: 1040px;
+}
+
+.wpdsac-settings-panel[data-wpdsac-panel="appearance"] {
+	max-width: none;
 }
 
 .wpdsac-settings-wrap.is-tabbed .wpdsac-settings-panel:not(.is-active) {
@@ -99,42 +115,35 @@
 }
 
 .wpdsac-panel-header {
-	margin-bottom: 22px;
-	padding-bottom: 18px;
-	border-bottom: 1px solid #e2e4e7;
+	margin-bottom: 18px;
 }
 
 .wpdsac-panel-header h2 {
 	margin: 0;
-	font-size: 20px;
-	letter-spacing: -0.01em;
+	font-size: 21px;
+	font-weight: 650;
+	letter-spacing: -0.015em;
 }
 
-.wpdsac-settings-subheading {
-	margin: 28px 0 4px;
-	padding-bottom: 8px;
-	border-bottom: 1px solid #e2e4e7;
-	color: #2c3338;
-	font-size: 15px;
-}
-
-.wpdsac-panel-header + .wpdsac-settings-subheading {
-	margin-top: 0;
-}
-
-.wpdsac-settings-panel .form-table {
+.wpdsac-settings-panel > .form-table {
 	margin: 0;
+	border: 1px solid #d7dce1;
+	border-radius: 10px;
+	background: #fff;
+	border-collapse: separate;
+	border-spacing: 0;
+	overflow: hidden;
 }
 
-.wpdsac-settings-panel .form-table tr {
+.wpdsac-settings-panel > .form-table tr {
 	display: grid;
-	grid-template-columns: minmax(180px, 240px) minmax(280px, 1fr);
-	gap: 24px;
-	padding: 18px 0;
-	border-bottom: 1px solid #f0f0f1;
+	grid-template-columns: minmax(190px, 250px) minmax(300px, 1fr);
+	gap: 26px;
+	padding: 20px 24px;
+	border-bottom: 1px solid #edf0f2;
 }
 
-.wpdsac-settings-panel .form-table tr:last-child {
+.wpdsac-settings-panel > .form-table tr:last-child {
 	border-bottom: 0;
 }
 
@@ -145,14 +154,15 @@
 }
 
 .wpdsac-settings-panel .form-table th {
-	color: #2c3338;
+	color: #303842;
 	font-weight: 600;
+	line-height: 1.45;
 }
 
 .wpdsac-settings-panel input.regular-text,
 .wpdsac-settings-panel textarea.large-text,
 .wpdsac-settings-panel select {
-	width: min(100%, 520px);
+	width: min(100%, 560px);
 }
 
 .wpdsac-settings-panel input[type="text"],
@@ -160,9 +170,10 @@
 .wpdsac-settings-panel input[type="number"],
 .wpdsac-settings-panel textarea,
 .wpdsac-settings-panel select {
-	min-height: 36px;
-	border-color: #8c8f94;
-	border-radius: 4px;
+	min-height: 38px;
+	border-color: #8f98a3;
+	border-radius: 6px;
+	background-color: #fff;
 }
 
 .wpdsac-settings-panel input:focus,
@@ -174,47 +185,131 @@
 
 .wpdsac-settings-panel .description {
 	margin-top: 7px;
-	line-height: 1.45;
+	color: #66717e;
+	line-height: 1.5;
 }
 
-.wpdsac-settings-actions {
+.wpdsac-appearance-workspace {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(390px, 500px);
+	gap: 28px;
+	align-items: start;
+}
+
+.wpdsac-appearance-controls {
+	display: grid;
+	gap: 12px;
+}
+
+.wpdsac-control-group {
+	border: 1px solid #d7dce1;
+	border-radius: 10px;
+	background: #fff;
+	overflow: hidden;
+}
+
+.wpdsac-control-group summary {
+	position: relative;
+	padding: 16px 46px 16px 18px;
+	color: #303842;
+	font-size: 14px;
+	font-weight: 650;
+	cursor: pointer;
+	list-style: none;
+}
+
+.wpdsac-control-group summary::-webkit-details-marker {
+	display: none;
+}
+
+.wpdsac-control-group summary::after {
+	position: absolute;
+	top: 50%;
+	right: 19px;
+	width: 8px;
+	height: 8px;
+	border-right: 2px solid #66717e;
+	border-bottom: 2px solid #66717e;
+	content: "";
+	transform: translateY(-65%) rotate(45deg);
+	transition: transform 160ms ease;
+}
+
+.wpdsac-control-group[open] summary {
+	border-bottom: 1px solid #edf0f2;
+}
+
+.wpdsac-control-group[open] summary::after {
+	transform: translateY(-30%) rotate(225deg);
+}
+
+.wpdsac-control-group__body {
+	padding: 5px 18px 12px;
+}
+
+.wpdsac-control-group .form-table {
+	margin: 0;
+}
+
+.wpdsac-control-group .form-table tbody {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	column-gap: 20px;
+}
+
+.wpdsac-control-group .form-table tr {
+	display: block;
+	padding: 14px 0;
+	border-bottom: 1px solid #f0f2f4;
+}
+
+.wpdsac-control-group .form-table th,
+.wpdsac-control-group .form-table td {
+	display: block;
+}
+
+.wpdsac-control-group .form-table td {
+	padding-top: 8px;
+}
+
+.wpdsac-control-group input[type="color"] {
+	width: 42px;
+	height: 34px;
+	padding: 2px;
+	border: 1px solid #8f98a3;
+	border-radius: 6px;
+	background: #fff;
+	vertical-align: middle;
+}
+
+.wpdsac-control-group code {
+	margin-left: 6px;
+	color: #59636f;
+	font-size: 11px;
+}
+
+.wpdsac-appearance-preview {
 	position: sticky;
-	bottom: 0;
-	display: flex;
-	align-items: center;
-	gap: 14px;
-	max-width: 920px;
-	margin-top: 16px;
-	padding: 12px 28px;
-	border: 1px solid #dcdcde;
-	border-radius: 8px;
-	background: rgba(240, 240, 241, 0.96);
-	box-shadow: 0 -8px 24px rgba(29, 35, 39, 0.05);
-	backdrop-filter: blur(8px);
-}
-
-.wpdsac-settings-actions .button:active {
-	transform: translateY(1px);
-}
-
-.wpdsac-save-note {
-	color: #646970;
-	font-size: 12px;
+	top: 44px;
 }
 
 .wpdsac-admin-preview-wrap {
-	margin-top: 28px;
-	padding-top: 6px;
+	margin: 0;
 }
 
 .wpdsac-admin-preview-wrap h2 {
-	margin-bottom: 0;
+	margin: 0;
+	font-size: 16px;
 }
 
 .wpdsac-preview-toolbar {
 	display: flex;
 	gap: 6px;
-	margin-top: 14px;
+	margin-top: 13px;
+}
+
+.wpdsac-preview-toolbar .button {
+	border-radius: 6px;
 }
 
 .wpdsac-preview-toolbar .button.is-active {
@@ -224,11 +319,17 @@
 }
 
 .wpdsac-admin-preview-stage {
-	margin-top: 14px;
-	padding: 32px;
-	border: 1px solid #dcdcde;
-	border-radius: 8px;
-	background: #f0f2f5;
+	display: grid;
+	min-height: 480px;
+	margin-top: 12px;
+	padding: 34px;
+	border: 1px solid #cfd5db;
+	border-radius: 12px;
+	background-color: #e9edf1;
+	background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.35) 25%, transparent 25%), linear-gradient(-45deg, rgba(255, 255, 255, 0.35) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.35) 75%), linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.35) 75%);
+	background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+	background-size: 16px 16px;
+	place-items: center;
 }
 
 .wpdsac-admin-preview-stage .wpdsac-chat {
@@ -239,34 +340,121 @@
 	pointer-events: none;
 }
 
+.wpdsac-settings-actions {
+	position: sticky;
+	bottom: 0;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	max-width: 1040px;
+	margin-top: 18px;
+	padding: 12px 0;
+	border-top: 1px solid #cfd5db;
+	background: rgba(240, 240, 241, 0.96);
+	backdrop-filter: blur(8px);
+}
+
+.wpdsac-settings-actions .button {
+	min-height: 38px;
+	padding: 0 18px;
+	border-radius: 6px;
+}
+
+.wpdsac-settings-actions .button:active {
+	transform: translateY(1px);
+}
+
+.wpdsac-save-note {
+	color: #66717e;
+	font-size: 12px;
+}
+
+.wpdsac-save-note.is-saving {
+	color: #59636f;
+}
+
+.wpdsac-save-note.is-unsaved {
+	color: #8a5a00;
+	font-weight: 600;
+}
+
+.wpdsac-admin-page {
+	max-width: 1120px;
+	margin-right: 28px;
+}
+
+.wpdsac-admin-page > h1 {
+	margin: 28px 0 8px;
+	font-size: 26px;
+	letter-spacing: -0.02em;
+}
+
+.wpdsac-admin-page > p {
+	max-width: 72ch;
+	color: #66717e;
+	line-height: 1.55;
+}
+
+.wpdsac-admin-page .widefat {
+	margin-top: 20px;
+	border-color: #d7dce1;
+	border-radius: 10px;
+	overflow: hidden;
+}
+
+.wpdsac-save-note.is-success {
+	color: #176b3a;
+	font-weight: 600;
+}
+
+.wpdsac-save-note.is-error {
+	color: #b32d2e;
+	font-weight: 600;
+}
+
+@media (max-width: 1180px) {
+	.wpdsac-appearance-workspace {
+		grid-template-columns: 1fr;
+	}
+
+	.wpdsac-appearance-preview {
+		position: static;
+	}
+}
+
 @media (max-width: 782px) {
+	.wpdsac-settings-wrap {
+		margin-right: 12px;
+	}
+
 	.wpdsac-settings-header {
-		padding-top: 16px;
+		padding-top: 18px;
 	}
 
-	.wpdsac-settings-panel {
-		padding: 20px;
+	.wpdsac-settings-tabs {
+		gap: 18px;
 	}
 
-	.wpdsac-settings-panel .form-table tr {
+	.wpdsac-settings-panel > .form-table tr {
 		display: block;
-		padding: 16px 0;
+		padding: 17px;
 	}
 
-	.wpdsac-settings-panel .form-table td {
+	.wpdsac-settings-panel > .form-table td {
 		padding-top: 8px;
 	}
 
-	.wpdsac-settings-actions {
-		align-items: flex-start;
-		padding: 12px 20px;
+	.wpdsac-control-group .form-table tbody {
+		grid-template-columns: 1fr;
+	}
+
+	.wpdsac-admin-preview-stage {
+		min-height: 380px;
+		padding: 18px;
 	}
 
 	.wpdsac-save-note {
 		display: none;
-	}
-
-	.wpdsac-admin-preview-stage {
-		padding: 16px;
 	}
 }
