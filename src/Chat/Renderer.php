@@ -41,16 +41,17 @@ final class Renderer {
 	public function render( array $args = array() ): string {
 		$options = wp_parse_args( $args, Settings::get() );
 		$view    = array(
-			'id'               => wp_unique_id( 'wpdsac-chat-' ),
-			'title'            => sanitize_text_field( (string) $options['title'] ),
-			'welcome_message'  => sanitize_textarea_field( (string) $options['welcome_message'] ),
-			'expanded'         => ! empty( $options['expanded'] ),
-			'appearance'       => Appearance::inline_style( $options ),
-			'position_class'   => Appearance::position_class( $options ),
-			'show_toggle_icon' => ! empty( $options['show_toggle_icon'] ),
-			'leads_enabled'    => ! empty( $options['leads_enabled'] ),
-			'lead_prompt'      => sanitize_text_field( (string) $options['lead_prompt'] ),
-			'lead_consent'     => sanitize_textarea_field( (string) $options['lead_consent_text'] ),
+			'id'                  => wp_unique_id( 'wpdsac-chat-' ),
+			'title'               => sanitize_text_field( (string) $options['title'] ),
+			'welcome_message'     => sanitize_textarea_field( (string) $options['welcome_message'] ),
+			'message_placeholder' => sanitize_text_field( (string) $options['message_placeholder'] ),
+			'expanded'            => ! empty( $options['expanded'] ),
+			'appearance'          => Appearance::inline_style( $options ),
+			'position_class'      => Appearance::position_class( $options ),
+			'show_toggle_icon'    => ! empty( $options['show_toggle_icon'] ),
+			'leads_enabled'       => ! empty( $options['leads_enabled'] ),
+			'lead_prompt'         => sanitize_text_field( (string) $options['lead_prompt'] ),
+			'lead_consent'        => sanitize_textarea_field( (string) $options['lead_consent_text'] ),
 		);
 
 		$this->assets->enqueue();

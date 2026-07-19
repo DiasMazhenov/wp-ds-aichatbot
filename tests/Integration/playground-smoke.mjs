@@ -54,7 +54,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.13',
+    plugin_version: '0.5.14',
     db_version: '5',
     rate_limit_table: true,
     request_lock_table: true,
@@ -69,6 +69,7 @@ try {
     shortcode_rendered: true,
     shortcode_escaped: true,
     global_widget_rendered: true,
+    custom_message_placeholder_rendered: true,
     appearance_rendered: true,
     appearance_positioned: true,
     appearance_sanitized: true,

@@ -208,7 +208,7 @@ final class AppearanceSettings {
 							<?php echo nl2br( esc_html( (string) $options['welcome_message'] ) ); ?>
 						</p>
 						<div class="wpdsac-chat__form">
-							<input type="text" placeholder="<?php esc_attr_e( 'Type your message…', 'wp-ds-aichatbot' ); ?>" disabled>
+							<input type="text" placeholder="<?php echo esc_attr( (string) $options['message_placeholder'] ); ?>" disabled>
 							<button type="button" disabled><?php esc_html_e( 'Send', 'wp-ds-aichatbot' ); ?></button>
 						</div>
 					</div>

@@ -83,7 +83,7 @@ if ( ! $view['show_toggle_icon'] ) {
 				id="<?php echo esc_attr( $view['id'] ); ?>-input"
 				type="text"
 				maxlength="2000"
-				placeholder="<?php esc_attr_e( 'Type your message…', 'wp-ds-aichatbot' ); ?>"
+				placeholder="<?php echo esc_attr( $view['message_placeholder'] ); ?>"
 				autocomplete="off"
 			>
 			<button type="submit"><?php esc_html_e( 'Send', 'wp-ds-aichatbot' ); ?></button>

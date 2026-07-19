@@ -167,6 +167,7 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$global_settings['chat_width']      = 512;
 	$global_settings['launcher_size']   = 72;
 	$global_settings['global_position'] = 'bottom_left';
+	$global_settings['message_placeholder'] = 'Ask about delivery';
 	update_option( 'wpdsac_settings', $global_settings, false );
 
 	ob_start();
@@ -468,6 +469,7 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'shortcode_rendered'          => false !== strpos( $shortcode_html, 'wpdsac-chat' ),
 			'shortcode_escaped'           => false === stripos( $shortcode_html, '<script' ),
 			'global_widget_rendered'      => false !== strpos( $global_html, 'wpdsac-chat' ),
+			'custom_message_placeholder_rendered' => false !== strpos( $global_html, 'placeholder="Ask about delivery"' ),
 			'appearance_rendered'         => false !== strpos( $global_html, '--wpdsac-accent:#123456;' )
 				&& false !== strpos( $global_html, '--wpdsac-user-message:#654321;' )
 				&& false !== strpos( $global_html, '--wpdsac-width:512px;' )

@@ -286,6 +286,9 @@ msgstr "Сообщение"
 msgid "Message input"
 msgstr "Поле сообщения"
 
+msgid "Message input placeholder"
+msgstr "Плейсхолдер поля сообщения"
+
 msgid "Message input text"
 msgstr "Текст в поле сообщения"
 

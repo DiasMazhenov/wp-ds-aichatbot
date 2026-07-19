@@ -202,6 +202,18 @@
     });
   });
 
+  document.querySelectorAll('[data-wpdsac-preview-placeholder]').forEach((input) => {
+    const target = preview.querySelector(input.dataset.wpdsacPreviewPlaceholder);
+
+    if (!target) {
+      return;
+    }
+
+    input.addEventListener('input', () => {
+      target.placeholder = input.value;
+    });
+  });
+
   const fontStacks = {
     system: '-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',
     modern: 'Arial,"Helvetica Neue",sans-serif',

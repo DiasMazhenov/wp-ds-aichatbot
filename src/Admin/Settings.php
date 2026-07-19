@@ -58,6 +58,7 @@ final class Settings {
 				'global_enabled'       => false,
 				'title'                => __( 'AI Assistant', 'wp-ds-aichatbot' ),
 				'welcome_message'      => __( 'Hello! How can I help you?', 'wp-ds-aichatbot' ),
+				'message_placeholder'  => __( 'Type your message…', 'wp-ds-aichatbot' ),
 				'rate_limit_requests'  => 10,
 				'rate_limit_window'    => 60,
 				'daily_request_limit'  => 500,
@@ -175,6 +176,7 @@ final class Settings {
 		$this->add_field( 'global_enabled', __( 'Global chatbot', 'wp-ds-aichatbot' ), 'checkbox' );
 		$this->add_field( 'title', __( 'Title', 'wp-ds-aichatbot' ), 'text' );
 		$this->add_field( 'welcome_message', __( 'Welcome message', 'wp-ds-aichatbot' ), 'textarea' );
+		$this->add_field( 'message_placeholder', __( 'Message input placeholder', 'wp-ds-aichatbot' ), 'text' );
 		$this->add_field( 'rate_limit_requests', __( 'Requests per window', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'rate_limit_window', __( 'Rate-limit window (seconds)', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'daily_request_limit', __( 'AI requests per 24 hours', 'wp-ds-aichatbot' ), 'number' );
@@ -224,6 +226,7 @@ final class Settings {
 			'global_enabled'       => ! empty( $input['global_enabled'] ),
 			'title'                => sanitize_text_field( $input['title'] ?? '' ),
 			'welcome_message'      => sanitize_textarea_field( $input['welcome_message'] ?? '' ),
+			'message_placeholder'  => sanitize_text_field( $input['message_placeholder'] ?? '' ),
 			'rate_limit_requests'  => min( 100, max( 1, absint( $input['rate_limit_requests'] ?? 10 ) ) ),
 			'rate_limit_window'    => min( HOUR_IN_SECONDS, max( 10, absint( $input['rate_limit_window'] ?? 60 ) ) ),
 			'daily_request_limit'  => min( 100000, absint( $input['daily_request_limit'] ?? 500 ) ),
@@ -552,9 +555,11 @@ final class Settings {
 			return;
 		}
 
-		$preview_attribute = 'title' === $key
-			? ' data-wpdsac-preview-text=".wpdsac-chat__toggle-title"'
-			: '';
+		$preview_attributes = array(
+			'title'               => ' data-wpdsac-preview-text=".wpdsac-chat__toggle-title"',
+			'message_placeholder' => ' data-wpdsac-preview-placeholder=".wpdsac-chat__form input"',
+		);
+		$preview_attribute  = $preview_attributes[ $key ] ?? '';
 
 		printf(
 			'<input class="regular-text" type="text" name="%1$s" value="%2$s"%3$s>',
