@@ -43,8 +43,21 @@ final class Settings {
 	public function register_hooks(): void {
 		add_action( 'admin_init', array( $this, 'register' ) );
 		add_action( 'admin_menu', array( $this, 'add_page' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_menu_icon_style' ) );
 		add_action( 'admin_enqueue_scripts', array( $this->appearance, 'enqueue_assets' ) );
 		add_action( 'wp_ajax_wpdsac_save_settings', array( $this, 'save_ajax' ) );
+	}
+
+	/**
+	 * Constrain the custom menu icon on every administration screen.
+	 *
+	 * @return void
+	 */
+	public function enqueue_menu_icon_style(): void {
+		wp_add_inline_style(
+			'common',
+			'#toplevel_page_wpdsac-settings .wp-menu-image img{width:20px!important;height:20px!important;max-width:20px!important;object-fit:contain}'
+		);
 	}
 
 	/**
@@ -102,6 +115,55 @@ final class Settings {
 		}
 
 		return wp_parse_args( $value, self::defaults() );
+	}
+
+	/**
+	 * Return safe diagnostics for one provider without exposing its credential.
+	 *
+	 * @param string                    $provider Provider ID. Defaults to the selected provider.
+	 * @param array<string, mixed>|null $options  Already sanitized settings when available.
+	 * @return array<string, mixed>
+	 */
+	public static function provider_diagnostics( string $provider = '', ?array $options = null ): array {
+		$options   = is_array( $options ) ? array_merge( self::defaults(), $options ) : self::get();
+		$provider  = '' !== $provider ? sanitize_key( $provider ) : (string) $options['ai_provider'];
+		$models    = array(
+			'openai'       => 'openai_model',
+			'anthropic'    => 'anthropic_model',
+			'gemini'       => 'gemini_model',
+			'openrouter'   => 'openrouter_model',
+			'deepseek'     => 'deepseek_model',
+			'wordpress_ai' => '',
+		);
+		$resolver  = new CredentialResolver();
+		$source    = in_array( $provider, CredentialResolver::provider_ids(), true )
+			? $resolver->source( $provider )
+			: ( function_exists( 'wp_ai_client_prompt' ) ? 'wordpress_ai_client' : 'missing' );
+		$model_key = $models[ $provider ] ?? '';
+
+		return array(
+			'provider'         => $provider,
+			'model'            => '' !== $model_key ? (string) ( $options[ $model_key ] ?? '' ) : '',
+			'credentialSource' => $source,
+			'configured'       => 'missing' !== $source,
+		);
+	}
+
+	/**
+	 * Return safe diagnostics for every selectable provider.
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	public static function all_provider_diagnostics(): array {
+		$options     = self::get();
+		$diagnostics = array();
+		$providers   = array_merge( CredentialResolver::provider_ids(), array( 'wordpress_ai' ) );
+
+		foreach ( $providers as $provider ) {
+			$diagnostics[ $provider ] = self::provider_diagnostics( $provider, $options );
+		}
+
+		return $diagnostics;
 	}
 
 	/**
@@ -328,8 +390,23 @@ final class Settings {
 			update_option( $option, $api_key, false );
 		}
 
+		$diagnostics = self::provider_diagnostics( (string) $settings['ai_provider'], $settings );
+
+		if ( in_array( $settings['ai_provider'], CredentialResolver::provider_ids(), true ) && empty( $diagnostics['configured'] ) ) {
+			wp_send_json_error(
+				array(
+					'message'     => __( 'Settings were saved, but the selected provider still has no API key. Open the browser console and run wpdsacDebugProvider().', 'wp-ds-aichatbot' ),
+					'diagnostics' => $diagnostics,
+				),
+				400
+			);
+		}
+
 		wp_send_json_success(
-			array( 'message' => __( 'Settings saved.', 'wp-ds-aichatbot' ) )
+			array(
+				'message'     => __( 'Settings saved.', 'wp-ds-aichatbot' ),
+				'diagnostics' => $diagnostics,
+			)
 		);
 	}
 
@@ -345,7 +422,7 @@ final class Settings {
 			'manage_options',
 			self::PAGE_SLUG,
 			array( $this, 'render_page' ),
-			WPDSAC_URL . 'wp-chatbot.svg',
+			add_query_arg( 'ver', WPDSAC_VERSION, WPDSAC_URL . 'wp-chatbot.svg' ),
 			58
 		);
 
@@ -455,6 +532,10 @@ final class Settings {
 			} else {
 				foreach ( $section_ids as $section_id ) {
 					do_settings_fields( 'wpdsac-settings', $section_id );
+				}
+
+				if ( 'ai' === $tab_id ) {
+					$this->render_provider_diagnostics();
 				}
 			}
 			?>
@@ -611,7 +692,7 @@ final class Settings {
 		printf(
 			'<input class="regular-text" type="password" name="%1$s" value="" autocomplete="new-password" placeholder="%2$s" %3$s data-wpdsac-api-key>',
 			esc_attr( $resolver->option_name( $provider ) ),
-			esc_attr( 'missing' === $source ? '' : __( 'Configured — enter a new key to replace it', 'wp-ds-aichatbot' ) ),
+			esc_attr( 'missing' === $source ? '' : '••••••••••••' ),
 			disabled( $disabled, true, false )
 		);
 
@@ -632,6 +713,27 @@ final class Settings {
 				esc_html__( 'The saved key is never displayed. Prefer the provider-specific WPDSAC_*_API_KEY constant or environment variable.', 'wp-ds-aichatbot' )
 			);
 		}
+	}
+
+	/**
+	 * Render safe active-provider diagnostics.
+	 *
+	 * @return void
+	 */
+	private function render_provider_diagnostics(): void {
+		$diagnostics = self::provider_diagnostics();
+		?>
+		<div class="wpdsac-provider-diagnostics" data-wpdsac-provider-diagnostics>
+			<h3><?php esc_html_e( 'Provider diagnostics', 'wp-ds-aichatbot' ); ?></h3>
+			<p><?php esc_html_e( 'No API key value is exposed. For console diagnostics run wpdsacDebugProvider().', 'wp-ds-aichatbot' ); ?></p>
+			<dl>
+				<div><dt><?php esc_html_e( 'Provider', 'wp-ds-aichatbot' ); ?></dt><dd data-wpdsac-debug-provider><?php echo esc_html( (string) $diagnostics['provider'] ); ?></dd></div>
+				<div><dt><?php esc_html_e( 'Model', 'wp-ds-aichatbot' ); ?></dt><dd data-wpdsac-debug-model><?php echo esc_html( (string) $diagnostics['model'] ); ?></dd></div>
+				<div><dt><?php esc_html_e( 'Credential source', 'wp-ds-aichatbot' ); ?></dt><dd data-wpdsac-debug-source><?php echo esc_html( (string) $diagnostics['credentialSource'] ); ?></dd></div>
+				<div><dt><?php esc_html_e( 'Configured', 'wp-ds-aichatbot' ); ?></dt><dd data-wpdsac-debug-configured><?php echo ! empty( $diagnostics['configured'] ) ? esc_html__( 'Yes', 'wp-ds-aichatbot' ) : esc_html__( 'No', 'wp-ds-aichatbot' ); ?></dd></div>
+			</dl>
+		</div>
+		<?php
 	}
 
 	/**

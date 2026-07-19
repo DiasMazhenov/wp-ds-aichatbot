@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.15
+Stable tag: 0.5.16
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,12 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.16 =
+* Add safe provider diagnostics to the AI settings screen and browser console.
+* Verify the selected provider credential after AJAX saves without exposing the secret.
+* Reliably hide inactive provider fields and mask stored API keys with dots.
+* Bust the menu icon cache and enforce its 20 by 20 pixel size across all administration screens.
 
 = 0.5.15 =
 * Constrain the custom WordPress administration menu icon to its native 20 by 20 pixel size.

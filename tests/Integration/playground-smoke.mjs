@@ -19,6 +19,14 @@ const adminScript = await readFile(
   join(projectRoot, 'assets/build/admin.js'),
   'utf8'
 );
+const adminStyles = await readFile(
+  join(projectRoot, 'assets/build/admin.css'),
+  'utf8'
+);
+const chatScript = await readFile(
+  join(projectRoot, 'assets/build/chat.js'),
+  'utf8'
+);
 const settingsPhp = await readFile(join(projectRoot, 'src/Admin/Settings.php'), 'utf8');
 const faqPhp = await readFile(join(projectRoot, 'src/Knowledge/FaqPostType.php'), 'utf8');
 
@@ -26,7 +34,11 @@ assert.match(adminScript, /data-wpdsac-tab/);
 assert.match(adminScript, /data-wpdsac-provider-select/);
 assert.match(adminScript, /wpdsacActiveSettingsTab/);
 assert.match(adminScript, /wpdsac_save_settings/);
+assert.match(adminScript, /wpdsacDebugProvider/);
+assert.match(adminStyles, /wpdsac-provider-setting\[hidden\]/);
+assert.match(chatScript, /REST request failed/);
 assert.match(settingsPhp, /add_menu_page/);
+assert.match(settingsPhp, /wp-menu-image img/);
 assert.match(settingsPhp, /add_submenu_page/);
 assert.match(faqPhp, /Settings::PAGE_SLUG/);
 
@@ -54,7 +66,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.15',
+    plugin_version: '0.5.16',
     db_version: '5',
     rate_limit_table: true,
     request_lock_table: true,

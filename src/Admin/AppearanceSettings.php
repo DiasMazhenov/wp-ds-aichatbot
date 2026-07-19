@@ -110,13 +110,17 @@ final class AppearanceSettings {
 			'wpdsac-admin',
 			'wpdsacAdmin',
 			array(
-				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
-				'nonce'        => wp_create_nonce( 'wpdsac_save_settings' ),
-				'savingText'   => __( 'Saving settings…', 'wp-ds-aichatbot' ),
-				'savedText'    => __( 'Settings saved.', 'wp-ds-aichatbot' ),
-				'errorText'    => __( 'Could not save settings. Please try again.', 'wp-ds-aichatbot' ),
-				'savedKeyText' => __( 'API key saved. Leave this field empty to keep it.', 'wp-ds-aichatbot' ),
-				'unsavedText'  => __( 'There are unsaved changes.', 'wp-ds-aichatbot' ),
+				'ajaxUrl'             => admin_url( 'admin-ajax.php' ),
+				'nonce'               => wp_create_nonce( 'wpdsac_save_settings' ),
+				'savingText'          => __( 'Saving settings…', 'wp-ds-aichatbot' ),
+				'savedText'           => __( 'Settings saved.', 'wp-ds-aichatbot' ),
+				'errorText'           => __( 'Could not save settings. Please try again.', 'wp-ds-aichatbot' ),
+				'savedKeyText'        => __( 'API key saved. Leave this field empty to keep it.', 'wp-ds-aichatbot' ),
+				'savedKeyMask'        => '••••••••••••',
+				'unsavedText'         => __( 'There are unsaved changes.', 'wp-ds-aichatbot' ),
+				'configuredYes'       => __( 'Yes', 'wp-ds-aichatbot' ),
+				'configuredNo'        => __( 'No', 'wp-ds-aichatbot' ),
+				'providerDiagnostics' => Settings::all_provider_diagnostics(),
 			)
 		);
 	}

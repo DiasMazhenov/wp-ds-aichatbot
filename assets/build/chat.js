@@ -25,6 +25,13 @@
 		if (!response.ok) {
 			const error = new Error(data.message || strings.error || 'Request failed.');
 			error.status = response.status;
+			error.code = data.code || 'wpdsac_unknown_error';
+			console.error('[WP DS AI Chatbot] REST request failed', {
+				path,
+				status: response.status,
+				code: error.code,
+				message: error.message,
+			});
 			throw error;
 		}
 

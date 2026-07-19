@@ -78,6 +78,47 @@
 
   const providerSelect = document.querySelector('[data-wpdsac-provider-select]');
   const providerRows = document.querySelectorAll('.wpdsac-provider-setting');
+  const diagnosticsPanel = document.querySelector('[data-wpdsac-provider-diagnostics]');
+  const providerDiagnostics = {...(window.wpdsacAdmin?.providerDiagnostics || {})};
+
+  const renderProviderDiagnostics = (diagnostics) => {
+    if (!diagnosticsPanel || !diagnostics) {
+      return;
+    }
+
+    const values = {
+      '[data-wpdsac-debug-provider]': diagnostics.provider || '',
+      '[data-wpdsac-debug-model]': diagnostics.model || '—',
+      '[data-wpdsac-debug-source]': diagnostics.credentialSource || 'missing',
+      '[data-wpdsac-debug-configured]': diagnostics.configured
+        ? window.wpdsacAdmin?.configuredYes || 'Yes'
+        : window.wpdsacAdmin?.configuredNo || 'No',
+    };
+
+    Object.entries(values).forEach(([selector, value]) => {
+      const target = diagnosticsPanel.querySelector(selector);
+
+      if (target) {
+        target.textContent = value;
+      }
+    });
+
+    diagnosticsPanel.classList.toggle('is-configured', Boolean(diagnostics.configured));
+    diagnosticsPanel.classList.toggle('is-missing', !diagnostics.configured);
+  };
+
+  window.wpdsacDebugProvider = () => {
+    const provider = providerSelect?.value || '';
+    const diagnostics = providerDiagnostics[provider] || {
+      provider,
+      model: '',
+      credentialSource: 'missing',
+      configured: false,
+    };
+
+    console.info('[WP DS AI Chatbot] Safe provider diagnostics', diagnostics);
+    return diagnostics;
+  };
 
   const updateProviderFields = () => {
     if (!providerSelect) {
@@ -85,13 +126,18 @@
     }
 
     providerRows.forEach((row) => {
-      row.hidden = !row.classList.contains(`wpdsac-provider-setting--${providerSelect.value}`);
+      const active = row.classList.contains(`wpdsac-provider-setting--${providerSelect.value}`);
+      row.hidden = !active;
+      row.setAttribute('aria-hidden', active ? 'false' : 'true');
     });
+
+    renderProviderDiagnostics(providerDiagnostics[providerSelect.value]);
   };
 
   if (providerSelect) {
     providerSelect.addEventListener('change', updateProviderFields);
     updateProviderFields();
+    window.wpdsacDebugProvider();
   }
 
   const settingsForm = document.querySelector('[data-wpdsac-settings-form]');
@@ -137,7 +183,15 @@
         const result = await response.json();
 
         if (!response.ok || !result.success) {
-          throw new Error(result?.data?.message || window.wpdsacAdmin.errorText);
+          const saveError = new Error(result?.data?.message || window.wpdsacAdmin.errorText);
+          saveError.diagnostics = result?.data?.diagnostics;
+          throw saveError;
+        }
+
+        if (result.data?.diagnostics) {
+          providerDiagnostics[result.data.diagnostics.provider] = result.data.diagnostics;
+          renderProviderDiagnostics(result.data.diagnostics);
+          console.info('[WP DS AI Chatbot] Settings save diagnostics', result.data.diagnostics);
         }
 
         document.querySelectorAll('[data-wpdsac-api-key]').forEach((input) => {
@@ -146,7 +200,7 @@
           }
 
           input.value = '';
-          input.placeholder = window.wpdsacAdmin.savedKeyText;
+          input.placeholder = window.wpdsacAdmin.savedKeyMask;
 
           const keyStatus = input.parentElement?.querySelector('[data-wpdsac-key-status]');
 
@@ -160,6 +214,16 @@
           saveStatus.textContent = result.data?.message || window.wpdsacAdmin.savedText;
         }
       } catch (error) {
+        if (error.diagnostics) {
+          providerDiagnostics[error.diagnostics.provider] = error.diagnostics;
+          renderProviderDiagnostics(error.diagnostics);
+        }
+
+        console.error('[WP DS AI Chatbot] Settings save failed', {
+          message: error.message || window.wpdsacAdmin.errorText,
+          diagnostics: error.diagnostics || window.wpdsacDebugProvider(),
+        });
+
         if (saveStatus) {
           saveStatus.className = 'wpdsac-save-note is-error';
           saveStatus.textContent = error.message || window.wpdsacAdmin.errorText;
