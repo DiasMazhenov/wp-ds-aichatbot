@@ -42,13 +42,12 @@ final class LeadRepository {
 		$session_hash = hash_hmac( 'sha256', $session_id, wp_salt( 'auth' ) );
 		$expires_at   = $now + ( min( 730, max( 1, $retention_days ) ) * DAY_IN_SECONDS );
 		$query        = $wpdb->prepare(
-			'INSERT INTO %i (session_hash, user_id, name, email, phone, request_text, consent_text, created_at, expires_at)
+			"INSERT INTO `{$table}` (session_hash, user_id, name, email, phone, request_text, consent_text, created_at, expires_at)
 			VALUES (%s, %d, %s, %s, %s, %s, %s, %d, %d)
 			ON DUPLICATE KEY UPDATE
 			user_id = VALUES(user_id), name = VALUES(name), email = VALUES(email),
 			phone = VALUES(phone), request_text = VALUES(request_text), consent_text = VALUES(consent_text),
-			created_at = VALUES(created_at), expires_at = VALUES(expires_at)',
-			$table,
+			created_at = VALUES(created_at), expires_at = VALUES(expires_at)",
 			$session_hash,
 			absint( $user_id ),
 			sanitize_text_field( $name ),
