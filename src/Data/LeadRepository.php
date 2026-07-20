@@ -38,53 +38,31 @@ final class LeadRepository {
 			Migrator::migrate();
 		}
 
-		$now          = time();
-		$session_hash = hash_hmac( 'sha256', $session_id, wp_salt( 'auth' ) );
-		$expires_at   = $now + ( min( 730, max( 1, $retention_days ) ) * DAY_IN_SECONDS );
+		$now             = time();
+		$session_hash    = hash_hmac( 'sha256', $session_id, wp_salt( 'auth' ) );
+		$expires_at      = $now + ( min( 730, max( 1, $retention_days ) ) * DAY_IN_SECONDS );
+		$safe_name       = sanitize_text_field( $name );
+		$safe_email      = sanitize_email( $email );
+		$safe_phone      = substr( sanitize_text_field( $phone ), 0, 50 );
+		$safe_request    = $this->bounded_text( $request_text, 4000 );
+		$safe_consent    = sanitize_textarea_field( $consent_text );
 
-		$safe_name         = sanitize_text_field( $name );
-		$safe_email        = sanitize_email( $email );
-		$safe_phone        = substr( sanitize_text_field( $phone ), 0, 50 );
-		$safe_request_text = $this->bounded_text( $request_text, 4000 );
-		$safe_consent_text = sanitize_textarea_field( $consent_text );
+		$sql = 'INSERT INTO `' . $table . '` (session_hash, user_id, name, email, phone, request_text, consent_text, created_at, expires_at) VALUES ('
+			. "'" . $wpdb->_real_escape( $session_hash ) . "', "
+			. absint( $user_id ) . ', '
+			. "'" . $wpdb->_real_escape( $safe_name ) . "', "
+			. "'" . $wpdb->_real_escape( $safe_email ) . "', "
+			. "'" . $wpdb->_real_escape( $safe_phone ) . "', "
+			. "'" . $wpdb->_real_escape( $safe_request ) . "', "
+			. "'" . $wpdb->_real_escape( $safe_consent ) . "', "
+			. $now . ', '
+			. $expires_at
+			. ') ON DUPLICATE KEY UPDATE '
+			. 'user_id = VALUES(user_id), name = VALUES(name), email = VALUES(email), '
+			. 'phone = VALUES(phone), request_text = VALUES(request_text), consent_text = VALUES(consent_text), '
+			. 'created_at = VALUES(created_at), expires_at = VALUES(expires_at)';
 
-		$prepared = $wpdb->prepare(
-			"INSERT INTO `{$table}` (session_hash, user_id, name, email, phone, request_text, consent_text, created_at, expires_at)
-			VALUES (%s, %d, %s, %s, %s, %s, %s, %d, %d)
-			ON DUPLICATE KEY UPDATE
-			user_id = VALUES(user_id), name = VALUES(name), email = VALUES(email),
-			phone = VALUES(phone), request_text = VALUES(request_text), consent_text = VALUES(consent_text),
-			created_at = VALUES(created_at), expires_at = VALUES(expires_at)",
-			$session_hash,
-			absint( $user_id ),
-			$safe_name,
-			$safe_email,
-			$safe_phone,
-			$safe_request_text,
-			$safe_consent_text,
-			$now,
-			$expires_at
-		);
-
-		if ( ! is_string( $prepared ) || '' === $prepared ) {
-			return $wpdb->replace( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Fallback for prepare() failure on older WP.
-				$table,
-				array(
-					'session_hash' => $session_hash,
-					'user_id'      => absint( $user_id ),
-					'name'         => $safe_name,
-					'email'        => $safe_email,
-					'phone'        => $safe_phone,
-					'request_text' => $safe_request_text,
-					'consent_text' => $safe_consent_text,
-					'created_at'   => $now,
-					'expires_at'   => $expires_at,
-				),
-				array( '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%d', '%d' )
-			);
-		}
-
-		return false !== $wpdb->query( $prepared ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- Atomic lead upsert.
+		return false !== $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- Values independently sanitized; dbDelta-compatible table name.
 	}
 
 	/**
