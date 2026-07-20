@@ -97,6 +97,7 @@
 				db_message: data.data?.db_message || '',
 				table_exists: data.data?.table_exists,
 				db_version: data.data?.db_version,
+				sql_fragment: data.data?.sql_fragment || '',
 			});
 			throw error;
 		}
