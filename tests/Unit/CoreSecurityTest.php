@@ -134,6 +134,27 @@ final class CoreSecurityTest extends TestCase {
 		$this->assertStringStartsWith( 'custom-', $actions[1]['id'] );
 	}
 
+	public function test_contact_form_uses_a_semantic_action_instead_of_a_navigation_url(): void {
+		$reflection = new ReflectionClass( ProviderManager::class );
+		$manager    = $reflection->newInstanceWithoutConstructor();
+		$method     = $reflection->getMethod( 'navigation_policy' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$method->setAccessible( true );
+		}
+		$policy = $method->invoke(
+			$manager,
+			array(
+				array(
+					'label' => 'Оставить заявку',
+					'url'   => 'https://example.test/#wpdsac-contact-form',
+				),
+			)
+		);
+
+		$this->assertStringContainsString( '[[WPDSAC_ACTION|lead_form|Оставить заявку]]', $policy );
+		$this->assertStringNotContainsString( '[[WPDSAC_NAV|https://example.test/#wpdsac-contact-form', $policy );
+	}
+
 	public function test_visitor_name_template_is_request_scoped(): void {
 		$GLOBALS['wpdsac_test_options'][ Settings::OPTION_NAME ] = array(
 			'ai_instructions' => '{username}, hello! Alias: (username)',
@@ -289,7 +310,7 @@ final class CoreSecurityTest extends TestCase {
 	}
 
 	public function test_administrative_label_uses_current_plugin_version(): void {
-		$this->assertSame( 'DS AI Chatbot v0.5.34', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
+		$this->assertSame( 'DS AI Chatbot v0.5.35', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
 	}
 
 	public function test_settings_remain_the_default_plugin_submenu(): void {
@@ -314,7 +335,7 @@ final class CoreSecurityTest extends TestCase {
 			)
 		);
 
-		$this->assertSame( 'WP DS AI Chatbot v0.5.34', $plugins[ $plugin_file ]['Name'] );
-		$this->assertSame( 'WP DS AI Chatbot v0.5.34', $plugins[ $plugin_file ]['Title'] );
+		$this->assertSame( 'WP DS AI Chatbot v0.5.35', $plugins[ $plugin_file ]['Name'] );
+		$this->assertSame( 'WP DS AI Chatbot v0.5.35', $plugins[ $plugin_file ]['Title'] );
 	}
 }

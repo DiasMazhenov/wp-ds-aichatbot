@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.34
+Stable tag: 0.5.35
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,11 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.35 =
+* Open the request form through a dedicated semantic action instead of an Elementor or navigation URL.
+* Move the lead modal to the document body so Elementor container overflow and transforms cannot clip it.
+* Keep every unclicked quick button visible instead of clipping additional rows.
 
 = 0.5.34 =
 * Fixed AI-generated contact actions so they open the lead form instead of attempting page navigation.

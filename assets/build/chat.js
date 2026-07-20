@@ -11,6 +11,7 @@
 	const conversationLifetime = 24 * 60 * 60 * 1000;
 	let audioContext = null;
 	const modalReturnFocus = new WeakMap();
+	const leadModalByChat = new WeakMap();
 
 	const ensureAudioContext = () => {
 		const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -153,22 +154,30 @@
 	};
 
 	const appendAssistantContent = (container, message) => {
-		const marker = /\[\[WPDSAC_NAV\|([^|\]]+)\|([^\]]+)\]\]/giu;
+		const marker = /\[\[WPDSAC_(NAV|ACTION)\|([^|\]]+)\|([^\]]+)\]\]/giu;
 		let offset = 0;
 		let match;
 
 		while ((match = marker.exec(message)) !== null) {
 			appendLinkedText(container, message.slice(offset, match.index));
-			const url = safeNavigationUrl(match[1].trim());
-			const label = match[2].trim().slice(0, 120);
+			const markerType = match[1].toUpperCase();
+			const markerValue = match[2].trim();
+			const label = match[3].trim().slice(0, 120);
+			const url = markerType === 'NAV' ? safeNavigationUrl(markerValue) : null;
+			const isLeadAction = (markerType === 'ACTION' && markerValue === 'lead_form')
+				|| (url && url.hash === leadNavigationHash);
 
-			if (url && label) {
+			if (label && (url || isLeadAction)) {
 				const action = document.createElement('button');
 				action.type = 'button';
 				action.className = 'wpdsac-chat__navigation-action';
-				action.dataset.wpdsacNavigationUrl = url.href;
-				action.dataset.wpdsacNavigationLabel = label;
-				action.textContent = `${strings.navigate || 'Go to'}: ${label}`;
+				if (isLeadAction) {
+					action.dataset.wpdsacAction = 'lead-form';
+				} else {
+					action.dataset.wpdsacNavigationUrl = url.href;
+					action.dataset.wpdsacNavigationLabel = label;
+				}
+				action.textContent = isLeadAction ? label : `${strings.navigate || 'Go to'}: ${label}`;
 				container.appendChild(action);
 			}
 
@@ -524,13 +533,25 @@
 		});
 
 		const container = chat.querySelector('[data-wpdsac-quick-actions]');
-		if (container && !container.querySelector('[data-wpdsac-quick-action]:not([hidden])')) {
-			container.hidden = true;
+		if (container) {
+			container.hidden = !container.querySelector('[data-wpdsac-quick-action]:not([hidden])');
 		}
 	};
 
-	const openLeadForm = (chat, details = {}) => {
+	const prepareLeadModal = (chat) => {
 		const lead = chat.querySelector('[data-wpdsac-lead]');
+		if (!lead) {
+			return;
+		}
+
+		leadModalByChat.set(chat, lead);
+		lead.classList.add('wpdsac-chat');
+		lead.style.cssText = chat.style.cssText;
+		document.body.appendChild(lead);
+	};
+
+	const openLeadForm = (chat, details = {}) => {
+		const lead = leadModalByChat.get(chat) || chat.querySelector('[data-wpdsac-lead]');
 		if (!lead) {
 			return;
 		}
@@ -571,6 +592,7 @@
 	};
 
 	document.querySelectorAll('[data-wpdsac-chat]').forEach((chat) => {
+		prepareLeadModal(chat);
 		restoreConversationHistory(chat);
 		restoreQuickActions(chat);
 		revealConversation(chat, getVisitorName());
@@ -615,6 +637,18 @@
 		const close = event.target.closest('[data-wpdsac-close-lead]');
 		if (close) {
 			closeLeadForm(close.closest('[data-wpdsac-lead]'));
+		}
+	});
+
+	document.addEventListener('click', (event) => {
+		const action = event.target.closest('[data-wpdsac-action="lead-form"]');
+		if (!action) {
+			return;
+		}
+
+		const chat = action.closest('[data-wpdsac-chat]');
+		if (chat) {
+			openLeadForm(chat);
 		}
 	});
 

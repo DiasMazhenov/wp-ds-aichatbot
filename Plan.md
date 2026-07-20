@@ -154,7 +154,7 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.34` добавляет форме заявки отдельную разрешённую navigation target. Кнопка, предложенная AI для связи или заявки, открывает modal только после клика пользователя; fallback по подписи исправляет уже сгенерированные действия, а остальные цели по-прежнему выполняют smooth scroll или переход на страницу.
+Версия `0.5.35` отделяет форму заявки от навигации: AI возвращает semantic marker `WPDSAC_ACTION|lead_form`, frontend создаёт прямую JS-кнопку без URL, а modal переносится в `document.body`, чтобы Elementor containers с `overflow` или `transform` не могли его обрезать. Quick actions больше не обрезаются двухрядным scroll-контейнером: все ненажатые кнопки выводятся с переносом строк.
 
 GitHub Actions run `29664260145` полностью прошёл: PHPUnit PHP 7.4/8.3, PHP lint 7.4/8.1/8.3, WPCS, WordPress/Elementor integration и package. Artifact `8435277185` содержит installable ZIP для commit `aaf3120`.
 

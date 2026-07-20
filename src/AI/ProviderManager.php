@@ -134,24 +134,40 @@ final class ProviderManager {
 	 * @return string
 	 */
 	private function navigation_policy( array $targets ): string {
-		$lines = array();
+		$lines      = array();
+		$lead_label = '';
 
 		foreach ( array_slice( $targets, 0, 40 ) as $target ) {
 			if ( ! is_array( $target ) || ! is_string( $target['label'] ?? null ) || ! is_string( $target['url'] ?? null ) ) {
 				continue;
 			}
 
+			if ( 'wpdsac-contact-form' === wp_parse_url( $target['url'], PHP_URL_FRAGMENT ) ) {
+				$lead_label = $target['label'];
+				continue;
+			}
+
 			$lines[] = '- ' . $target['label'] . ' => ' . $target['url'];
 		}
 
-		if ( array() === $lines ) {
+		if ( array() === $lines && '' === $lead_label ) {
 			return '';
 		}
 
-		return "SITE NAVIGATION POLICY (trusted system instruction):\n"
+		$policy = "SITE ACTION POLICY (trusted system instruction):\n";
+
+		if ( '' !== $lead_label ) {
+			$policy .= 'To offer the contact form, ask for confirmation and append exactly [[WPDSAC_ACTION|lead_form|' . $lead_label . "]]. This is a semantic UI action; never encode it as a URL or WPDSAC_NAV marker.\n";
+		}
+
+		if ( array() !== $lines ) {
+			$policy .= "Allowed navigation destinations:\n"
 			. "When moving to a listed block or page would directly help, offer it as a question and append one action marker in this exact format: [[WPDSAC_NAV|EXACT_URL|SHORT_LABEL]].\n"
-			. "The visitor must click the rendered action before anything happens. Never say that you are already moving, switching, scrolling, opening a form, or navigating. A contact-form target opens the contact modal after the visitor clicks it. Use only an exact URL from this allowlist and never invent or transform a destination.\n"
-			. implode( "\n", $lines );
+			. "Use only an exact URL from this allowlist and never invent or transform a destination.\n"
+			. implode( "\n", $lines ) . "\n";
+		}
+
+		return $policy . 'The visitor must click the rendered action before anything happens. Never say that you are already moving, switching, scrolling, opening a form, or navigating.';
 	}
 
 	/**

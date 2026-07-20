@@ -111,6 +111,9 @@ assert.match(chatScript, /collectNavigationTargets/);
 assert.match(chatScript, /wpdsacNavigationUrl/);
 assert.match(chatScript, /wpdsacNavigationLabel/);
 assert.match(chatScript, /wpdsac-contact-form/);
+assert.match(chatScript, /data-wpdsac-action/);
+assert.match(chatScript, /prepareLeadModal/);
+assert.match(providerManagerPhp, /WPDSAC_ACTION\|lead_form/);
 assert.match(chatControllerPhp, /sanitize_navigation_targets/);
 assert.match(providerManagerPhp, /SITE NAVIGATION POLICY/);
 assert.match(quickActionsPhp, /MAX_ACTIONS\s*=\s*8/);
@@ -152,7 +155,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.34',
+    plugin_version: '0.5.35',
     db_version: '7',
     rate_limit_table: true,
     request_lock_table: true,

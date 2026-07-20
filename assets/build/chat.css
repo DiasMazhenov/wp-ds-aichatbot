@@ -43,6 +43,7 @@
 	font: 400 var(--wpdsac-font-size)/1.5 var(--wpdsac-font-family);
 }
 
+.wpdsac-chat[hidden],
 .wpdsac-chat [hidden] {
 	display: none !important;
 }
@@ -280,11 +281,8 @@ body.wpdsac-modal-open {
 	flex-wrap: wrap;
 	flex: 0 0 auto;
 	gap: var(--wpdsac-quick-gap);
-	max-height: 78px;
 	margin: 10px 0 8px;
 	padding: 1px;
-	overflow-y: auto;
-	scrollbar-width: thin;
 }
 
 .wpdsac-chat__quick-actions + .wpdsac-chat__form {
@@ -361,7 +359,7 @@ body.wpdsac-modal-open {
 .wpdsac-chat__lead-modal {
 	position: fixed;
 	inset: 0;
-	z-index: 30;
+	z-index: 100000;
 	display: grid;
 	place-items: center;
 	box-sizing: border-box;
