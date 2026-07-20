@@ -295,15 +295,19 @@ final class LeadController {
 		}
 
 		if ( ! $saved ) {
+			global $wpdb;
+
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				global $wpdb;
 				error_log( '[WP DS AI Chatbot] Lead save failed: ' . sanitize_text_field( (string) $wpdb->last_error ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug-only operational diagnostic without visitor data.
 			}
 
 			return new \WP_Error(
 				'wpdsac_lead_not_saved',
 				__( 'Contact details could not be saved. Please try again.', 'wp-ds-aichatbot' ),
-				array( 'status' => 500 )
+				array(
+					'status'     => 500,
+					'db_message' => defined( 'WP_DEBUG' ) && WP_DEBUG ? sanitize_text_field( (string) $wpdb->last_error ) : '',
+				)
 			);
 		}
 

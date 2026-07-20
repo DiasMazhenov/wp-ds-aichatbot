@@ -94,6 +94,7 @@
 				status: response.status,
 				code: error.code,
 				message: error.message,
+				db_message: data.data?.db_message || '',
 			});
 			throw error;
 		}
