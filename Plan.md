@@ -1,6 +1,6 @@
 # WP DS AI Chatbot — план разработки
 
-Последнее обновление: 2026-07-19
+Последнее обновление: 2026-07-20
 
 ## Цель
 
@@ -154,7 +154,9 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.36` сохраняет двустороннюю WeakMap-связь между вынесенным в `body` lead modal и исходным экземпляром чата. Отправка формы получает transcript из правильного чата и больше не обращается к `querySelectorAll` у `null`.
+Версия `0.5.37`: `LeadRepository` проверяет существование заявки по HMAC-хешу сессии. `ProviderManager` получает `LeadRepository` зависимостью, добавляет в AI-инструкции «уже есть заявка — не предлагать» и страховочно удаляет маркеры lead_form/nav-contact из ответа провайдера. Обратная совместимость сохраняется через nullable параметр.
+
+Коммит `feb29db` запушен: PHP lint чист, PHPUnit 14/14 OK.
 
 GitHub Actions run `29664260145` полностью прошёл: PHPUnit PHP 7.4/8.3, PHP lint 7.4/8.1/8.3, WPCS, WordPress/Elementor integration и package. Artifact `8435277185` содержит installable ZIP для commit `aaf3120`.
 
