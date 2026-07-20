@@ -82,6 +82,7 @@ final class Assets {
 					'leadSaving'        => __( 'Saving contact details…', 'wp-ds-aichatbot' ),
 					'leadError'         => __( 'Contact details could not be saved. Please try again.', 'wp-ds-aichatbot' ),
 					'leadPhoneRequired' => __( 'Enter your name and a valid phone number.', 'wp-ds-aichatbot' ),
+					'navigate'          => __( 'Go to', 'wp-ds-aichatbot' ),
 				),
 			)
 		);

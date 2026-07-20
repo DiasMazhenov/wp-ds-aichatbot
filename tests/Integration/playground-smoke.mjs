@@ -39,6 +39,8 @@ const contactSourcePhp = await readFile(join(projectRoot, 'src/Knowledge/Contact
 const answerEnricherPhp = await readFile(join(projectRoot, 'src/Knowledge/AnswerEnricher.php'), 'utf8');
 const promptGuardPhp = await readFile(join(projectRoot, 'src/AI/PromptGuard.php'), 'utf8');
 const providerManagerPhp = await readFile(join(projectRoot, 'src/AI/ProviderManager.php'), 'utf8');
+const chatControllerPhp = await readFile(join(projectRoot, 'src/Api/ChatController.php'), 'utf8');
+const quickActionsPhp = await readFile(join(projectRoot, 'src/Chat/QuickActions.php'), 'utf8');
 const postIndexerPhp = await readFile(join(projectRoot, 'src/Knowledge/PostIndexer.php'), 'utf8');
 const leadNotifierPhp = await readFile(join(projectRoot, 'src/Data/LeadNotifier.php'), 'utf8');
 const chatbotTemplate = await readFile(join(projectRoot, 'templates/chatbot.php'), 'utf8');
@@ -54,6 +56,7 @@ assert.match(adminScript, /Credential preflight/);
 assert.match(adminScript, /removeProperty\('display'\)/);
 assert.match(adminScript, /wpdsacAdminTheme/);
 assert.match(adminScript, /window\.wp\.media/);
+assert.match(adminScript, /data-wpdsac-action-repeater/);
 assert.match(adminStyles, /wpdsac-admin-theme-dark/);
 assert.doesNotMatch(adminScript, /providerTargets/);
 assert.match(settingsPhp, /data-wpdsac-provider-field/);
@@ -104,6 +107,14 @@ assert.match(chatScript, /hideQuickAction/);
 assert.match(chatScript, /openLeadForm/);
 assert.match(chatScript, /extractLeadDetails/);
 assert.match(chatScript, /lead\.hidden = true/);
+assert.match(chatScript, /collectNavigationTargets/);
+assert.match(chatScript, /wpdsacNavigationUrl/);
+assert.match(chatControllerPhp, /sanitize_navigation_targets/);
+assert.match(providerManagerPhp, /SITE NAVIGATION POLICY/);
+assert.match(quickActionsPhp, /MAX_ACTIONS\s*=\s*8/);
+assert.match(chatbotTemplate, /role="dialog"/);
+assert.match(chatbotTemplate, /aria-modal="true"/);
+assert.match(chatStyles, /--wpdsac-height/);
 assert.match(chatbotTemplate, /name="phone"[^>]+required/);
 assert.match(chatbotTemplate, /data-wpdsac-intro-trigger/);
 assert.match(chatbotTemplate, /wpdsac-chat__avatar/);
@@ -139,7 +150,7 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.32',
+    plugin_version: '0.5.33',
     db_version: '7',
     rate_limit_table: true,
     request_lock_table: true,

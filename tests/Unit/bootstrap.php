@@ -9,7 +9,7 @@ define( 'ABSPATH', __DIR__ . '/' );
 define( 'DAY_IN_SECONDS', 86400 );
 define( 'MINUTE_IN_SECONDS', 60 );
 define( 'WPDSAC_PATH', dirname( __DIR__, 2 ) . '/' );
-define( 'WPDSAC_VERSION', '0.5.32' );
+define( 'WPDSAC_VERSION', '0.5.33' );
 define( 'WPDSAC_FILE', WPDSAC_PATH . 'wp-ds-aichatbot.php' );
 
 $GLOBALS['wpdsac_test_options'] = array();
@@ -103,6 +103,22 @@ function sanitize_text_field( $value ): string {
 
 function sanitize_textarea_field( $value ): string {
 	return trim( strip_tags( (string) $value ) );
+}
+
+function esc_url_raw( $value, $protocols = null ): string {
+	$url       = filter_var( (string) $value, FILTER_SANITIZE_URL );
+	$scheme    = strtolower( (string) parse_url( $url, PHP_URL_SCHEME ) );
+	$protocols = is_array( $protocols ) ? $protocols : array( 'http', 'https' );
+
+	return in_array( $scheme, $protocols, true ) ? $url : '';
+}
+
+function home_url( string $path = '' ): string {
+	return 'https://example.test' . $path;
+}
+
+function wp_parse_url( string $url, int $component = -1 ) {
+	return parse_url( $url, $component );
 }
 
 function do_action( string $hook, ...$args ): void {

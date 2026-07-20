@@ -9,6 +9,7 @@ namespace DiasMazhenov\WPDsAiChatbot\Admin;
 
 use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
 use DiasMazhenov\WPDsAiChatbot\Chat\Appearance;
+use DiasMazhenov\WPDsAiChatbot\Chat\QuickActions;
 use DiasMazhenov\WPDsAiChatbot\Support\PluginInfo;
 
 defined( 'ABSPATH' ) || exit;
@@ -27,6 +28,13 @@ final class Settings {
 	 * @var array<string, string>
 	 */
 	private static $runtime_variables = array();
+
+	/**
+	 * Request-only protected instruction suffix.
+	 *
+	 * @var string
+	 */
+	private static $runtime_instruction_suffix = '';
 
 	/**
 	 * Appearance settings module.
@@ -94,7 +102,7 @@ final class Settings {
 				'quick_call_label'        => __( 'Call', 'wp-ds-aichatbot' ),
 				'quick_call_url'          => '',
 				'quick_lead_label'        => __( 'Leave a request', 'wp-ds-aichatbot' ),
-				'quick_lead_url'          => '',
+				'quick_custom_actions'    => array(),
 				'lead_prompt'             => __( 'Please leave your name and phone number, and we will contact you.', 'wp-ds-aichatbot' ),
 				'lead_submit_label'       => __( 'Send request', 'wp-ds-aichatbot' ),
 				'lead_notification_email' => get_option( 'admin_email', '' ),
@@ -144,6 +152,10 @@ final class Settings {
 			);
 		}
 
+		if ( '' !== self::$runtime_instruction_suffix ) {
+			$options['ai_instructions'] .= "\n\n" . self::$runtime_instruction_suffix;
+		}
+
 		return $options;
 	}
 
@@ -168,7 +180,18 @@ final class Settings {
 
 	/** Clear request-only template variables after provider execution. */
 	public static function clear_runtime_variables(): void {
-		self::$runtime_variables = array();
+		self::$runtime_variables          = array();
+		self::$runtime_instruction_suffix = '';
+	}
+
+	/**
+	 * Append bounded server-built instructions for the current provider call.
+	 *
+	 * @param string $suffix Trusted server-generated policy.
+	 * @return void
+	 */
+	public static function set_runtime_instruction_suffix( string $suffix ): void {
+		self::$runtime_instruction_suffix = self::limit_runtime_text( $suffix, 6000 );
 	}
 
 	/**
@@ -179,6 +202,17 @@ final class Settings {
 	 */
 	private static function limit_runtime_value( string $value ): string {
 		return function_exists( 'mb_substr' ) ? mb_substr( $value, 0, 100 ) : substr( $value, 0, 100 );
+	}
+
+	/**
+	 * Limit request-only policy text without altering its line structure.
+	 *
+	 * @param string $value Input policy.
+	 * @param int    $limit Maximum characters.
+	 * @return string
+	 */
+	private static function limit_runtime_text( string $value, int $limit ): string {
+		return function_exists( 'mb_substr' ) ? mb_substr( $value, 0, $limit ) : substr( $value, 0, $limit );
 	}
 
 	/**
@@ -318,7 +352,7 @@ final class Settings {
 		$this->add_field( 'quick_call_label', __( 'Call button text', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
 		$this->add_field( 'quick_call_url', __( 'Call button URL', 'wp-ds-aichatbot' ), 'url', 'wpdsac_leads' );
 		$this->add_field( 'quick_lead_label', __( 'Request button text', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
-		$this->add_field( 'quick_lead_url', __( 'Request button URL', 'wp-ds-aichatbot' ), 'url', 'wpdsac_leads' );
+		$this->add_field( 'quick_custom_actions', __( 'Custom quick buttons', 'wp-ds-aichatbot' ), 'quick_actions', 'wpdsac_leads' );
 		$this->add_field( 'lead_prompt', __( 'Contact prompt', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
 		$this->add_field( 'lead_submit_label', __( 'Submit request button', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
 		$this->add_field( 'lead_notification_email', __( 'Notification email', 'wp-ds-aichatbot' ), 'email', 'wpdsac_leads' );
@@ -382,7 +416,7 @@ final class Settings {
 			'quick_call_label'        => $this->label_or_default( $input['quick_call_label'] ?? '', $defaults['quick_call_label'] ),
 			'quick_call_url'          => esc_url_raw( (string) ( $input['quick_call_url'] ?? '' ), array( 'http', 'https', 'tel', 'sms' ) ),
 			'quick_lead_label'        => $this->label_or_default( $input['quick_lead_label'] ?? '', $defaults['quick_lead_label'] ),
-			'quick_lead_url'          => esc_url_raw( (string) ( $input['quick_lead_url'] ?? '' ), array( 'http', 'https' ) ),
+			'quick_custom_actions'    => QuickActions::sanitize( $input['quick_custom_actions'] ?? array() ),
 			'lead_prompt'             => $lead_prompt,
 			'lead_submit_label'       => $this->label_or_default( $input['lead_submit_label'] ?? '', $defaults['lead_submit_label'] ),
 			'lead_notification_email' => sanitize_email( $input['lead_notification_email'] ?? '' ),
@@ -805,6 +839,11 @@ final class Settings {
 			return;
 		}
 
+		if ( 'quick_actions' === $args['type'] ) {
+			$this->render_quick_actions_repeater( QuickActions::sanitize( $options[ $key ] ?? array() ) );
+			return;
+		}
+
 		if ( 'checkbox' === $args['type'] ) {
 			$descriptions = array(
 				'global_enabled'       => __( 'Show the chatbot globally in the site footer.', 'wp-ds-aichatbot' ),
@@ -896,6 +935,69 @@ final class Settings {
 			esc_attr( (string) $options[ $key ] ),
 			$preview_attribute // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed internal attribute.
 		);
+	}
+
+	/**
+	 * Render a bounded repeater for custom message and URL actions.
+	 *
+	 * @param array<int, array{id: string, label: string, type: string, value: string}> $actions Saved actions.
+	 * @return void
+	 */
+	private function render_quick_actions_repeater( array $actions ): void {
+		?>
+		<div class="wpdsac-action-repeater" data-wpdsac-action-repeater>
+			<div class="wpdsac-action-repeater__rows" data-wpdsac-action-rows>
+				<?php foreach ( $actions as $index => $action ) : ?>
+					<?php $this->render_quick_action_row( (int) $index, $action ); ?>
+				<?php endforeach; ?>
+			</div>
+			<button type="button" class="button" data-wpdsac-add-action><?php esc_html_e( 'Add quick button', 'wp-ds-aichatbot' ); ?></button>
+			<p class="description"><?php esc_html_e( 'Up to 8 buttons. A message button sends a prepared phrase; a link button opens its URL.', 'wp-ds-aichatbot' ); ?></p>
+			<template data-wpdsac-action-template>
+				<?php
+				$this->render_quick_action_row(
+					'__INDEX__',
+					array(
+						'label' => '',
+						'type'  => 'message',
+						'value' => '',
+					)
+				);
+				?>
+			</template>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render one custom quick-action row.
+	 *
+	 * @param int|string            $index  Numeric index or template placeholder.
+	 * @param array<string, string> $action Action values.
+	 * @return void
+	 */
+	private function render_quick_action_row( $index, array $action ): void {
+		$base = self::OPTION_NAME . '[quick_custom_actions][' . $index . ']';
+		?>
+		<div class="wpdsac-action-row" data-wpdsac-action-row>
+			<label>
+				<span><?php esc_html_e( 'Button text', 'wp-ds-aichatbot' ); ?></span>
+				<input type="text" name="<?php echo esc_attr( $base . '[label]' ); ?>" value="<?php echo esc_attr( $action['label'] ?? '' ); ?>" maxlength="60">
+			</label>
+			<label>
+				<span><?php esc_html_e( 'Action', 'wp-ds-aichatbot' ); ?></span>
+				<select name="<?php echo esc_attr( $base . '[type]' ); ?>" data-wpdsac-action-type>
+					<option value="message" <?php selected( $action['type'] ?? '', 'message' ); ?>><?php esc_html_e( 'Send message', 'wp-ds-aichatbot' ); ?></option>
+					<option value="url" <?php selected( $action['type'] ?? '', 'url' ); ?>><?php esc_html_e( 'Open URL', 'wp-ds-aichatbot' ); ?></option>
+				</select>
+			</label>
+			<label class="wpdsac-action-row__value">
+				<span><?php esc_html_e( 'Message or URL', 'wp-ds-aichatbot' ); ?></span>
+				<input type="text" name="<?php echo esc_attr( $base . '[value]' ); ?>" value="<?php echo esc_attr( $action['value'] ?? '' ); ?>" maxlength="500">
+			</label>
+			<button type="button" class="button-link-delete" data-wpdsac-remove-action><?php esc_html_e( 'Remove', 'wp-ds-aichatbot' ); ?></button>
+		</div>
+		<?php
 	}
 
 	/**

@@ -21,35 +21,44 @@ final class Appearance {
 	 */
 	public static function defaults(): array {
 		return array(
-			'accent_color'       => '#2563eb',
-			'accent_text_color'  => '#ffffff',
-			'surface_color'      => '#ffffff',
-			'text_color'         => '#172033',
-			'bot_message_color'  => '#eff4ff',
-			'bot_text_color'     => '#172033',
-			'user_message_color' => '#2563eb',
-			'user_text_color'    => '#ffffff',
-			'input_color'        => '#ffffff',
-			'input_text_color'   => '#172033',
-			'send_button_color'  => '#2563eb',
-			'send_text_color'    => '#ffffff',
-			'muted_text_color'   => '#64748b',
-			'border_color'       => '#dce2ee',
-			'chat_width'         => 380,
-			'chat_border_radius' => 18,
-			'toggle_radius'      => 18,
-			'message_radius'     => 14,
-			'input_radius'       => 18,
-			'chat_font_size'     => 16,
-			'panel_padding'      => 18,
-			'messages_height'    => 320,
-			'launcher_size'      => 60,
-			'shadow_opacity'     => 16,
-			'font_family'        => 'system',
-			'show_toggle_icon'   => true,
-			'global_position'    => 'bottom_right',
-			'global_offset_x'    => 24,
-			'global_offset_y'    => 24,
+			'accent_color'           => '#2563eb',
+			'accent_text_color'      => '#ffffff',
+			'surface_color'          => '#ffffff',
+			'text_color'             => '#172033',
+			'bot_message_color'      => '#eff4ff',
+			'bot_text_color'         => '#172033',
+			'user_message_color'     => '#2563eb',
+			'user_text_color'        => '#ffffff',
+			'input_color'            => '#ffffff',
+			'input_text_color'       => '#172033',
+			'send_button_color'      => '#2563eb',
+			'send_text_color'        => '#ffffff',
+			'muted_text_color'       => '#64748b',
+			'border_color'           => '#dce2ee',
+			'quick_action_color'     => '#ffffff',
+			'quick_action_text'      => '#2563eb',
+			'quick_action_border'    => '#b8c8ea',
+			'chat_width'             => 380,
+			'chat_height'            => 500,
+			'chat_border_radius'     => 18,
+			'toggle_radius'          => 18,
+			'message_radius'         => 14,
+			'input_radius'           => 18,
+			'chat_font_size'         => 16,
+			'panel_padding'          => 18,
+			'messages_height'        => 320,
+			'quick_action_font_size' => 13,
+			'quick_action_padding_x' => 10,
+			'quick_action_padding_y' => 6,
+			'quick_action_radius'    => 16,
+			'quick_action_gap'       => 6,
+			'launcher_size'          => 60,
+			'shadow_opacity'         => 16,
+			'font_family'            => 'system',
+			'show_toggle_icon'       => true,
+			'global_position'        => 'bottom_right',
+			'global_offset_x'        => 24,
+			'global_offset_y'        => 24,
 		);
 	}
 
@@ -111,7 +120,11 @@ final class Appearance {
 			'--wpdsac-send-text'       => $values['send_text_color'],
 			'--wpdsac-muted'           => $values['muted_text_color'],
 			'--wpdsac-border'          => $values['border_color'],
+			'--wpdsac-quick-bg'        => $values['quick_action_color'],
+			'--wpdsac-quick-text'      => $values['quick_action_text'],
+			'--wpdsac-quick-border'    => $values['quick_action_border'],
 			'--wpdsac-width'           => $values['chat_width'] . 'px',
+			'--wpdsac-height'          => $values['chat_height'] . 'px',
 			'--wpdsac-radius'          => $values['chat_border_radius'] . 'px',
 			'--wpdsac-toggle-radius'   => $values['toggle_radius'] . 'px',
 			'--wpdsac-message-radius'  => $values['message_radius'] . 'px',
@@ -119,6 +132,11 @@ final class Appearance {
 			'--wpdsac-font-size'       => $values['chat_font_size'] . 'px',
 			'--wpdsac-panel-padding'   => $values['panel_padding'] . 'px',
 			'--wpdsac-messages-height' => $values['messages_height'] . 'px',
+			'--wpdsac-quick-font-size' => $values['quick_action_font_size'] . 'px',
+			'--wpdsac-quick-padding-x' => $values['quick_action_padding_x'] . 'px',
+			'--wpdsac-quick-padding-y' => $values['quick_action_padding_y'] . 'px',
+			'--wpdsac-quick-radius'    => $values['quick_action_radius'] . 'px',
+			'--wpdsac-quick-gap'       => $values['quick_action_gap'] . 'px',
 			'--wpdsac-launcher-size'   => $values['launcher_size'] . 'px',
 			'--wpdsac-shadow-opacity'  => $values['shadow_opacity'] . '%',
 			'--wpdsac-font-family'     => self::font_families()[ $values['font_family'] ],
@@ -169,6 +187,9 @@ final class Appearance {
 			'send_text_color',
 			'muted_text_color',
 			'border_color',
+			'quick_action_color',
+			'quick_action_text',
+			'quick_action_border',
 		);
 	}
 
@@ -179,62 +200,92 @@ final class Appearance {
 	 */
 	public static function number_constraints(): array {
 		return array(
-			'chat_width'         => array(
+			'chat_width'             => array(
 				'min'  => 280,
 				'max'  => 640,
 				'unit' => 'px',
 			),
-			'chat_border_radius' => array(
+			'chat_height'            => array(
+				'min'  => 360,
+				'max'  => 760,
+				'unit' => 'px',
+			),
+			'chat_border_radius'     => array(
 				'min'  => 0,
 				'max'  => 40,
 				'unit' => 'px',
 			),
-			'chat_font_size'     => array(
+			'chat_font_size'         => array(
 				'min'  => 12,
 				'max'  => 22,
 				'unit' => 'px',
 			),
-			'toggle_radius'      => array(
+			'toggle_radius'          => array(
 				'min'  => 0,
 				'max'  => 40,
 				'unit' => 'px',
 			),
-			'message_radius'     => array(
+			'message_radius'         => array(
 				'min'  => 0,
 				'max'  => 32,
 				'unit' => 'px',
 			),
-			'input_radius'       => array(
+			'input_radius'           => array(
 				'min'  => 0,
 				'max'  => 32,
 				'unit' => 'px',
 			),
-			'panel_padding'      => array(
+			'panel_padding'          => array(
 				'min'  => 8,
 				'max'  => 40,
 				'unit' => 'px',
 			),
-			'messages_height'    => array(
+			'messages_height'        => array(
 				'min'  => 120,
 				'max'  => 640,
 				'unit' => 'px',
 			),
-			'launcher_size'      => array(
+			'quick_action_font_size' => array(
+				'min'  => 10,
+				'max'  => 18,
+				'unit' => 'px',
+			),
+			'quick_action_padding_x' => array(
+				'min'  => 4,
+				'max'  => 24,
+				'unit' => 'px',
+			),
+			'quick_action_padding_y' => array(
+				'min'  => 2,
+				'max'  => 16,
+				'unit' => 'px',
+			),
+			'quick_action_radius'    => array(
+				'min'  => 0,
+				'max'  => 40,
+				'unit' => 'px',
+			),
+			'quick_action_gap'       => array(
+				'min'  => 2,
+				'max'  => 20,
+				'unit' => 'px',
+			),
+			'launcher_size'          => array(
 				'min'  => 44,
 				'max'  => 96,
 				'unit' => 'px',
 			),
-			'shadow_opacity'     => array(
+			'shadow_opacity'         => array(
 				'min'  => 0,
 				'max'  => 40,
 				'unit' => '%',
 			),
-			'global_offset_x'    => array(
+			'global_offset_x'        => array(
 				'min'  => 0,
 				'max'  => 120,
 				'unit' => 'px',
 			),
-			'global_offset_y'    => array(
+			'global_offset_y'        => array(
 				'min'  => 0,
 				'max'  => 120,
 				'unit' => 'px',

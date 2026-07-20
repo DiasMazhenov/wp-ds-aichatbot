@@ -9,6 +9,7 @@
 	const hiddenQuickActionsStorageKey = 'wpdsacHiddenQuickActions';
 	const conversationLifetime = 24 * 60 * 60 * 1000;
 	let audioContext = null;
+	const modalReturnFocus = new WeakMap();
 
 	const ensureAudioContext = () => {
 		const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -141,6 +142,51 @@
 		});
 	};
 
+	const safeNavigationUrl = (value) => {
+		try {
+			const url = new URL(value, window.location.href);
+			return url.origin === window.location.origin && ['http:', 'https:'].includes(url.protocol) ? url : null;
+		} catch (error) {
+			return null;
+		}
+	};
+
+	const appendAssistantContent = (container, message) => {
+		const marker = /\[\[WPDSAC_NAV\|([^|\]]+)\|([^\]]+)\]\]/giu;
+		let offset = 0;
+		let match;
+
+		while ((match = marker.exec(message)) !== null) {
+			appendLinkedText(container, message.slice(offset, match.index));
+			const url = safeNavigationUrl(match[1].trim());
+			const label = match[2].trim().slice(0, 120);
+
+			if (url && label) {
+				const action = document.createElement('button');
+				action.type = 'button';
+				action.className = 'wpdsac-chat__navigation-action';
+				action.dataset.wpdsacNavigationUrl = url.href;
+				action.textContent = `${strings.navigate || 'Go to'}: ${label}`;
+				container.appendChild(action);
+			}
+
+			offset = marker.lastIndex;
+		}
+
+		appendLinkedText(container, message.slice(offset));
+	};
+
+	const scrollToLatest = (chat, behavior = 'auto') => {
+		const messages = chat.querySelector('.wpdsac-chat__messages');
+		if (!messages) {
+			return;
+		}
+
+		window.requestAnimationFrame(() => {
+			messages.scrollTo({top: messages.scrollHeight, behavior});
+		});
+	};
+
 	const appendMessage = (chat, message, role) => {
 		const messages = chat.querySelector('.wpdsac-chat__messages');
 		const row = document.createElement('div');
@@ -156,13 +202,13 @@
 			avatar.height = 32;
 			avatar.decoding = 'async';
 			row.appendChild(avatar);
-			appendLinkedText(item, message);
+			appendAssistantContent(item, message);
 		} else {
 			item.textContent = message;
 		}
 		row.appendChild(item);
 		messages.appendChild(row);
-		messages.scrollTop = messages.scrollHeight;
+		scrollToLatest(chat);
 	};
 
 	const getVisitorName = () => window.sessionStorage.getItem(visitorNameStorageKey) || '';
@@ -230,6 +276,42 @@
 		}
 
 		return history;
+	};
+
+	const collectNavigationTargets = () => {
+		const targets = [];
+		const seen = new Set();
+		const addTarget = (label, urlValue) => {
+			const url = safeNavigationUrl(urlValue);
+			label = String(label || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+			if (!url || !label || seen.has(url.href) || targets.length >= 40) {
+				return;
+			}
+
+			seen.add(url.href);
+			targets.push({label, url: url.href});
+		};
+
+		document.querySelectorAll('main [id], article [id], .elementor [id]').forEach((element) => {
+			if (element.closest('[data-wpdsac-chat]') || !element.id) {
+				return;
+			}
+
+			const heading = element.matches('h1,h2,h3,h4,h5,h6') ? element : element.querySelector('h1,h2,h3,h4,h5,h6');
+			const label = element.getAttribute('aria-label') || heading?.textContent || '';
+			const url = new URL(window.location.href);
+			url.hash = element.id;
+			addTarget(label, url.href);
+		});
+
+		document.querySelectorAll('a[href]').forEach((link) => {
+			if (link.closest('[data-wpdsac-chat]')) {
+				return;
+			}
+			addTarget(link.textContent, link.href);
+		});
+
+		return targets;
 	};
 
 	const getStoredConversation = () => {
@@ -390,6 +472,7 @@
 				intro.hidden = true;
 			}
 			revealConversation(chat, getVisitorName());
+			scrollToLatest(chat);
 			chat.querySelector('[data-wpdsac-form] input')?.focus();
 		}
 	};
@@ -449,7 +532,9 @@
 			persistConversationHistory(chat);
 		}
 
+		modalReturnFocus.set(lead, document.activeElement);
 		lead.hidden = false;
+		document.body.classList.add('wpdsac-modal-open');
 		const form = lead.querySelector('[data-wpdsac-lead-form]');
 		if (details.name) {
 			form.elements.name.value = details.name;
@@ -461,8 +546,20 @@
 		if (details.request && !form.elements.request.value) {
 			form.elements.request.value = details.request;
 		}
-		lead.querySelector('input:not([type="hidden"])')?.focus();
-		lead.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+		window.requestAnimationFrame(() => lead.querySelector('input:not([type="hidden"])')?.focus());
+	};
+
+	const closeLeadForm = (lead) => {
+		if (!lead || lead.hidden) {
+			return;
+		}
+
+		lead.hidden = true;
+		document.body.classList.remove('wpdsac-modal-open');
+		const returnFocus = modalReturnFocus.get(lead);
+		if (returnFocus instanceof HTMLElement) {
+			returnFocus.focus();
+		}
 	};
 
 	document.querySelectorAll('[data-wpdsac-chat]').forEach((chat) => {
@@ -495,6 +592,78 @@
 
 		if (action.matches('[data-wpdsac-open-lead]')) {
 			openLeadForm(action.closest('[data-wpdsac-chat]'));
+			return;
+		}
+
+		if (action.dataset.wpdsacQuickMessage) {
+			const chat = action.closest('[data-wpdsac-chat]');
+			const form = chat.querySelector('[data-wpdsac-form]');
+			form.querySelector('input').value = action.dataset.wpdsacQuickMessage;
+			form.requestSubmit();
+		}
+	});
+
+	document.addEventListener('click', (event) => {
+		const close = event.target.closest('[data-wpdsac-close-lead]');
+		if (close) {
+			closeLeadForm(close.closest('[data-wpdsac-lead]'));
+		}
+	});
+
+	document.addEventListener('click', (event) => {
+		const action = event.target.closest('[data-wpdsac-navigation-url]');
+		if (!action) {
+			return;
+		}
+
+		const url = safeNavigationUrl(action.dataset.wpdsacNavigationUrl || '');
+		if (!url) {
+			return;
+		}
+
+		const samePage = url.pathname === window.location.pathname && url.search === window.location.search;
+		const target = samePage && url.hash ? document.getElementById(decodeURIComponent(url.hash.slice(1))) : null;
+		if (target) {
+			const chat = action.closest('[data-wpdsac-chat]');
+			setExpanded(chat, false);
+			target.scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'});
+			target.classList.add('wpdsac-navigation-highlight');
+			window.setTimeout(() => target.classList.remove('wpdsac-navigation-highlight'), 2200);
+			return;
+		}
+
+		window.location.assign(url.href);
+	});
+
+	document.addEventListener('keydown', (event) => {
+		const lead = document.querySelector('[data-wpdsac-lead]:not([hidden])');
+		if (!lead) {
+			return;
+		}
+
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			closeLeadForm(lead);
+			return;
+		}
+
+		if (event.key !== 'Tab') {
+			return;
+		}
+
+		const focusable = Array.from(lead.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href]'));
+		if (!focusable.length) {
+			return;
+		}
+
+		const first = focusable[0];
+		const last = focusable[focusable.length - 1];
+		if (event.shiftKey && document.activeElement === first) {
+			event.preventDefault();
+			last.focus();
+		} else if (!event.shiftKey && document.activeElement === last) {
+			event.preventDefault();
+			first.focus();
 		}
 	});
 
@@ -539,12 +708,13 @@
 			ensureConversationFresh(chat);
 			const session = await getSessionToken();
 			status.textContent = strings.sending || '';
-			const response = await request('/chat', {
-				session,
-				message,
-				visitor_name: getVisitorName(),
-				history: getConversationHistory(chat),
-			});
+				const response = await request('/chat', {
+					session,
+					message,
+					visitor_name: getVisitorName(),
+					history: getConversationHistory(chat),
+					navigation_targets: collectNavigationTargets(),
+				});
 
 			appendMessage(chat, message, 'user');
 			appendMessage(chat, response.reply, 'bot');
@@ -605,7 +775,7 @@
 				website,
 			});
 
-				lead.hidden = true;
+				closeLeadForm(lead);
 				window.sessionStorage.setItem(visitorNameStorageKey, name.slice(0, 100));
 				appendMessage(chat, response.message || '', 'bot');
 				persistConversationHistory(chat);

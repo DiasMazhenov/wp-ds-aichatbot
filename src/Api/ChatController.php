@@ -82,29 +82,35 @@ final class ChatController {
 				'callback'            => array( $this, 'respond' ),
 				'permission_callback' => array( $this, 'permissions_check' ),
 				'args'                => array(
-					'session'      => array(
+					'session'            => array(
 						'type'              => 'string',
 						'required'          => true,
 						'sanitize_callback' => 'sanitize_text_field',
 						'validate_callback' => array( $this, 'validate_session_token' ),
 					),
-					'message'      => array(
+					'message'            => array(
 						'type'              => 'string',
 						'required'          => true,
 						'sanitize_callback' => 'sanitize_textarea_field',
 						'validate_callback' => array( $this, 'validate_message' ),
 					),
-					'visitor_name' => array(
+					'visitor_name'       => array(
 						'type'              => 'string',
 						'default'           => '',
 						'sanitize_callback' => 'sanitize_text_field',
 						'validate_callback' => array( $this, 'validate_visitor_name' ),
 					),
-					'history'      => array(
+					'history'            => array(
 						'type'              => 'array',
 						'default'           => array(),
 						'sanitize_callback' => array( $this, 'sanitize_history' ),
 						'validate_callback' => array( $this, 'validate_history' ),
+					),
+					'navigation_targets' => array(
+						'type'              => 'array',
+						'default'           => array(),
+						'sanitize_callback' => array( $this, 'sanitize_navigation_targets' ),
+						'validate_callback' => array( $this, 'validate_navigation_targets' ),
 					),
 				),
 			)
@@ -234,6 +240,71 @@ final class ChatController {
 	}
 
 	/**
+	 * Validate a bounded browser-provided navigation allowlist.
+	 *
+	 * @param mixed $value Raw target rows.
+	 * @return bool
+	 */
+	public function validate_navigation_targets( $value ): bool {
+		if ( ! is_array( $value ) || count( $value ) > 40 ) {
+			return false;
+		}
+
+		foreach ( $value as $target ) {
+			if ( ! is_array( $target ) || ! is_string( $target['label'] ?? null ) || ! is_string( $target['url'] ?? null ) ) {
+				return false;
+			}
+
+			if ( self::length( $target['label'] ) > 120 || self::length( $target['url'] ) > 500 ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Keep only same-origin HTTP(S) destinations and safe labels.
+	 *
+	 * @param mixed $value Raw target rows.
+	 * @return array<int, array{label: string, url: string}>
+	 */
+	public function sanitize_navigation_targets( $value ): array {
+		if ( ! is_array( $value ) ) {
+			return array();
+		}
+
+		$home_url    = home_url( '/' );
+		$home_scheme = strtolower( (string) wp_parse_url( $home_url, PHP_URL_SCHEME ) );
+		$home_host   = strtolower( (string) wp_parse_url( $home_url, PHP_URL_HOST ) );
+		$home_port   = absint( wp_parse_url( $home_url, PHP_URL_PORT ) );
+		$targets     = array();
+
+		foreach ( array_slice( $value, 0, 40 ) as $target ) {
+			if ( ! is_array( $target ) ) {
+				continue;
+			}
+
+			$label  = str_replace( array( '|', '[', ']' ), '', sanitize_text_field( (string) ( $target['label'] ?? '' ) ) );
+			$url    = esc_url_raw( (string) ( $target['url'] ?? '' ), array( 'http', 'https' ) );
+			$scheme = strtolower( (string) wp_parse_url( $url, PHP_URL_SCHEME ) );
+			$host   = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+			$port   = absint( wp_parse_url( $url, PHP_URL_PORT ) );
+
+			if ( '' === $label || '' === $url || '' === $home_host || $home_scheme !== $scheme || $home_host !== $host || $home_port !== $port ) {
+				continue;
+			}
+
+			$targets[] = array(
+				'label' => self::slice( $label, 120 ),
+				'url'   => self::slice( str_replace( '|', '%7C', $url ), 500 ),
+			);
+		}
+
+		return $targets;
+	}
+
+	/**
 	 * Rate-limit and dispatch the message to the provider extension point.
 	 *
 	 * @param \WP_REST_Request $request REST request.
@@ -340,5 +411,26 @@ final class ChatController {
 		$response->header( $header, '0' );
 
 		return $response;
+	}
+
+	/**
+	 * Count Unicode characters when available.
+	 *
+	 * @param string $value Input text.
+	 * @return int
+	 */
+	private static function length( string $value ): int {
+		return function_exists( 'mb_strlen' ) ? mb_strlen( $value ) : strlen( $value );
+	}
+
+	/**
+	 * Slice Unicode text when available.
+	 *
+	 * @param string $value Input text.
+	 * @param int    $limit Maximum characters.
+	 * @return string
+	 */
+	private static function slice( string $value, int $limit ): string {
+		return function_exists( 'mb_substr' ) ? mb_substr( $value, 0, $limit ) : substr( $value, 0, $limit );
 	}
 }

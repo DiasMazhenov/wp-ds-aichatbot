@@ -66,6 +66,11 @@ final class ProviderManager {
 
 		$visitor_name = sanitize_text_field( (string) $request->get_param( 'visitor_name' ) );
 		Settings::set_runtime_variables( array( 'username' => $visitor_name ) );
+		$navigation_targets = $request->get_param( 'navigation_targets' );
+
+		if ( is_array( $navigation_targets ) && array() !== $navigation_targets ) {
+			Settings::set_runtime_instruction_suffix( $this->navigation_policy( $navigation_targets ) );
+		}
 
 		try {
 			$options       = Settings::get();
@@ -120,6 +125,33 @@ final class ProviderManager {
 		} finally {
 			Settings::clear_runtime_variables();
 		}
+	}
+
+	/**
+	 * Build a system-level allowlist for user-confirmed site navigation.
+	 *
+	 * @param array<int, mixed> $targets Sanitized same-origin targets.
+	 * @return string
+	 */
+	private function navigation_policy( array $targets ): string {
+		$lines = array();
+
+		foreach ( array_slice( $targets, 0, 40 ) as $target ) {
+			if ( ! is_array( $target ) || ! is_string( $target['label'] ?? null ) || ! is_string( $target['url'] ?? null ) ) {
+				continue;
+			}
+
+			$lines[] = '- ' . $target['label'] . ' => ' . $target['url'];
+		}
+
+		if ( array() === $lines ) {
+			return '';
+		}
+
+		return "SITE NAVIGATION POLICY (trusted system instruction):\n"
+			. "When moving to a listed block or page would directly help, ask the visitor for confirmation and append one action marker in this exact format: [[WPDSAC_NAV|EXACT_URL|SHORT_LABEL]].\n"
+			. "The visitor must click the rendered action before navigation occurs. Never claim that navigation already happened. Use only an exact URL from this allowlist and never invent or transform a destination.\n"
+			. implode( "\n", $lines );
 	}
 
 	/**

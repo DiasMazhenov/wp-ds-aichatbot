@@ -73,10 +73,10 @@ final class Renderer {
 			'quick_call_label'    => sanitize_text_field( (string) $options['quick_call_label'] ),
 			'quick_lead_label'    => sanitize_text_field( (string) $options['quick_lead_label'] ),
 			'call_url'            => $call_url,
-			'lead_url'            => esc_url_raw( (string) $options['quick_lead_url'], array( 'http', 'https' ) ),
 			'lead_prompt'         => sanitize_text_field( (string) $options['lead_prompt'] ),
 			'lead_submit_label'   => sanitize_text_field( (string) $options['lead_submit_label'] ),
 			'lead_consent'        => sanitize_textarea_field( (string) $options['lead_consent_text'] ),
+			'custom_actions'      => QuickActions::sanitize( $options['quick_custom_actions'] ?? array() ),
 		);
 
 		$this->assets->enqueue();

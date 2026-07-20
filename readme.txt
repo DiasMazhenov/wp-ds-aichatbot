@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.32
+Stable tag: 0.5.33
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,14 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.33 =
+* Add up to 8 custom quick buttons that can send a prepared message or open a safe URL; the built-in request button always opens the modal.
+* Add visual controls for quick-button colors, border, font size, padding, radius, and gap.
+* Move the contact form into an accessible centered modal with focus management and keyboard dismissal.
+* Keep the expanded chat at a configured fixed height with one auto-scrolling message viewport.
+* Let the assistant propose allowlisted same-origin blocks and pages through a user-confirmed navigation action.
+* Refine spacing, hierarchy, focus states, compact actions, and responsive behavior after a UI/UX audit.
 
 = 0.5.32 =
 * Recognize a visitor name and phone number in chat messages, then prefill the consent form instead of sending the contact data to the AI provider.

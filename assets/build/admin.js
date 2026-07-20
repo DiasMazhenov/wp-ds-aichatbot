@@ -445,7 +445,49 @@
 		});
 	}
 
-  const preview = document.querySelector('[data-wpdsac-preview]');
+	document.querySelectorAll('[data-wpdsac-action-repeater]').forEach((repeater) => {
+		const rows = repeater.querySelector('[data-wpdsac-action-rows]');
+		const template = repeater.querySelector('[data-wpdsac-action-template]');
+		const addButton = repeater.querySelector('[data-wpdsac-add-action]');
+		let nextIndex = Array.from(rows.querySelectorAll('input[name]')).reduce((highest, input) => {
+			const match = input.name.match(/quick_custom_actions\]\[(\d+)\]/);
+			return match ? Math.max(highest, Number(match[1]) + 1) : highest;
+		}, 0);
+
+		const refresh = () => {
+			addButton.disabled = rows.querySelectorAll('[data-wpdsac-action-row]').length >= 8;
+		};
+
+		addButton?.addEventListener('click', () => {
+			if (!template || rows.querySelectorAll('[data-wpdsac-action-row]').length >= 8) {
+				return;
+			}
+
+			const wrapper = document.createElement('div');
+			wrapper.innerHTML = template.innerHTML.replaceAll('__INDEX__', String(nextIndex));
+			nextIndex += 1;
+			const row = wrapper.firstElementChild;
+			rows.appendChild(row);
+			row.querySelector('input')?.focus();
+			row.dispatchEvent(new Event('input', {bubbles: true}));
+			refresh();
+		});
+
+		repeater.addEventListener('click', (event) => {
+			const remove = event.target.closest('[data-wpdsac-remove-action]');
+			if (!remove) {
+				return;
+			}
+
+			remove.closest('[data-wpdsac-action-row]')?.remove();
+			repeater.dispatchEvent(new Event('input', {bubbles: true}));
+			refresh();
+		});
+
+		refresh();
+	});
+
+	const preview = document.querySelector('[data-wpdsac-preview]');
 
   if (!preview) {
     return;

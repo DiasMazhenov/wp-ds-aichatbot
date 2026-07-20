@@ -45,9 +45,12 @@ final class AppearanceSettings {
 		$this->add_field( 'send_text_color', __( 'Send button text', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_colors' );
 		$this->add_field( 'muted_text_color', __( 'Status text', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_colors' );
 		$this->add_field( 'border_color', __( 'Borders', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_colors' );
+		$this->add_field( 'quick_action_color', __( 'Quick button background', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_colors' );
+		$this->add_field( 'quick_action_text', __( 'Quick button text', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_colors' );
+		$this->add_field( 'quick_action_border', __( 'Quick button border', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_colors' );
 
 		$this->add_field( 'chat_width', __( 'Chat width (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
-		$this->add_field( 'messages_height', __( 'Messages area height (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
+		$this->add_field( 'chat_height', __( 'Chat height (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
 		$this->add_field( 'panel_padding', __( 'Panel padding (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
 		$this->add_field( 'chat_font_size', __( 'Font size (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
 		$this->add_field( 'font_family', __( 'Font style', 'wp-ds-aichatbot' ), 'font', 'wpdsac_appearance_layout' );
@@ -61,6 +64,11 @@ final class AppearanceSettings {
 		$this->add_field( 'toggle_radius', __( 'Expanded header radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
 		$this->add_field( 'message_radius', __( 'Message radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
 		$this->add_field( 'input_radius', __( 'Input and button radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
+		$this->add_field( 'quick_action_font_size', __( 'Quick button font size (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
+		$this->add_field( 'quick_action_padding_x', __( 'Quick button horizontal padding (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
+		$this->add_field( 'quick_action_padding_y', __( 'Quick button vertical padding (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
+		$this->add_field( 'quick_action_radius', __( 'Quick button radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
+		$this->add_field( 'quick_action_gap', __( 'Quick button gap (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
 		$this->add_field( 'show_toggle_icon', __( 'Icon in expanded header', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_appearance_controls' );
 	}
 
@@ -220,6 +228,10 @@ final class AppearanceSettings {
 								</p>
 							</div>
 						</div>
+						<div class="wpdsac-chat__quick-actions">
+							<button type="button" class="wpdsac-chat__quick-action"><?php echo esc_html( (string) $options['quick_call_label'] ); ?></button>
+							<button type="button" class="wpdsac-chat__quick-action"><?php echo esc_html( (string) $options['quick_lead_label'] ); ?></button>
+						</div>
 						<div class="wpdsac-chat__form">
 							<input type="text" placeholder="<?php echo esc_attr( (string) $options['message_placeholder'] ); ?>" disabled>
 							<button type="button" disabled><?php esc_html_e( 'Send', 'wp-ds-aichatbot' ); ?></button>
@@ -313,32 +325,41 @@ final class AppearanceSettings {
 	 */
 	private function css_variable( string $key ): string {
 		$variables = array(
-			'accent_color'       => '--wpdsac-accent',
-			'accent_text_color'  => '--wpdsac-accent-text',
-			'surface_color'      => '--wpdsac-surface',
-			'text_color'         => '--wpdsac-text',
-			'bot_message_color'  => '--wpdsac-bot-message',
-			'bot_text_color'     => '--wpdsac-bot-text',
-			'user_message_color' => '--wpdsac-user-message',
-			'user_text_color'    => '--wpdsac-user-text',
-			'input_color'        => '--wpdsac-input',
-			'input_text_color'   => '--wpdsac-input-text',
-			'send_button_color'  => '--wpdsac-send',
-			'send_text_color'    => '--wpdsac-send-text',
-			'muted_text_color'   => '--wpdsac-muted',
-			'border_color'       => '--wpdsac-border',
-			'chat_width'         => '--wpdsac-width',
-			'chat_border_radius' => '--wpdsac-radius',
-			'chat_font_size'     => '--wpdsac-font-size',
-			'toggle_radius'      => '--wpdsac-toggle-radius',
-			'message_radius'     => '--wpdsac-message-radius',
-			'input_radius'       => '--wpdsac-input-radius',
-			'panel_padding'      => '--wpdsac-panel-padding',
-			'messages_height'    => '--wpdsac-messages-height',
-			'launcher_size'      => '--wpdsac-launcher-size',
-			'shadow_opacity'     => '--wpdsac-shadow-opacity',
-			'global_offset_x'    => '--wpdsac-offset-x',
-			'global_offset_y'    => '--wpdsac-offset-y',
+			'accent_color'           => '--wpdsac-accent',
+			'accent_text_color'      => '--wpdsac-accent-text',
+			'surface_color'          => '--wpdsac-surface',
+			'text_color'             => '--wpdsac-text',
+			'bot_message_color'      => '--wpdsac-bot-message',
+			'bot_text_color'         => '--wpdsac-bot-text',
+			'user_message_color'     => '--wpdsac-user-message',
+			'user_text_color'        => '--wpdsac-user-text',
+			'input_color'            => '--wpdsac-input',
+			'input_text_color'       => '--wpdsac-input-text',
+			'send_button_color'      => '--wpdsac-send',
+			'send_text_color'        => '--wpdsac-send-text',
+			'muted_text_color'       => '--wpdsac-muted',
+			'border_color'           => '--wpdsac-border',
+			'quick_action_color'     => '--wpdsac-quick-bg',
+			'quick_action_text'      => '--wpdsac-quick-text',
+			'quick_action_border'    => '--wpdsac-quick-border',
+			'chat_width'             => '--wpdsac-width',
+			'chat_height'            => '--wpdsac-height',
+			'chat_border_radius'     => '--wpdsac-radius',
+			'chat_font_size'         => '--wpdsac-font-size',
+			'toggle_radius'          => '--wpdsac-toggle-radius',
+			'message_radius'         => '--wpdsac-message-radius',
+			'input_radius'           => '--wpdsac-input-radius',
+			'panel_padding'          => '--wpdsac-panel-padding',
+			'messages_height'        => '--wpdsac-messages-height',
+			'quick_action_font_size' => '--wpdsac-quick-font-size',
+			'quick_action_padding_x' => '--wpdsac-quick-padding-x',
+			'quick_action_padding_y' => '--wpdsac-quick-padding-y',
+			'quick_action_radius'    => '--wpdsac-quick-radius',
+			'quick_action_gap'       => '--wpdsac-quick-gap',
+			'launcher_size'          => '--wpdsac-launcher-size',
+			'shadow_opacity'         => '--wpdsac-shadow-opacity',
+			'global_offset_x'        => '--wpdsac-offset-x',
+			'global_offset_y'        => '--wpdsac-offset-y',
 		);
 
 		return $variables[ $key ] ?? '';
