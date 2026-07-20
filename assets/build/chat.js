@@ -12,6 +12,7 @@
 	let audioContext = null;
 	const modalReturnFocus = new WeakMap();
 	const leadModalByChat = new WeakMap();
+	const chatByLeadModal = new WeakMap();
 
 	const ensureAudioContext = () => {
 		const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -545,6 +546,7 @@
 		}
 
 		leadModalByChat.set(chat, lead);
+		chatByLeadModal.set(lead, chat);
 		lead.classList.add('wpdsac-chat');
 		lead.style.cssText = chat.style.cssText;
 		document.body.appendChild(lead);
@@ -797,9 +799,14 @@
 
 		event.preventDefault();
 
-		const button = form.querySelector('button[type="submit"]');
-		const chat = form.closest('[data-wpdsac-chat]');
 		const lead = form.closest('[data-wpdsac-lead]');
+		const chat = lead ? chatByLeadModal.get(lead) : null;
+		const button = form.querySelector('button[type="submit"]');
+		if (!lead || !chat || !button) {
+			console.error('[WP DS AI Chatbot] Lead form is detached from its chat instance.');
+			return;
+		}
+
 		const status = lead.querySelector('[data-wpdsac-lead-status]');
 		const name = form.elements.name.value.trim();
 		const phone = form.elements.phone.value.trim();
@@ -832,16 +839,16 @@
 				website,
 			});
 
-				closeLeadForm(lead);
-				window.sessionStorage.setItem(visitorNameStorageKey, name.slice(0, 100));
-				appendMessage(chat, response.message || '', 'bot');
-				persistConversationHistory(chat);
-				playReplySound(chat.dataset.wpdsacReplySound || 'off');
-				form.reset();
-				status.textContent = '';
-				if (response.notified === false) {
-					console.warn('[WP DS AI Chatbot] Lead saved, but WordPress could not send the notification email. Configure SMTP and verify the notification address.');
-				}
+			closeLeadForm(lead);
+			window.sessionStorage.setItem(visitorNameStorageKey, name.slice(0, 100));
+			appendMessage(chat, response.message || '', 'bot');
+			persistConversationHistory(chat);
+			playReplySound(chat.dataset.wpdsacReplySound || 'off');
+			form.reset();
+			status.textContent = '';
+			if (response.notified === false) {
+				console.warn('[WP DS AI Chatbot] Lead saved, but WordPress could not send the notification email. Configure SMTP and verify the notification address.');
+			}
 		} catch (error) {
 			if (error.status === 401) {
 				window.sessionStorage.removeItem(sessionStorageKey);
