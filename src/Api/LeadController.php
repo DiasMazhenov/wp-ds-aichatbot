@@ -296,7 +296,7 @@ final class LeadController {
 					'db_message'   => sanitize_text_field( (string) $wpdb->last_error ),
 					'db_version'   => get_option( 'wpdsac_db_version', '0' ),
 					'table_exists' => (bool) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = %s', \DiasMazhenov\WPDsAiChatbot\Lifecycle\Migrator::leads_table() ) ), // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Operational diagnostic.
-					'sql_fragment' => function_exists( 'mb_substr' ) ? mb_substr( (string) $wpdb->last_query, 0, 600 ) : substr( (string) $wpdb->last_query, 0, 600 ),
+					'sql_fragment' => function_exists( 'mb_substr' ) ? mb_substr( \DiasMazhenov\WPDsAiChatbot\Data\LeadRepository::$last_sql, 0, 600 ) : substr( \DiasMazhenov\WPDsAiChatbot\Data\LeadRepository::$last_sql, 0, 600 ),
 				)
 			);
 		}

@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WPDSAC_VERSION', '0.5.43' );
+define( 'WPDSAC_VERSION', '0.5.44' );
 define( 'WPDSAC_FILE', __FILE__ );
 define( 'WPDSAC_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WPDSAC_URL', plugin_dir_url( __FILE__ ) );

@@ -17,6 +17,13 @@ defined( 'ABSPATH' ) || exit;
 final class LeadRepository {
 
 	/**
+	 * Last attempted SQL for diagnostics.
+	 *
+	 * @var string
+	 */
+	public static $last_sql = '';
+
+	/**
 	 * Store one consented lead per signed chat session.
 	 *
 	 * @param string $session_id    Verified session UUID.
@@ -47,7 +54,7 @@ final class LeadRepository {
 		$safe_request    = $this->bounded_text( $request_text, 4000 );
 		$safe_consent    = sanitize_textarea_field( $consent_text );
 
-		$sql = 'INSERT INTO `' . $table . '` (session_hash, user_id, name, email, phone, request_text, consent_text, created_at, expires_at) VALUES ('
+		self::$last_sql = 'INSERT INTO `' . $table . '` (session_hash, user_id, name, email, phone, request_text, consent_text, created_at, expires_at) VALUES ('
 			. "'" . $wpdb->_real_escape( $session_hash ) . "', "
 			. absint( $user_id ) . ', '
 			. "'" . $wpdb->_real_escape( $safe_name ) . "', "
@@ -62,7 +69,15 @@ final class LeadRepository {
 			. 'phone = VALUES(phone), request_text = VALUES(request_text), consent_text = VALUES(consent_text), '
 			. 'created_at = VALUES(created_at), expires_at = VALUES(expires_at)';
 
-		return false !== $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- Values independently sanitized; dbDelta-compatible table name.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- All values independently sanitized with _real_escape and absint.
+		$result = mysqli_query( $wpdb->dbh, self::$last_sql );
+
+		if ( ! $result ) {
+			$wpdb->last_error = 'MySQL error: ' . mysqli_error( $wpdb->dbh );
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
