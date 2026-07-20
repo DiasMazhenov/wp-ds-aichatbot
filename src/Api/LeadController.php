@@ -292,8 +292,10 @@ final class LeadController {
 				'wpdsac_lead_not_saved',
 				__( 'Contact details could not be saved. Please try again.', 'wp-ds-aichatbot' ),
 				array(
-					'status'     => 500,
-					'db_message' => defined( 'WP_DEBUG' ) && WP_DEBUG ? sanitize_text_field( (string) $wpdb->last_error ) : '',
+					'status'       => 500,
+					'db_message'   => sanitize_text_field( (string) $wpdb->last_error ),
+					'table_exists' => (bool) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = %s', \DiasMazhenov\WPDsAiChatbot\Lifecycle\Migrator::leads_table() ) ), // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Operational diagnostic.
+					'db_version'   => get_option( 'wpdsac_db_version', '0' ),
 				)
 			);
 		}
