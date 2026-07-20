@@ -149,8 +149,8 @@ final class ProviderManager {
 		}
 
 		return "SITE NAVIGATION POLICY (trusted system instruction):\n"
-			. "When moving to a listed block or page would directly help, ask the visitor for confirmation and append one action marker in this exact format: [[WPDSAC_NAV|EXACT_URL|SHORT_LABEL]].\n"
-			. "The visitor must click the rendered action before navigation occurs. Never claim that navigation already happened. Use only an exact URL from this allowlist and never invent or transform a destination.\n"
+			. "When moving to a listed block or page would directly help, offer it as a question and append one action marker in this exact format: [[WPDSAC_NAV|EXACT_URL|SHORT_LABEL]].\n"
+			. "The visitor must click the rendered action before anything happens. Never say that you are already moving, switching, scrolling, opening a form, or navigating. A contact-form target opens the contact modal after the visitor clicks it. Use only an exact URL from this allowlist and never invent or transform a destination.\n"
 			. implode( "\n", $lines );
 	}
 

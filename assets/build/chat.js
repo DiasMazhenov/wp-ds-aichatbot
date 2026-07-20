@@ -7,6 +7,7 @@
 	const visitorNameStorageKey = 'wpdsacVisitorName';
 	const conversationHistoryStorageKey = 'wpdsacConversationHistory';
 	const hiddenQuickActionsStorageKey = 'wpdsacHiddenQuickActions';
+	const leadNavigationHash = '#wpdsac-contact-form';
 	const conversationLifetime = 24 * 60 * 60 * 1000;
 	let audioContext = null;
 	const modalReturnFocus = new WeakMap();
@@ -166,6 +167,7 @@
 				action.type = 'button';
 				action.className = 'wpdsac-chat__navigation-action';
 				action.dataset.wpdsacNavigationUrl = url.href;
+				action.dataset.wpdsacNavigationLabel = label;
 				action.textContent = `${strings.navigate || 'Go to'}: ${label}`;
 				container.appendChild(action);
 			}
@@ -291,6 +293,12 @@
 			seen.add(url.href);
 			targets.push({label, url: url.href});
 		};
+		const leadAction = document.querySelector('[data-wpdsac-open-lead]');
+		if (leadAction) {
+			const leadUrl = new URL(window.location.href);
+			leadUrl.hash = leadNavigationHash;
+			addTarget(leadAction.textContent || strings.leaveRequest || 'Оставить заявку', leadUrl.href);
+		}
 
 		document.querySelectorAll('main [id], article [id], .elementor [id]').forEach((element) => {
 			if (element.closest('[data-wpdsac-chat]') || !element.id) {
@@ -621,10 +629,25 @@
 			return;
 		}
 
+		const chat = action.closest('[data-wpdsac-chat]');
+		const label = action.dataset.wpdsacNavigationLabel || action.textContent || '';
+		const isLeadAction = url.hash === leadNavigationHash
+			|| /(?:оставить\s+заявк|заявк|связаться|leave\s+(?:a\s+)?request|contact)/iu.test(label);
+		if (isLeadAction && chat) {
+			openLeadForm(chat);
+			return;
+		}
+
 		const samePage = url.pathname === window.location.pathname && url.search === window.location.search;
-		const target = samePage && url.hash ? document.getElementById(decodeURIComponent(url.hash.slice(1))) : null;
+		let target = null;
+		if (samePage && url.hash) {
+			try {
+				target = document.getElementById(decodeURIComponent(url.hash.slice(1)));
+			} catch (error) {
+				target = null;
+			}
+		}
 		if (target) {
-			const chat = action.closest('[data-wpdsac-chat]');
 			setExpanded(chat, false);
 			target.scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'});
 			target.classList.add('wpdsac-navigation-highlight');

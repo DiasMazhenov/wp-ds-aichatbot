@@ -154,7 +154,7 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.33` добавляет до восьми custom quick actions типов prepared message/URL и отдельные visual tokens для их фона, текста, рамки, размера шрифта, padding, radius и gap. Встроенная «Оставить заявку» всегда открывает modal; произвольные URL создаются отдельными custom actions. Expanded chat использует настраиваемую фиксированную высоту и единственную flex-scroll область сообщений с автоматическим переходом к последнему сообщению. Lead form вынесена в центрированный modal со scrim, Escape, focus trap и возвратом фокуса. Frontend собирает bounded exact-same-origin allowlist блоков и внутренних ссылок; AI может только предложить маркер навигации, а scroll/page transition выполняется после явного клика пользователя.
+Версия `0.5.34` добавляет форме заявки отдельную разрешённую navigation target. Кнопка, предложенная AI для связи или заявки, открывает modal только после клика пользователя; fallback по подписи исправляет уже сгенерированные действия, а остальные цели по-прежнему выполняют smooth scroll или переход на страницу.
 
 GitHub Actions run `29664260145` полностью прошёл: PHPUnit PHP 7.4/8.3, PHP lint 7.4/8.1/8.3, WPCS, WordPress/Elementor integration и package. Artifact `8435277185` содержит installable ZIP для commit `aaf3120`.
 
