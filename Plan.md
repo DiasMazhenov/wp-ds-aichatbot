@@ -154,9 +154,7 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.37`: дубликаты заявок предотвращены через `exists_for_session()`, instruction injection и post-processing stripping. Ошибка сохранения лида при `WP_DEBUG` возвращает `db_message` в ответе и выводится в консоль браузера.
-
-Коммит `fe964f1` запушен.
+Версия `0.5.44`: `LeadRepository::save()` использует `mysqli_query()` напрямую в обход `$wpdb->query()`, который на некоторых хостингах отвергает валидный параметризованный SQL. Форма заявок работает на mazhenov.kz.
 
 GitHub Actions run `29664260145` полностью прошёл: PHPUnit PHP 7.4/8.3, PHP lint 7.4/8.1/8.3, WPCS, WordPress/Elementor integration и package. Artifact `8435277185` содержит installable ZIP для commit `aaf3120`.
 
