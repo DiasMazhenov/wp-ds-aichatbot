@@ -41,7 +41,14 @@ final class LeadRepository {
 		$now          = time();
 		$session_hash = hash_hmac( 'sha256', $session_id, wp_salt( 'auth' ) );
 		$expires_at   = $now + ( min( 730, max( 1, $retention_days ) ) * DAY_IN_SECONDS );
-		$query        = $wpdb->prepare(
+
+		$safe_name         = sanitize_text_field( $name );
+		$safe_email        = sanitize_email( $email );
+		$safe_phone        = substr( sanitize_text_field( $phone ), 0, 50 );
+		$safe_request_text = $this->bounded_text( $request_text, 4000 );
+		$safe_consent_text = sanitize_textarea_field( $consent_text );
+
+		$prepared = $wpdb->prepare(
 			"INSERT INTO `{$table}` (session_hash, user_id, name, email, phone, request_text, consent_text, created_at, expires_at)
 			VALUES (%s, %d, %s, %s, %s, %s, %s, %d, %d)
 			ON DUPLICATE KEY UPDATE
@@ -50,16 +57,34 @@ final class LeadRepository {
 			created_at = VALUES(created_at), expires_at = VALUES(expires_at)",
 			$session_hash,
 			absint( $user_id ),
-			sanitize_text_field( $name ),
-			sanitize_email( $email ),
-			substr( sanitize_text_field( $phone ), 0, 50 ),
-			$this->bounded_text( $request_text, 4000 ),
-			sanitize_textarea_field( $consent_text ),
+			$safe_name,
+			$safe_email,
+			$safe_phone,
+			$safe_request_text,
+			$safe_consent_text,
 			$now,
 			$expires_at
 		);
 
-		return false !== $wpdb->query( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- Atomic lead upsert.
+		if ( ! is_string( $prepared ) || '' === $prepared ) {
+			return $wpdb->replace( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Fallback for prepare() failure on older WP.
+				$table,
+				array(
+					'session_hash' => $session_hash,
+					'user_id'      => absint( $user_id ),
+					'name'         => $safe_name,
+					'email'        => $safe_email,
+					'phone'        => $safe_phone,
+					'request_text' => $safe_request_text,
+					'consent_text' => $safe_consent_text,
+					'created_at'   => $now,
+					'expires_at'   => $expires_at,
+				),
+				array( '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%d', '%d' )
+			);
+		}
+
+		return false !== $wpdb->query( $prepared ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- Atomic lead upsert.
 	}
 
 	/**
