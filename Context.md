@@ -1,6 +1,6 @@
 # WP DS AI Chatbot — рабочий контекст
 
-Последнее обновление: 2026-07-19
+Последнее обновление: 2026-07-20
 
 ## Запрос пользователя
 
@@ -232,3 +232,4 @@
 - Версия `0.5.34`: frontend добавляет виртуальную same-origin цель `#wpdsac-contact-form`; AI-кнопка заявки открывает существующий lead modal вместо перехода по URL. Для ранее сгенерированных кнопок действует fallback по подписи, а system policy запрещает заявлять о переходе до клика посетителя.
 - Версия `0.5.35`: форма заявки больше не зависит от Elementor action или navigation URL. `ProviderManager` выдаёт отдельный `WPDSAC_ACTION|lead_form`, JS рендерит `data-wpdsac-action="lead-form"`, а lead modal портируется в `body` с сохранением CSS variables. Старый NAV marker с contact hash также преобразуется в semantic action при рендере. Quick-action container не ограничивается высотой 78px и явно показывается, пока существует хотя бы одна ненажатая кнопка.
 - Версия `0.5.36`: исправлен regression после portal-переноса lead modal. `chatByLeadModal` сохраняет исходный chat node, поэтому submit handler корректно собирает transcript, добавляет ответ и не вызывает `querySelectorAll` на `null`; при нарушенной разметке обработчик безопасно завершается с диагностикой.
+- Версия `0.5.37`: `LeadRepository::exists_for_session()` проверяет HMAC-хеш сессии. `ProviderManager` получает `LeadRepository` как зависимость: если лид уже существует, в AI-инструкции добавляется «Visitor already submitted contact details — do not offer the form again», а после ответа страховочно удаляются маркеры `[[WPDSAC_ACTION|lead_form|...]]` и `[[WPDSAC_NAV|...#wpdsac-contact-form...]]`. Без `LeadRepository` менеджер остаётся обратно совместимым. При `WP_DEBUG` ошибка сохранения лида возвращает `db_message` в REST-ответе и консоли браузера.
