@@ -8,6 +8,7 @@
 namespace DiasMazhenov\WPDsAiChatbot\AI;
 
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
+use DiasMazhenov\WPDsAiChatbot\Data\LeadRepository;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -31,14 +32,23 @@ final class ProviderManager {
 	private $guard;
 
 	/**
+	 * Lead persistence to check for existing submissions.
+	 *
+	 * @var LeadRepository|null
+	 */
+	private $leads;
+
+	/**
 	 * Store the provider registry.
 	 *
 	 * @param array<string, ProviderInterface> $providers Registered providers by ID.
 	 * @param PromptGuard                      $guard     Request guard.
+	 * @param LeadRepository|null              $leads     Lead persistence for duplicate detection.
 	 */
-	public function __construct( array $providers, PromptGuard $guard ) {
+	public function __construct( array $providers, PromptGuard $guard, ?LeadRepository $leads = null ) {
 		$this->providers = $providers;
 		$this->guard     = $guard;
+		$this->leads     = $leads;
 	}
 
 	/**
@@ -68,8 +78,21 @@ final class ProviderManager {
 		Settings::set_runtime_variables( array( 'username' => $visitor_name ) );
 		$navigation_targets = $request->get_param( 'navigation_targets' );
 
+		$suffix = '';
+
 		if ( is_array( $navigation_targets ) && array() !== $navigation_targets ) {
-			Settings::set_runtime_instruction_suffix( $this->navigation_policy( $navigation_targets ) );
+			$suffix = $this->navigation_policy( $navigation_targets );
+		}
+
+		if ( $this->leads instanceof LeadRepository && $this->leads->exists_for_session( $session_id ) ) {
+			if ( '' !== $suffix ) {
+				$suffix .= "\n\n";
+			}
+			$suffix .= 'LEAD STATUS (trusted server data): The visitor already submitted their contact details in this chat session. Do not offer the contact form again or ask for contact information. Reassure the visitor that their request has been received and is being processed.';
+		}
+
+		if ( '' !== $suffix ) {
+			Settings::set_runtime_instruction_suffix( $suffix );
 		}
 
 		try {
@@ -118,6 +141,20 @@ final class ProviderManager {
 			}
 
 			$generated_reply = $provider->generate( $provider_message, $session_id );
+
+			if ( is_string( $generated_reply ) && $this->leads instanceof LeadRepository && $this->leads->exists_for_session( $session_id ) ) {
+				$generated_reply = preg_replace(
+					'/\[\[WPDSAC_ACTION\|lead_form\|[^]]*\]\]/',
+					'',
+					$generated_reply
+				);
+				$generated_reply = preg_replace(
+					'/\[\[WPDSAC_NAV\|[^|]*#wpdsac-contact-form[^|]*\|[^]]*\]\]/',
+					'',
+					$generated_reply
+				);
+				$generated_reply = trim( preg_replace( '/\n{3,}/', "\n\n", $generated_reply ) );
+			}
 
 			return is_string( $generated_reply )
 				? $this->remove_repeated_greeting( $generated_reply, is_array( $history ) ? $history : array() )

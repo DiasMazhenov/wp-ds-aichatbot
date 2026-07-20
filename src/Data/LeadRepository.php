@@ -135,6 +135,27 @@ final class LeadRepository {
 	}
 
 	/**
+	 * Check whether the signed chat session already has a lead.
+	 *
+	 * @param string $session_id Verified session UUID.
+	 * @return bool
+	 */
+	public function exists_for_session( string $session_id ): bool {
+		global $wpdb;
+
+		$session_hash = hash_hmac( 'sha256', $session_id, wp_salt( 'auth' ) );
+		$count        = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Fast existence lookup.
+			$wpdb->prepare(
+				'SELECT COUNT(*) FROM %i WHERE session_hash = %s',
+				Migrator::leads_table(),
+				$session_hash
+			)
+		);
+
+		return absint( $count ) > 0;
+	}
+
+	/**
 	 * Delete expired leads.
 	 *
 	 * @param int $limit Maximum rows per run.

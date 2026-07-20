@@ -110,7 +110,8 @@ final class Plugin {
 				'deepseek'     => new DeepSeekProvider( $credentials ),
 				'wordpress_ai' => new WordPressAiClientProvider(),
 			),
-			new PromptGuard()
+			new PromptGuard(),
+			$leads
 		);
 
 		Migrator::maybe_migrate();
