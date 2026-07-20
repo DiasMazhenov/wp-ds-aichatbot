@@ -32,6 +32,12 @@ final class LeadRepository {
 	public function save( string $session_id, int $user_id, string $name, string $email, string $phone, string $request_text, string $consent_text, int $retention_days ): bool {
 		global $wpdb;
 
+		$table = Migrator::leads_table();
+
+		if ( $table !== $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Table existence guard.
+			Migrator::migrate();
+		}
+
 		$now          = time();
 		$session_hash = hash_hmac( 'sha256', $session_id, wp_salt( 'auth' ) );
 		$expires_at   = $now + ( min( 730, max( 1, $retention_days ) ) * DAY_IN_SECONDS );
@@ -42,7 +48,7 @@ final class LeadRepository {
 			user_id = VALUES(user_id), name = VALUES(name), email = VALUES(email),
 			phone = VALUES(phone), request_text = VALUES(request_text), consent_text = VALUES(consent_text),
 			created_at = VALUES(created_at), expires_at = VALUES(expires_at)',
-			Migrator::leads_table(),
+			$table,
 			$session_hash,
 			absint( $user_id ),
 			sanitize_text_field( $name ),

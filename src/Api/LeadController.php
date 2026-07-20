@@ -7,10 +7,11 @@
 
 namespace DiasMazhenov\WPDsAiChatbot\Api;
 
+use DiasMazhenov\WPDsAiChatbot\Api\SessionToken;
+use DiasMazhenov\WPDsAiChatbot\Api\RateLimiter;
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 use DiasMazhenov\WPDsAiChatbot\Data\LeadRepository;
 use DiasMazhenov\WPDsAiChatbot\Data\LeadNotifier;
-use DiasMazhenov\WPDsAiChatbot\Lifecycle\Migrator;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -279,20 +280,6 @@ final class LeadController {
 			(string) $options['lead_consent_text'],
 			(int) $options['lead_retention_days']
 		);
-
-		if ( ! $saved ) {
-			Migrator::migrate();
-			$saved = $this->repository->save(
-				$this->session_id,
-				get_current_user_id(),
-				$name,
-				'',
-				$phone,
-				(string) $request->get_param( 'request' ),
-				(string) $options['lead_consent_text'],
-				(int) $options['lead_retention_days']
-			);
-		}
 
 		if ( ! $saved ) {
 			global $wpdb;
