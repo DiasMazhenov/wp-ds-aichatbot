@@ -160,7 +160,8 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	display: none;
 }
 
-.wpdsac-chat.is-expanded.wpdsac-hide-header-icon .wpdsac-chat__icon {
+.wpdsac-chat.is-expanded.wpdsac-hide-header-icon .wpdsac-chat__icon,
+.wpdsac-chat.is-expanded.wpdsac-hide-header-icon .wpdsac-chat__icon-frame {
 	display: none;
 }
 
@@ -372,15 +373,27 @@ body.wpdsac-modal-open {
 	justify-content: flex-end;
 }
 
-img.wpdsac-chat__avatar,
-img.wpdsac-chat__icon {
+.wpdsac-chat__avatar-frame,
+.wpdsac-chat__icon-frame {
 	box-sizing: border-box;
 	width: 32px;
 	height: 32px;
 	flex: 0 0 32px;
 	border: 1px solid var(--wpdsac-border);
 	border-radius: 50%;
+	overflow: hidden;
+}
+
+img.wpdsac-chat__avatar,
+img.wpdsac-chat__icon {
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	border: 0;
+	border-radius: 0;
 	object-fit: cover;
+	transform-origin: center;
 }
 
 svg.wpdsac-chat__avatar,

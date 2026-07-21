@@ -53,6 +53,17 @@ final class EmbeddingService {
 		add_action( 'wpdsac_knowledge_chunk_stored', array( $this, 'schedule_queue' ) );
 		add_action( self::QUEUE_HOOK, array( $this, 'process_queue' ) );
 		add_action( 'admin_init', array( $this, 'schedule_queue' ), 40 );
+		add_action( 'wpdsac_embeddings_configuration_changed', array( $this, 'reset_embeddings' ) );
+	}
+
+	/**
+	 * Invalidate vectors when their provider or model changes.
+	 *
+	 * @return void
+	 */
+	public function reset_embeddings(): void {
+		wp_clear_scheduled_hook( self::QUEUE_HOOK );
+		$this->repository->clear_embeddings();
 	}
 
 	/**

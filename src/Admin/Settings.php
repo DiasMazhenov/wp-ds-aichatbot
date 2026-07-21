@@ -150,7 +150,8 @@ final class Settings {
 				'knowledge_enabled'          => false,
 				'knowledge_max_chunks'       => 4,
 				'knowledge_semantic_enabled' => false,
-				'embeddings_model'           => 'text-embedding-3-small',
+				'embeddings_provider'        => 'auto',
+				'embeddings_model'           => '',
 				'logging_enabled'            => false,
 				'log_retention_days'         => 30,
 				'quick_call_label'           => __( 'Call', 'wp-ds-aichatbot' ),
@@ -419,6 +420,7 @@ final class Settings {
 		$this->add_field( 'knowledge_enabled', __( 'Use website knowledge', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_knowledge' );
 		$this->add_field( 'knowledge_max_chunks', __( 'Knowledge fragments per answer', 'wp-ds-aichatbot' ), 'number', 'wpdsac_knowledge' );
 		$this->add_field( 'knowledge_semantic_enabled', __( 'Semantic (vector) search', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_knowledge' );
+		$this->add_field( 'embeddings_provider', __( 'Embeddings provider', 'wp-ds-aichatbot' ), 'embeddings_provider_select', 'wpdsac_knowledge' );
 		$this->add_field( 'embeddings_model', __( 'Embeddings model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_knowledge' );
 		$this->add_field( 'logging_enabled', __( 'Conversation logging', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_privacy' );
 		$this->add_field( 'log_retention_days', __( 'Log retention (days)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_privacy' );
@@ -459,17 +461,20 @@ final class Settings {
 	 * @return array<string, mixed>
 	 */
 	public function sanitize( $input ): array {
-		$input        = is_array( $input ) ? $input : array();
-		$providers    = array( 'openai', 'anthropic', 'gemini', 'openrouter', 'deepseek', 'wordpress_ai' );
-		$provider     = sanitize_key( $input['ai_provider'] ?? 'openai' );
-		$provider     = in_array( $provider, $providers, true ) ? $provider : 'openai';
-		$defaults     = self::defaults();
-		$lead_prompt  = sanitize_text_field( $input['lead_prompt'] ?? '' );
-		$lead_prompt  = '' !== $lead_prompt ? $lead_prompt : $defaults['lead_prompt'];
-		$lead_consent = sanitize_textarea_field( $input['lead_consent_text'] ?? '' );
-		$lead_consent = '' !== $lead_consent ? $lead_consent : $defaults['lead_consent_text'];
-		$refusal      = sanitize_text_field( $input['guard_refusal_message'] ?? '' );
-		$refusal      = '' !== $refusal ? $refusal : $defaults['guard_refusal_message'];
+		$input               = is_array( $input ) ? $input : array();
+		$providers           = array( 'openai', 'anthropic', 'gemini', 'openrouter', 'deepseek', 'wordpress_ai' );
+		$provider            = sanitize_key( $input['ai_provider'] ?? 'openai' );
+		$provider            = in_array( $provider, $providers, true ) ? $provider : 'openai';
+		$embedding_providers = array( 'auto', 'openai', 'gemini', 'openrouter' );
+		$embedding_provider  = sanitize_key( $input['embeddings_provider'] ?? 'auto' );
+		$embedding_provider  = in_array( $embedding_provider, $embedding_providers, true ) ? $embedding_provider : 'auto';
+		$defaults            = self::defaults();
+		$lead_prompt         = sanitize_text_field( $input['lead_prompt'] ?? '' );
+		$lead_prompt         = '' !== $lead_prompt ? $lead_prompt : $defaults['lead_prompt'];
+		$lead_consent        = sanitize_textarea_field( $input['lead_consent_text'] ?? '' );
+		$lead_consent        = '' !== $lead_consent ? $lead_consent : $defaults['lead_consent_text'];
+		$refusal             = sanitize_text_field( $input['guard_refusal_message'] ?? '' );
+		$refusal             = '' !== $refusal ? $refusal : $defaults['guard_refusal_message'];
 
 		$settings = array(
 			'global_enabled'             => ! empty( $input['global_enabled'] ),
@@ -490,7 +495,8 @@ final class Settings {
 			'knowledge_enabled'          => ! empty( $input['knowledge_enabled'] ),
 			'knowledge_max_chunks'       => min( 8, max( 1, absint( $input['knowledge_max_chunks'] ?? 4 ) ) ),
 			'knowledge_semantic_enabled' => ! empty( $input['knowledge_semantic_enabled'] ),
-			'embeddings_model'           => sanitize_text_field( (string) ( $input['embeddings_model'] ?? 'text-embedding-3-small' ) ),
+			'embeddings_provider'        => $embedding_provider,
+			'embeddings_model'           => $this->sanitize_model_id( $input['embeddings_model'] ?? '', '' ),
 			'logging_enabled'            => ! empty( $input['logging_enabled'] ),
 			'log_retention_days'         => min( 365, max( 1, absint( $input['log_retention_days'] ?? 30 ) ) ),
 			'quick_call_label'           => $this->label_or_default( $input['quick_call_label'] ?? '', $defaults['quick_call_label'] ),
@@ -517,7 +523,18 @@ final class Settings {
 			'deepseek_thinking'          => ! empty( $input['deepseek_thinking'] ),
 		);
 
-		return array_merge( $settings, Appearance::sanitize( $input ) );
+		$sanitized = array_merge( $settings, Appearance::sanitize( $input ) );
+		$previous  = get_option( self::OPTION_NAME, array() );
+		$previous  = is_array( $previous ) ? $previous : array();
+
+		if (
+			( $previous['embeddings_provider'] ?? 'auto' ) !== $sanitized['embeddings_provider']
+			|| ( $previous['embeddings_model'] ?? '' ) !== $sanitized['embeddings_model']
+		) {
+			do_action( 'wpdsac_embeddings_configuration_changed' );
+		}
+
+		return $sanitized;
 	}
 
 	/**
@@ -657,6 +674,10 @@ final class Settings {
 		}
 
 		update_option( CredentialResolver::CREDENTIALS_OPTION, $credential_store, false );
+
+		if ( array_intersect( array_keys( array_filter( $submitted ) ), array( 'openai', 'gemini', 'openrouter' ) ) ) {
+			do_action( 'wpdsac_embeddings_configuration_changed' );
+		}
 
 		$diagnostics                        = self::provider_diagnostics( (string) $settings['ai_provider'], $settings );
 		$diagnostics['credentialSubmitted'] = ! empty( $submitted[ $settings['ai_provider'] ] );
@@ -930,6 +951,11 @@ final class Settings {
 			return;
 		}
 
+		if ( 'embeddings_provider_select' === $args['type'] ) {
+			$this->render_embeddings_provider_select( $name, (string) $options[ $key ] );
+			return;
+		}
+
 		if ( 'sound_select' === $args['type'] ) {
 			$this->render_sound_select( $name, (string) $options[ $key ] );
 			return;
@@ -1071,6 +1097,44 @@ final class Settings {
 			esc_attr( $name ),
 			esc_attr( (string) $options[ $key ] ),
 			$preview_attribute // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed internal attribute.
+		);
+
+		if ( 'embeddings_model' === $key ) {
+			printf(
+				'<p class="description">%s</p>',
+				esc_html__( 'Leave empty for the provider default. DeepSeek and Anthropic do not currently expose compatible embedding endpoints; choose OpenAI, Gemini, OpenRouter, or Auto.', 'wp-ds-aichatbot' )
+			);
+		}
+	}
+
+	/**
+	 * Render an embeddings provider selector independent from the chat provider.
+	 *
+	 * @param string $name  Input name.
+	 * @param string $value Selected provider ID.
+	 * @return void
+	 */
+	private function render_embeddings_provider_select( string $name, string $value ): void {
+		$options = array(
+			'auto'       => __( 'Auto — use a configured supported provider', 'wp-ds-aichatbot' ),
+			'openai'     => 'OpenAI',
+			'gemini'     => 'Google Gemini',
+			'openrouter' => 'OpenRouter',
+		);
+
+		echo '<select name="' . esc_attr( $name ) . '">';
+		foreach ( $options as $provider_id => $label ) {
+			printf(
+				'<option value="%1$s" %2$s>%3$s</option>',
+				esc_attr( $provider_id ),
+				selected( $value, $provider_id, false ),
+				esc_html( $label )
+			);
+		}
+		echo '</select>';
+		printf(
+			'<p class="description">%s</p>',
+			esc_html__( 'This setting is independent from the chat provider. Auto prefers the selected chat provider when it supports embeddings, then uses another configured supported provider.', 'wp-ds-aichatbot' )
 		);
 	}
 
@@ -1383,7 +1447,9 @@ final class Settings {
 		$obj_style   = sprintf( 'border-radius:50%%;object-fit:cover;object-position:%d%% %d%%;transform:scale(%s)', $pos_x, $pos_y, round( $scale / 100, 2 ) );
 		?>
 		<div class="wpdsac-avatar-control" data-wpdsac-avatar-control data-wpdsac-default-avatar="<?php echo esc_url( $default_url ); ?>">
-			<img src="<?php echo esc_url( $avatar_url ); ?>" width="64" height="64" alt="" data-wpdsac-avatar-preview style="<?php echo esc_attr( $obj_style ); ?>">
+			<span class="wpdsac-avatar-control__preview" aria-hidden="true">
+				<img src="<?php echo esc_url( $avatar_url ); ?>" width="64" height="64" alt="" data-wpdsac-avatar-preview style="<?php echo esc_attr( $obj_style ); ?>">
+			</span>
 			<input type="hidden" name="<?php echo esc_attr( $name ); ?>" value="<?php echo absint( $attachment_id ); ?>" data-wpdsac-avatar-id>
 			<div>
 				<button type="button" class="button" data-wpdsac-avatar-select><?php esc_html_e( 'Choose avatar', 'wp-ds-aichatbot' ); ?></button>

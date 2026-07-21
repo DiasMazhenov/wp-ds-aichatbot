@@ -15,7 +15,7 @@ use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
 use DiasMazhenov\WPDsAiChatbot\AI\AnthropicProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\DeepSeekProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\GeminiProvider;
-use DiasMazhenov\WPDsAiChatbot\AI\OpenAIEmbeddingsProvider;
+use DiasMazhenov\WPDsAiChatbot\AI\EmbeddingsProviderFactory;
 use DiasMazhenov\WPDsAiChatbot\AI\OpenAIProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\OpenRouterProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\PromptGuard;
@@ -98,7 +98,8 @@ final class Plugin {
 		$manual_source  = new ManualSource( $knowledge, $chunker );
 		$contact_source = new ContactSource( $knowledge, $chunker );
 		$renderer       = new Renderer( $assets, $contact_source );
-		$embeddings     = new EmbeddingService( new OpenAIEmbeddingsProvider( $credentials ), $knowledge );
+		$embedding_api  = ( new EmbeddingsProviderFactory( $credentials ) )->create();
+		$embeddings     = new EmbeddingService( $embedding_api, $knowledge );
 		$retriever      = new Retriever( $knowledge, $embeddings );
 		$conversations  = new ConversationRepository();
 		$leads          = new LeadRepository();

@@ -226,7 +226,9 @@ final class AppearanceSettings {
 					<div class="wpdsac-chat__panel" data-wpdsac-preview-panel>
 						<div class="wpdsac-chat__messages">
 							<div class="wpdsac-chat__message-row wpdsac-chat__message-row--bot">
-								<img class="wpdsac-chat__avatar" src="<?php echo esc_url( $avatar_url ); ?>" width="32" height="32" alt="" data-wpdsac-admin-avatar style="<?php echo esc_attr( $obj_pos ); ?>">
+								<span class="wpdsac-chat__avatar-frame" aria-hidden="true">
+									<img class="wpdsac-chat__avatar" src="<?php echo esc_url( $avatar_url ); ?>" width="32" height="32" alt="" data-wpdsac-admin-avatar style="<?php echo esc_attr( $obj_pos ); ?>">
+								</span>
 								<p class="wpdsac-chat__message wpdsac-chat__message--bot">
 									<?php echo nl2br( esc_html( (string) $options['welcome_message'] ) ); ?>
 								</p>

@@ -378,14 +378,20 @@
 		if (isBot) {
 			const avatarUrl = chat.dataset.wpdsacAvatarUrl || '';
 			if (avatarUrl) {
+				const avatarFrame = document.createElement('span');
 				const avatar = document.createElement('img');
+				avatarFrame.className = 'wpdsac-chat__avatar-frame';
+				avatarFrame.setAttribute('aria-hidden', 'true');
 				avatar.className = 'wpdsac-chat__avatar';
 				avatar.src = avatarUrl;
 				avatar.alt = '';
 				avatar.width = 32;
 				avatar.height = 32;
 				avatar.decoding = 'async';
-				row.appendChild(avatar);
+				avatar.style.objectPosition = `${chat.dataset.wpdsacAvatarPositionX || 50}% ${chat.dataset.wpdsacAvatarPositionY || 50}%`;
+				avatar.style.transform = `scale(${chat.dataset.wpdsacAvatarScale || 1})`;
+				avatarFrame.appendChild(avatar);
+				row.appendChild(avatarFrame);
 			} else {
 				const avatar = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 				avatar.setAttribute('class', 'wpdsac-chat__avatar');

@@ -156,7 +156,7 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.76`: исправлены критические проблемы безопасности, БД и embeddings, а также устаревший quick-action assertion, из-за которого GitHub CI постоянно падал до запуска Playground.
+Версия `0.5.77`: embeddings отделены от чат-провайдера, добавлены адаптеры OpenAI, Gemini и OpenRouter с безопасным keyword fallback; масштабируемый аватар ограничен круглым контейнером.
 
 ### Критический аудит 0.5.75
 
@@ -169,6 +169,9 @@ wp-ds-aichatbot/
 - [x] Исправить assertions `/hideQuickAction/` и `SITE NAVIGATION POLICY` в соответствии с текущим поведением и добавить обязательный pre-push протокол в `Context.md`.
 - [x] Локально подтвердить core и Elementor WordPress Playground smoke tests.
 - [x] Подтвердить зелёный GitHub Actions run `29856541857` для 0.5.76; package job создал installable ZIP artifact.
+- [x] Убрать жёсткую привязку embeddings к OpenAI и добавить независимый выбор Auto/OpenAI/Gemini/OpenRouter.
+- [x] Сбрасывать несовместимые сохранённые векторы при смене embedding provider/model.
+- [x] Ограничить увеличенный аватар круглой clipping-рамкой во всех frontend и admin preview.
 
 ### Выполнено в сессии 2026-07-21 (0.5.55 – 0.5.74)
 

@@ -188,6 +188,22 @@ final class Repository {
 	}
 
 	/**
+	 * Remove vectors generated with an obsolete provider or model.
+	 *
+	 * @return void
+	 */
+	public function clear_embeddings(): void {
+		global $wpdb;
+
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Explicit invalidation after embeddings configuration changes.
+			$wpdb->prepare(
+				'UPDATE %i SET embedding = NULL',
+				Migrator::knowledge_table()
+			)
+		);
+	}
+
+	/**
 	 * Fetch chunks that have stored embeddings, bounded.
 	 *
 	 * @param int $limit Maximum rows.

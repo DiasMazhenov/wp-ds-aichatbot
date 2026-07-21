@@ -1,6 +1,6 @@
 <?php
 /**
- * OpenAI embeddings via the dedicated embeddings endpoint.
+ * OpenRouter embeddings provider.
  *
  * @package WPDsAiChatbot
  */
@@ -10,9 +10,9 @@ namespace DiasMazhenov\WPDsAiChatbot\AI;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Call the OpenAI embeddings API and return a normalized vector.
+ * Generate embeddings through OpenRouter's OpenAI-compatible endpoint.
  */
-final class OpenAIEmbeddingsProvider implements EmbeddingsProviderInterface {
+final class OpenRouterEmbeddingsProvider implements EmbeddingsProviderInterface {
 
 	/**
 	 * Credential resolver.
@@ -32,62 +32,66 @@ final class OpenAIEmbeddingsProvider implements EmbeddingsProviderInterface {
 	 * Store dependencies.
 	 *
 	 * @param CredentialResolver $credentials Credential resolver.
-	 * @param string             $model       Optional OpenAI embedding model.
+	 * @param string             $model       Optional OpenRouter embedding model.
 	 */
 	public function __construct( CredentialResolver $credentials, string $model = '' ) {
 		$this->credentials = $credentials;
-		$this->model       = '' !== trim( $model ) ? trim( $model ) : 'text-embedding-3-small';
+		$this->model       = '' !== trim( $model ) ? trim( $model ) : 'openai/text-embedding-3-small';
 	}
 
 	/**
-	 * Return whether an OpenAI key is available for embedding requests.
+	 * Return whether an OpenRouter key is available.
 	 *
 	 * @return bool
 	 */
 	public function is_configured(): bool {
-		return '' !== $this->credentials->get_api_key( 'openai' );
+		return '' !== $this->credentials->get_api_key( 'openrouter' );
 	}
 
 	/**
-	 * Generate an embedding vector via OpenAI API.
+	 * Generate a normalized embedding vector.
 	 *
 	 * @param string $text Text to embed.
 	 * @return array<int, float>|null
 	 */
 	public function embed( string $text ): ?array {
-		$api_key = $this->credentials->get_api_key( 'openai' );
+		$api_key = $this->credentials->get_api_key( 'openrouter' );
 
 		if ( '' === $api_key ) {
 			return null;
 		}
 
-		$url      = 'https://api.openai.com/v1/embeddings';
-		$body     = wp_json_encode(
-			array(
-				'model' => $this->model,
-				'input' => $text,
-			)
-		);
 		$response = wp_remote_post(
-			$url,
+			'https://openrouter.ai/api/v1/embeddings',
 			array(
 				'headers'     => array(
 					'Authorization' => 'Bearer ' . $api_key,
 					'Content-Type'  => 'application/json',
+					'HTTP-Referer'  => home_url( '/' ),
+					'X-Title'       => 'WP DS AI Chatbot',
 				),
-				'body'        => $body,
+				'body'        => wp_json_encode(
+					array(
+						'model' => $this->model,
+						'input' => $text,
+					)
+				),
 				'timeout'     => 15,
 				'redirection' => 0,
 			)
 		);
 
-		if ( is_wp_error( $response ) ) {
-			return null;
-		}
+		return $this->vector_from_response( $response );
+	}
 
-		$code = absint( wp_remote_retrieve_response_code( $response ) );
-
-		if ( 200 !== $code ) {
+	/**
+	 * Extract and normalize a vector from an OpenAI-compatible response.
+	 *
+	 * @param array<string, mixed>|\WP_Error $response HTTP response.
+	 * @return array<int, float>|null
+	 */
+	private function vector_from_response( $response ): ?array {
+		if ( is_wp_error( $response ) || 200 !== absint( wp_remote_retrieve_response_code( $response ) ) ) {
 			return null;
 		}
 

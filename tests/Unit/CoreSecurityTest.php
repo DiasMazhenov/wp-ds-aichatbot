@@ -12,6 +12,10 @@ use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 use DiasMazhenov\WPDsAiChatbot\Admin\PluginList;
 use DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver;
 use DiasMazhenov\WPDsAiChatbot\AI\DeepSeekProvider;
+use DiasMazhenov\WPDsAiChatbot\AI\EmbeddingsProviderFactory;
+use DiasMazhenov\WPDsAiChatbot\AI\GeminiEmbeddingsProvider;
+use DiasMazhenov\WPDsAiChatbot\AI\OpenAIEmbeddingsProvider;
+use DiasMazhenov\WPDsAiChatbot\AI\OpenRouterEmbeddingsProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\PromptGuard;
 use DiasMazhenov\WPDsAiChatbot\AI\ProviderManager;
 use DiasMazhenov\WPDsAiChatbot\Chat\Appearance;
@@ -280,6 +284,41 @@ final class CoreSecurityTest extends TestCase {
 		$this->assertTrue( $diagnostics['configured'] );
 		$this->assertSame( 'option', $diagnostics['credentialSource'] );
 		$this->assertArrayNotHasKey( 'apiKey', $diagnostics );
+	}
+
+	public function test_embeddings_provider_is_independent_from_chat_provider(): void {
+		$previous_options = $GLOBALS['wpdsac_test_options'];
+		$credentials      = new CredentialResolver();
+
+		try {
+			$GLOBALS['wpdsac_test_options'][ CredentialResolver::CREDENTIALS_OPTION ] = array(
+				'gemini'     => 'gemini-test-key',
+				'openrouter' => 'openrouter-test-key',
+			);
+			$GLOBALS['wpdsac_test_options'][ Settings::OPTION_NAME ]                  = array(
+				'ai_provider'        => 'deepseek',
+				'embeddings_provider' => 'auto',
+				'embeddings_model'    => '',
+			);
+
+			$automatic = ( new EmbeddingsProviderFactory( $credentials ) )->create();
+			$this->assertInstanceOf( GeminiEmbeddingsProvider::class, $automatic );
+
+			$GLOBALS['wpdsac_test_options'][ Settings::OPTION_NAME ]['embeddings_provider'] = 'openrouter';
+			$explicit = ( new EmbeddingsProviderFactory( $credentials ) )->create();
+			$this->assertInstanceOf( OpenRouterEmbeddingsProvider::class, $explicit );
+
+			$GLOBALS['wpdsac_test_options'][ Settings::OPTION_NAME ]['embeddings_provider'] = 'openai';
+			$this->assertNull( ( new EmbeddingsProviderFactory( $credentials ) )->create() );
+
+			$GLOBALS['wpdsac_test_options'][ CredentialResolver::CREDENTIALS_OPTION ]['openai'] = 'openai-test-key';
+			$this->assertInstanceOf(
+				OpenAIEmbeddingsProvider::class,
+				( new EmbeddingsProviderFactory( $credentials ) )->create()
+			);
+		} finally {
+			$GLOBALS['wpdsac_test_options'] = $previous_options;
+		}
 	}
 
 	public function test_prompt_guard_blocks_injection_model_probes_and_off_topic_requests(): void {
