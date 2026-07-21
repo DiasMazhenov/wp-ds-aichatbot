@@ -54,6 +54,7 @@ final class Renderer {
 		$avatar_url = $avatar_url ? $avatar_url : WPDSAC_URL . 'wp-chatbot.svg';
 		$pos_x      = min( 100, max( 0, absint( $options['avatar_position_x'] ?? 50 ) ) );
 		$pos_y      = min( 100, max( 0, absint( $options['avatar_position_y'] ?? 50 ) ) );
+		$scale      = min( 200, max( 50, absint( $options['avatar_scale'] ?? 100 ) ) );
 		$triggers   = array( 'delay', 'scroll', 'exit', 'immediate', 'disabled' );
 		$trigger    = sanitize_key( (string) $options['intro_trigger'] );
 		$trigger    = in_array( $trigger, $triggers, true ) ? $trigger : 'delay';
@@ -80,7 +81,7 @@ final class Renderer {
 			'intro_trigger'       => $trigger,
 			'intro_delay'         => min( 300, max( 0, absint( $options['intro_delay_seconds'] ) ) ),
 			'avatar_url'          => $avatar_url,
-			'avatar_position'     => sprintf( 'object-position:%d%% %d%%;', $pos_x, $pos_y ),
+			'avatar_position'     => sprintf( 'object-position:%d%% %d%%;transform:scale(%s)', $pos_x, $pos_y, round( $scale / 100, 2 ) ),
 			'expanded'            => ! empty( $options['expanded'] ),
 			'appearance'          => Appearance::inline_style( $options ),
 			'position_class'      => Appearance::position_class( $options ),

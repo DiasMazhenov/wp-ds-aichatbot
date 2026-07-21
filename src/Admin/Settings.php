@@ -143,6 +143,7 @@ final class Settings {
 				'bot_avatar_id'              => 0,
 				'avatar_position_x'          => 50,
 				'avatar_position_y'          => 50,
+				'avatar_scale'               => 100,
 				'rate_limit_requests'        => 10,
 				'rate_limit_window'          => 60,
 				'daily_request_limit'        => 500,
@@ -408,8 +409,9 @@ final class Settings {
 		$this->add_field( 'intro_trigger', __( 'Intro bubble trigger', 'wp-ds-aichatbot' ), 'intro_trigger_select' );
 		$this->add_field( 'intro_delay_seconds', __( 'Intro bubble delay (seconds)', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'bot_avatar_id', __( 'Chatbot avatar', 'wp-ds-aichatbot' ), 'media' );
-		$this->add_field( 'avatar_position_x', __( 'Avatar horizontal position', 'wp-ds-aichatbot' ), 'number' );
-		$this->add_field( 'avatar_position_y', __( 'Avatar vertical position', 'wp-ds-aichatbot' ), 'number' );
+		$this->add_field( 'avatar_position_x', __( 'Avatar horizontal position', 'wp-ds-aichatbot' ), 'hidden' );
+		$this->add_field( 'avatar_position_y', __( 'Avatar vertical position', 'wp-ds-aichatbot' ), 'hidden' );
+		$this->add_field( 'avatar_scale', __( 'Avatar scale', 'wp-ds-aichatbot' ), 'hidden' );
 		$this->add_field( 'rate_limit_requests', __( 'Requests per window', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'rate_limit_window', __( 'Rate-limit window (seconds)', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'daily_request_limit', __( 'AI requests per 24 hours', 'wp-ds-aichatbot' ), 'number' );
@@ -480,6 +482,7 @@ final class Settings {
 			'bot_avatar_id'              => absint( $input['bot_avatar_id'] ?? 0 ),
 			'avatar_position_x'          => min( 100, max( 0, absint( $input['avatar_position_x'] ?? 50 ) ) ),
 			'avatar_position_y'          => min( 100, max( 0, absint( $input['avatar_position_y'] ?? 50 ) ) ),
+			'avatar_scale'               => min( 200, max( 50, absint( $input['avatar_scale'] ?? 100 ) ) ),
 			'rate_limit_requests'        => min( 100, max( 1, absint( $input['rate_limit_requests'] ?? 10 ) ) ),
 			'rate_limit_window'          => min( HOUR_IN_SECONDS, max( 10, absint( $input['rate_limit_window'] ?? 60 ) ) ),
 			'daily_request_limit'        => min( 100000, absint( $input['daily_request_limit'] ?? 500 ) ),
@@ -1037,6 +1040,15 @@ final class Settings {
 			return;
 		}
 
+		if ( 'hidden' === $args['type'] ) {
+			printf(
+				'<input type="hidden" name="%1$s" value="%2$s">',
+				esc_attr( $name ),
+				esc_attr( (string) $options[ $key ] )
+			);
+			return;
+		}
+
 		if ( 'url' === $args['type'] ) {
 			printf(
 				'<input class="regular-text" type="url" name="%1$s" value="%2$s" placeholder="https://…"><p class="description">%3$s</p>',
@@ -1362,16 +1374,53 @@ final class Settings {
 		$default_url = WPDSAC_URL . 'wp-chatbot.svg';
 		$avatar_url  = $attachment_id ? wp_get_attachment_image_url( $attachment_id, 'wpdsac-avatar' ) : '';
 		$avatar_url  = $avatar_url ? $avatar_url : $default_url;
+		$full_url    = $attachment_id ? wp_get_attachment_image_url( $attachment_id, 'full' ) : $avatar_url;
+		$options     = self::get();
+		$pos_x       = (int) ( $options['avatar_position_x'] ?? 50 );
+		$pos_y       = (int) ( $options['avatar_position_y'] ?? 50 );
+		$scale       = (int) ( $options['avatar_scale'] ?? 100 );
+		$obj_style   = sprintf( 'border-radius:50%%;object-fit:cover;object-position:%d%% %d%%;transform:scale(%s)', $pos_x, $pos_y, round( $scale / 100, 2 ) );
 		?>
 		<div class="wpdsac-avatar-control" data-wpdsac-avatar-control data-wpdsac-default-avatar="<?php echo esc_url( $default_url ); ?>">
-			<img src="<?php echo esc_url( $avatar_url ); ?>" width="64" height="64" alt="" data-wpdsac-avatar-preview style="border-radius:50%;object-fit:cover">
+			<img src="<?php echo esc_url( $avatar_url ); ?>" width="64" height="64" alt="" data-wpdsac-avatar-preview style="<?php echo esc_attr( $obj_style ); ?>">
 			<input type="hidden" name="<?php echo esc_attr( $name ); ?>" value="<?php echo absint( $attachment_id ); ?>" data-wpdsac-avatar-id>
 			<div>
 				<button type="button" class="button" data-wpdsac-avatar-select><?php esc_html_e( 'Choose avatar', 'wp-ds-aichatbot' ); ?></button>
+				<button type="button" class="button" data-wpdsac-avatar-crop<?php echo $attachment_id ? '' : ' hidden'; ?>><?php esc_html_e( 'Crop avatar', 'wp-ds-aichatbot' ); ?></button>
 				<button type="button" class="button-link-delete" data-wpdsac-avatar-remove<?php echo $attachment_id ? '' : ' hidden'; ?>><?php esc_html_e( 'Remove avatar', 'wp-ds-aichatbot' ); ?></button>
 			</div>
 		</div>
-		<p class="description"><?php esc_html_e( 'The avatar appears beside every assistant message, like in WhatsApp or Telegram.', 'wp-ds-aichatbot' ); ?></p>
+
+		<div class="wpdsac-avatar-crop-modal" data-wpdsac-crop-modal hidden>
+			<div class="wpdsac-crop-overlay" data-wpdsac-crop-close></div>
+			<div class="wpdsac-crop-dialog" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Crop avatar for circle', 'wp-ds-aichatbot' ); ?>">
+				<h2><?php esc_html_e( 'Crop avatar for circle', 'wp-ds-aichatbot' ); ?></h2>
+				<div class="wpdsac-crop-viewport" data-wpdsac-crop-viewport>
+					<div class="wpdsac-crop-mask">
+						<img
+							src="<?php echo esc_url( $full_url ); ?>"
+							alt=""
+							data-wpdsac-crop-image
+							draggable="false"
+							style="transform:translate(<?php echo (int) ( ( 50 - $pos_x ) / 100 * 200 ); ?>px, <?php echo (int) ( ( 50 - $pos_y ) / 100 * 200 ); ?>px) scale(<?php echo esc_attr( round( $scale / 100, 2 ) ); ?>)"
+						>
+					</div>
+				</div>
+				<div class="wpdsac-crop-controls">
+					<label>
+						<?php esc_html_e( 'Zoom', 'wp-ds-aichatbot' ); ?>:
+						<input type="range" min="50" max="200" value="<?php echo absint( $scale ); ?>" data-wpdsac-crop-zoom>
+						<span data-wpdsac-crop-zoom-value><?php echo absint( $scale ); ?>%</span>
+					</label>
+					<button type="button" class="button" data-wpdsac-crop-reset><?php esc_html_e( 'Reset', 'wp-ds-aichatbot' ); ?></button>
+				</div>
+				<div class="wpdsac-crop-actions">
+					<button type="button" class="button button-primary" data-wpdsac-crop-save><?php esc_html_e( 'Apply', 'wp-ds-aichatbot' ); ?></button>
+					<button type="button" class="button" data-wpdsac-crop-close><?php esc_html_e( 'Cancel', 'wp-ds-aichatbot' ); ?></button>
+				</div>
+			</div>
+		</div>
+		<p class="description"><?php esc_html_e( 'The avatar appears beside every assistant message, like in WhatsApp or Telegram. Use «Crop» to position and zoom the image inside the circle.', 'wp-ds-aichatbot' ); ?></p>
 		<?php
 	}
 

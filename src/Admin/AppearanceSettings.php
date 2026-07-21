@@ -201,7 +201,8 @@ final class AppearanceSettings {
 		$avatar_url = $avatar_url ? $avatar_url : WPDSAC_URL . 'wp-chatbot.svg';
 		$pos_x      = min( 100, max( 0, absint( $options['avatar_position_x'] ?? 50 ) ) );
 		$pos_y      = min( 100, max( 0, absint( $options['avatar_position_y'] ?? 50 ) ) );
-		$obj_pos    = sprintf( 'object-position:%d%% %d%%;', $pos_x, $pos_y );
+		$scale      = min( 200, max( 50, absint( $options['avatar_scale'] ?? 100 ) ) );
+		$obj_pos    = sprintf( 'object-position:%d%% %d%%;transform:scale(%s)', $pos_x, $pos_y, round( $scale / 100, 2 ) );
 		?>
 		<div class="wpdsac-admin-preview-wrap" aria-live="polite">
 			<h2><?php esc_html_e( 'Live preview', 'wp-ds-aichatbot' ); ?></h2>

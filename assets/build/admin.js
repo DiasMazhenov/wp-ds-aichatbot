@@ -413,6 +413,12 @@
 			avatarId.value = id;
 			avatarPreview.src = url;
 			removeAvatar.hidden = !hasAvatar;
+			const cropBtn = document.querySelector('[data-wpdsac-avatar-crop]');
+			if (cropBtn) cropBtn.hidden = !hasAvatar;
+			const cropImg = document.querySelector('[data-wpdsac-crop-image]');
+			if (cropImg && hasAvatar) {
+				cropImg.src = url;
+			}
 			document.querySelectorAll('[data-wpdsac-admin-avatar]').forEach((image) => {
 				image.src = url;
 			});
@@ -445,24 +451,152 @@
 		});
 	}
 
-	const posInputs = document.querySelectorAll('[name="wpdsac_settings[avatar_position_x]"], [name="wpdsac_settings[avatar_position_y]"]');
-	posInputs.forEach(function(input) {
-		var valueSpan = input.parentNode.querySelector('.wpdsac-range-value');
-		var updatePosition = function() {
-			var xInput = document.querySelector('[name="wpdsac_settings[avatar_position_x]"]');
-			var yInput = document.querySelector('[name="wpdsac_settings[avatar_position_y]"]');
-			if (!xInput || !yInput) return;
-			var posStyle = 'object-position:' + xInput.value + '% ' + yInput.value + '%;';
+	const cropModal = document.querySelector('[data-wpdsac-crop-modal]');
+	const cropImage = document.querySelector('[data-wpdsac-crop-image]');
+	const cropViewport = document.querySelector('[data-wpdsac-crop-viewport]');
+	const cropZoom = document.querySelector('[data-wpdsac-crop-zoom]');
+	const cropZoomVal = document.querySelector('[data-wpdsac-crop-zoom-value]');
+	const cropButton = document.querySelector('[data-wpdsac-avatar-crop]');
+	const xInput = document.querySelector('[name="wpdsac_settings[avatar_position_x]"]');
+	const yInput = document.querySelector('[name="wpdsac_settings[avatar_position_y]"]');
+	const scaleInput = document.querySelector('[name="wpdsac_settings[avatar_scale]"]');
+	const avatarPreview = document.querySelector('[data-wpdsac-avatar-preview]');
+	const defaultAvatar = document.querySelector('[data-wpdsac-avatar-control]')?.dataset?.wpdsacDefaultAvatar || '';
+
+	let dragState = null;
+
+	if (cropModal && cropImage && cropViewport) {
+		const updateCropPreview = () => {
+			var x = Number(xInput?.value) || 50;
+			var y = Number(yInput?.value) || 50;
+			var s = Number(scaleInput?.value) || 100;
+			var tx = ((50 - x) / 100) * 200;
+			var ty = ((50 - y) / 100) * 200;
+			cropImage.style.transform = 'translate(' + tx + 'px, ' + ty + 'px) scale(' + (s / 100) + ')';
+
 			document.querySelectorAll('[data-wpdsac-admin-avatar]').forEach(function(img) {
-				img.setAttribute('style', posStyle);
+				img.setAttribute('style', 'object-position:' + x + '% ' + y + '%;border-radius:50%;object-fit:cover;transform:scale(' + (s / 100) + ')');
 			});
-			document.querySelectorAll('.wpdsac-chat__icon[src], .wpdsac-chat__avatar[src]').forEach(function(img) {
-				img.setAttribute('style', posStyle);
-			});
-			if (valueSpan) valueSpan.textContent = input.value + '%';
+			if (avatarPreview) {
+				avatarPreview.style.objectPosition = x + '% ' + y + '%';
+				avatarPreview.style.transform = 'scale(' + (s / 100) + ')';
+			}
 		};
-		input.addEventListener('input', updatePosition);
-	});
+
+		const commitCrop = () => {
+			var x = Number(xInput?.value) || 50;
+			var y = Number(yInput?.value) || 50;
+			var s = Number(scaleInput?.value) || 100;
+			if (xInput) xInput.value = x;
+			if (yInput) yInput.value = y;
+			if (scaleInput) scaleInput.value = s;
+			if (xInput) xInput.dispatchEvent(new Event('change', {bubbles: true}));
+		};
+
+		const openCrop = () => {
+			var avatarId = document.querySelector('[data-wpdsac-avatar-id]')?.value;
+			if (!avatarId || avatarId === '0') return;
+			var fullUrl = cropImage.src;
+			if (!fullUrl || fullUrl === defaultAvatar) return;
+			cropModal.hidden = false;
+			document.body.classList.add('wpdsac-modal-open');
+			updateCropPreview();
+			if (cropZoomVal) cropZoomVal.textContent = (Number(scaleInput?.value) || 100) + '%';
+		};
+
+		const closeCrop = () => {
+			cropModal.hidden = true;
+			document.body.classList.remove('wpdsac-modal-open');
+			commitCrop();
+		};
+
+		if (cropButton) cropButton.addEventListener('click', openCrop);
+
+		document.querySelectorAll('[data-wpdsac-crop-close]').forEach(function(el) {
+			el.addEventListener('click', closeCrop);
+		});
+
+		document.querySelector('[data-wpdsac-crop-save]')?.addEventListener('click', closeCrop);
+
+		cropModal.addEventListener('keydown', function(e) {
+			if (e.key === 'Escape') closeCrop();
+		});
+
+		if (cropZoom) {
+			cropZoom.addEventListener('input', function() {
+				if (cropZoomVal) cropZoomVal.textContent = this.value + '%';
+				if (scaleInput) scaleInput.value = this.value;
+				updateCropPreview();
+			});
+		}
+
+		document.querySelector('[data-wpdsac-crop-reset]')?.addEventListener('click', function() {
+			if (xInput) xInput.value = 50;
+			if (yInput) yInput.value = 50;
+			if (scaleInput) scaleInput.value = 100;
+			if (cropZoom) cropZoom.value = 100;
+			if (cropZoomVal) cropZoomVal.textContent = '100%';
+			updateCropPreview();
+		});
+
+		const cropMask = document.querySelector('.wpdsac-crop-mask');
+		if (cropMask) {
+			cropMask.addEventListener('mousedown', function(e) {
+				e.preventDefault();
+				var rect = cropMask.getBoundingClientRect();
+				var imgX = ((50 - (Number(xInput?.value) || 50)) / 100) * 200;
+				var imgY = ((50 - (Number(yInput?.value) || 50)) / 100) * 200;
+				dragState = {
+					startX: e.clientX,
+					startY: e.clientY,
+					imgX: imgX,
+					imgY: imgY,
+				};
+			});
+
+			window.addEventListener('mousemove', function(e) {
+				if (!dragState || cropModal.hidden) return;
+				var dx = e.clientX - dragState.startX;
+				var dy = e.clientY - dragState.startY;
+				var s = Number(scaleInput?.value) || 100;
+				var newImgX = dragState.imgX + dx;
+				var newImgY = dragState.imgY + dy;
+				var maxOffset = (200 * (s / 100) - 200) / 2;
+				maxOffset = Math.max(0, maxOffset);
+				newImgX = Math.min(maxOffset, Math.max(-maxOffset, newImgX));
+				newImgY = Math.min(maxOffset, Math.max(-maxOffset, newImgY));
+				var px = 50 - (newImgX / 200) * 100;
+				var py = 50 - (newImgY / 200) * 100;
+				px = Math.round(Math.min(100, Math.max(0, px)));
+				py = Math.round(Math.min(100, Math.max(0, py)));
+				if (xInput) xInput.value = px;
+				if (yInput) yInput.value = py;
+				updateCropPreview();
+			});
+
+			window.addEventListener('mouseup', function() {
+				dragState = null;
+			});
+
+			cropMask.addEventListener('wheel', function(e) {
+				e.preventDefault();
+				var s = Number(scaleInput?.value) || 100;
+				var delta = e.deltaY > 0 ? -5 : 5;
+				s = Math.min(200, Math.max(50, s + delta));
+				if (scaleInput) scaleInput.value = s;
+				if (cropZoom) cropZoom.value = s;
+				if (cropZoomVal) cropZoomVal.textContent = s + '%';
+				updateCropPreview();
+			}, {passive: false});
+		}
+
+		document.querySelector('[data-wpdsac-avatar-remove]')?.addEventListener('click', function() {
+			if (cropButton) cropButton.hidden = true;
+			if (xInput) xInput.value = 50;
+			if (yInput) yInput.value = 50;
+			if (scaleInput) scaleInput.value = 100;
+		});
+	}
 
 	document.querySelectorAll('[data-wpdsac-action-repeater]').forEach((repeater) => {
 		const rows = repeater.querySelector('[data-wpdsac-action-rows]');
