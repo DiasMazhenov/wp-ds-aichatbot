@@ -39,7 +39,7 @@ final class OpenAIEmbeddingsProvider implements EmbeddingsProviderInterface {
 	 * @return array<int, float>|null
 	 */
 	public function embed( string $text ): ?array {
-		$api_key = $this->credentials->resolve( 'openai' );
+		$api_key = $this->credentials->get_api_key( 'openai' );
 
 		if ( '' === $api_key ) {
 			return null;
