@@ -210,14 +210,26 @@
 		row.className = `wpdsac-chat__message-row wpdsac-chat__message-row--${role}`;
 		item.className = `wpdsac-chat__message wpdsac-chat__message--${role}`;
 		if (role === 'bot') {
-			const avatar = document.createElement('img');
-			avatar.className = 'wpdsac-chat__avatar';
-			avatar.src = chat.dataset.wpdsacAvatarUrl || '';
-			avatar.alt = '';
-			avatar.width = 32;
-			avatar.height = 32;
-			avatar.decoding = 'async';
-			row.appendChild(avatar);
+			const avatarUrl = chat.dataset.wpdsacAvatarUrl || '';
+			if (avatarUrl) {
+				const avatar = document.createElement('img');
+				avatar.className = 'wpdsac-chat__avatar';
+				avatar.src = avatarUrl;
+				avatar.alt = '';
+				avatar.width = 32;
+				avatar.height = 32;
+				avatar.decoding = 'async';
+				row.appendChild(avatar);
+			} else {
+				const avatar = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+				avatar.setAttribute('class', 'wpdsac-chat__avatar');
+				avatar.setAttribute('viewBox', '0 0 24 24');
+				avatar.setAttribute('width', '20');
+				avatar.setAttribute('height', '20');
+				avatar.setAttribute('aria-hidden', 'true');
+				avatar.innerHTML = '<path fill="currentColor" d="M12 2.75c.47 4.88 4.37 8.78 9.25 9.25-4.88.47-8.78 4.37-9.25 9.25C11.53 16.37 7.63 12.47 2.75 12 7.63 11.53 11.53 7.63 12 2.75Z"/>';
+				row.appendChild(avatar);
+			}
 			appendAssistantContent(item, message);
 		} else {
 			item.textContent = message;

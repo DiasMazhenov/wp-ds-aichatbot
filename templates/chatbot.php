@@ -60,7 +60,11 @@ if ( ! $view['show_toggle_icon'] ) {
 		<div class="wpdsac-chat__conversation" data-wpdsac-conversation>
 			<div class="wpdsac-chat__messages" aria-live="polite">
 				<div class="wpdsac-chat__message-row wpdsac-chat__message-row--bot">
-					<img class="wpdsac-chat__avatar" src="<?php echo esc_url( $view['avatar_url'] ); ?>" width="32" height="32" alt="">
+					<?php if ( '' !== $view['avatar_url'] ) : ?>
+						<img class="wpdsac-chat__avatar" src="<?php echo esc_url( $view['avatar_url'] ); ?>" width="32" height="32" alt="">
+					<?php else : ?>
+						<svg class="wpdsac-chat__avatar" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2.75c.47 4.88 4.37 8.78 9.25 9.25-4.88.47-8.78 4.37-9.25 9.25C11.53 16.37 7.63 12.47 2.75 12 7.63 11.53 11.53 7.63 12 2.75Z"/></svg>
+					<?php endif; ?>
 					<p class="wpdsac-chat__message wpdsac-chat__message--bot" data-wpdsac-message-template="<?php echo esc_attr( $view['welcome_message'] ); ?>">
 						<?php echo nl2br( esc_html( $view['welcome_message'] ) ); ?>
 					</p>
