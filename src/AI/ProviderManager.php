@@ -80,25 +80,8 @@ final class ProviderManager {
 
 		$suffix = '';
 
-		$now    = time();
-		$hour   = (int) gmdate( 'G', $now );
-		$dow    = gmdate( 'l', $now );
-		$suffix = sprintf(
-			"CONTEXT:\n- Current server time: %s (%s, %s)\n- Time of day: %s\n",
-			gmdate( 'H:i T', $now ),
-			gmdate( 'j F Y', $now ),
-			$dow,
-			$hour < 6 ? 'night' : ( $hour < 12 ? 'morning' : ( $hour < 18 ? 'afternoon' : 'evening' ) )
-		);
-
 		if ( is_array( $navigation_targets ) && array() !== $navigation_targets ) {
-			$nav_policy = $this->navigation_policy( $navigation_targets );
-			if ( '' !== $nav_policy ) {
-				if ( '' !== $suffix ) {
-					$suffix .= "\n\n";
-				}
-				$suffix .= $nav_policy;
-			}
+			$suffix = $this->navigation_policy( $navigation_targets );
 		}
 
 		if ( $this->leads instanceof LeadRepository && $this->leads->exists_for_session( $session_id ) ) {
@@ -112,62 +95,73 @@ final class ProviderManager {
 			Settings::set_runtime_instruction_suffix( $suffix );
 		}
 
-		$options       = Settings::get();
-		$guarded_reply = $this->guard->inspect( $message, $options, $session_id );
+		try {
+			$options       = Settings::get();
+			$guarded_reply = $this->guard->inspect( $message, $options, $session_id );
 
-		if ( is_string( $guarded_reply ) ) {
-			return $guarded_reply;
+			if ( is_string( $guarded_reply ) ) {
+				return $guarded_reply;
+			}
+
+			$provider_id = (string) apply_filters( 'wpdsac_ai_provider_id', $options['ai_provider'], $request );
+			$providers   = apply_filters( 'wpdsac_ai_providers', $this->providers );
+			$providers   = is_array( $providers ) ? $providers : $this->providers;
+			$provider    = $providers[ $provider_id ] ?? null;
+
+			/**
+			 * Filter the provider used for a chat request.
+			 *
+			 * @param ProviderInterface|null $provider    Selected provider.
+			 * @param \WP_REST_Request       $request     Current REST request.
+			 * @param string                 $provider_id Selected provider ID.
+			 */
+			$provider = apply_filters( 'wpdsac_ai_provider', $provider, $request, $provider_id );
+
+			if ( ! $provider instanceof ProviderInterface ) {
+				return new \WP_Error(
+					'wpdsac_invalid_provider',
+					__( 'The configured AI provider is invalid.', 'wp-ds-aichatbot' ),
+					array( 'status' => 503 )
+				);
+			}
+
+			$provider_message = apply_filters( 'wpdsac_ai_message', $message, $session_id, $request, $provider_id );
+			$provider_message = is_string( $provider_message ) && '' !== trim( $provider_message )
+				? $provider_message
+				: $message;
+			$history          = $request->get_param( 'history' );
+			$provider_message = $this->with_conversation_history( is_array( $history ) ? $history : array(), $provider_message );
+
+			if ( '' !== $visitor_name ) {
+				$provider_message = sprintf(
+					"Visitor name (untrusted profile data): %s\n\nVisitor message:\n%s",
+					$visitor_name,
+					$provider_message
+				);
+			}
+
+			$generated_reply = $provider->generate( $provider_message, $session_id );
+
+			if ( is_string( $generated_reply ) && $this->leads instanceof LeadRepository && $this->leads->exists_for_session( $session_id ) ) {
+				$generated_reply = preg_replace(
+					'/\[\[WPDSAC_ACTION\|lead_form\|[^]]*\]\]/',
+					'',
+					$generated_reply
+				);
+				$generated_reply = preg_replace(
+					'/\[\[WPDSAC_NAV\|[^|]*#wpdsac-contact-form[^|]*\|[^]]*\]\]/',
+					'',
+					$generated_reply
+				);
+				$generated_reply = trim( preg_replace( '/\n{3,}/', "\n\n", $generated_reply ) );
+			}
+
+			return is_string( $generated_reply )
+				? $this->remove_repeated_greeting( $generated_reply, is_array( $history ) ? $history : array() )
+				: $generated_reply;
+		} finally {
+			Settings::clear_runtime_variables();
 		}
-
-		$provider_id = (string) apply_filters( 'wpdsac_ai_provider_id', $options['ai_provider'], $request );
-		$providers   = apply_filters( 'wpdsac_ai_providers', $this->providers );
-		$providers   = is_array( $providers ) ? $providers : $this->providers;
-		$provider    = $providers[ $provider_id ] ?? null;
-
-		$provider = apply_filters( 'wpdsac_ai_provider', $provider, $request, $provider_id );
-
-		if ( ! $provider instanceof ProviderInterface ) {
-			return new \WP_Error(
-				'wpdsac_invalid_provider',
-				__( 'The configured AI provider is invalid.', 'wp-ds-aichatbot' ),
-				array( 'status' => 503 )
-			);
-		}
-
-		$provider_message = apply_filters( 'wpdsac_ai_message', $message, $session_id, $request, $provider_id );
-		$provider_message = is_string( $provider_message ) && '' !== trim( $provider_message )
-			? $provider_message
-			: $message;
-		$history          = $request->get_param( 'history' );
-		$provider_message = $this->with_conversation_history( is_array( $history ) ? $history : array(), $provider_message );
-
-		if ( '' !== $visitor_name ) {
-			$provider_message = sprintf(
-				"Visitor name (untrusted profile data): %s\n\nVisitor message:\n%s",
-				$visitor_name,
-				$provider_message
-			);
-		}
-
-		$generated_reply = $provider->generate( $provider_message, $session_id );
-
-		if ( is_string( $generated_reply ) && $this->leads instanceof LeadRepository && $this->leads->exists_for_session( $session_id ) ) {
-			$generated_reply = preg_replace(
-				'/\[\[WPDSAC_ACTION\|lead_form\|[^]]*\]\]/',
-				'',
-				$generated_reply
-			);
-			$generated_reply = preg_replace(
-				'/\[\[WPDSAC_NAV\|[^|]*#wpdsac-contact-form[^|]*\|[^]]*\]\]/',
-				'',
-				$generated_reply
-			);
-			$generated_reply = trim( preg_replace( '/\n{3,}/', "\n\n", $generated_reply ) );
-		}
-
-		return is_string( $generated_reply )
-			? $this->remove_repeated_greeting( $generated_reply, is_array( $history ) ? $history : array() )
-			: $generated_reply;
 	}
 
 	/**
@@ -217,7 +211,7 @@ final class ProviderManager {
 	 * Add bounded browser history as explicitly untrusted conversational context.
 	 *
 	 * @param array<int, mixed> $history         Sanitized chronological history.
-	 * @param string            $current_message Current provider message, possibly with website knowledge.
+	 * @param string            $current_message Visitor message being answered.
 	 * @return string
 	 */
 	private function with_conversation_history( array $history, string $current_message ): string {
