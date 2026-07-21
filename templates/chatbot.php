@@ -43,7 +43,8 @@ if ( ! $view['show_toggle_icon'] ) {
 		aria-controls="<?php echo esc_attr( $panel_id ); ?>"
 	>
 		<span class="wpdsac-chat__toggle-title"><?php echo esc_html( $view['title'] ); ?></span>
-		<svg class="wpdsac-chat__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2.75c.47 4.88 4.37 8.78 9.25 9.25-4.88.47-8.78 4.37-9.25 9.25C11.53 16.37 7.63 12.47 2.75 12 7.63 11.53 11.53 7.63 12 2.75Z"/></svg>
+		<img class="wpdsac-chat__icon" src="<?php echo esc_url( $view['avatar_url'] ); ?>" width="32" height="32" alt="">
+		<p class="wpdsac-chat__status" data-wpdsac-status aria-live="polite"></p>
 	</button>
 
 	<div
@@ -94,9 +95,10 @@ if ( ! $view['show_toggle_icon'] ) {
 				placeholder="<?php echo esc_attr( $view['message_placeholder'] ); ?>"
 				autocomplete="off"
 			>
-			<button type="submit"><?php esc_html_e( 'Send', 'wp-ds-aichatbot' ); ?></button>
+			<button type="submit" aria-label="<?php esc_attr_e( 'Send message', 'wp-ds-aichatbot' ); ?>">
+				<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2 .01 7Z"/></svg>
+			</button>
 			</form>
-			<p class="wpdsac-chat__status" data-wpdsac-status aria-live="polite"></p>
 		</div>
 	</div>
 

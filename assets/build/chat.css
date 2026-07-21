@@ -1,3 +1,15 @@
+:root {
+	--wpdsac-panel-mt: 0;
+	--wpdsac-panel-pr: 10px;
+	--wpdsac-panel-pl: 20px;
+	--wpdsac-panel-pt: 20px;
+	--wpdsac-msg-bg: #e0e0ef;
+	--wpdsac-msg-br: 10px;
+	--wpdsac-msg-pt: 20px;
+	--wpdsac-msg-pb: 20px;
+	--wpdsac-msg-px: 3px;
+}
+
 .wpdsac-chat {
 	--wpdsac-accent: #2563eb;
 	--wpdsac-accent-text: #fff;
@@ -135,6 +147,10 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	box-shadow: 0 10px 30px rgb(23 32 51 / var(--wpdsac-shadow-opacity));
 }
 
+.wpdsac-chat:not(.is-expanded) .wpdsac-chat__icon {
+	display: none;
+}
+
 .wpdsac-chat:not(.is-expanded) .wpdsac-chat__toggle-title {
 	position: absolute;
 	width: 1px;
@@ -147,6 +163,17 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	border: 0;
 }
 
+.wpdsac-chat__icon {
+	box-sizing: border-box;
+	width: 32px;
+	height: 32px;
+	flex: 0 0 32px;
+	border: 1px solid var(--wpdsac-border);
+	border-radius: 50%;
+	background: var(--wpdsac-surface);
+	object-fit: cover;
+}
+
 .wpdsac-chat.is-expanded.wpdsac-hide-header-icon .wpdsac-chat__icon {
 	display: none;
 }
@@ -157,8 +184,8 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	min-width: 0;
 	height: min(var(--wpdsac-height), calc(100dvh - 120px));
 	min-height: min(360px, calc(100dvh - 120px));
-	margin-top: 8px;
-	padding: var(--wpdsac-panel-padding);
+	margin-top: var(--wpdsac-panel-mt);
+	padding: var(--wpdsac-panel-pt) var(--wpdsac-panel-pr) var(--wpdsac-panel-padding) var(--wpdsac-panel-pl);
 	border: 1px solid var(--wpdsac-border);
 	border-radius: var(--wpdsac-radius);
 	background: var(--wpdsac-surface);
@@ -236,7 +263,9 @@ body.wpdsac-modal-open {
 	gap: 10px;
 	min-width: 0;
 	min-height: 0;
-	padding: 2px;
+	padding: var(--wpdsac-msg-pt) var(--wpdsac-msg-px) var(--wpdsac-msg-pb);
+	background: var(--wpdsac-msg-bg);
+	border-radius: var(--wpdsac-msg-br);
 	overflow-y: auto;
 	overscroll-behavior: contain;
 	scrollbar-width: thin;
@@ -328,7 +357,7 @@ body.wpdsac-modal-open {
 	width: 100%;
 	min-width: 0;
 	min-height: 44px;
-	padding: 11px 12px;
+	padding: 5px 10px;
 	border: 1px solid var(--wpdsac-border);
 	border-radius: var(--wpdsac-input-radius);
 	background: var(--wpdsac-input);
@@ -463,8 +492,8 @@ body.wpdsac-modal-open {
 .wpdsac-chat textarea:focus-visible,
 .wpdsac-chat button:focus-visible,
 .wpdsac-chat a:focus-visible {
-	outline: 2px solid var(--wpdsac-accent);
-	outline-offset: 2px;
+	outline: none;
+	outline-offset: 1px;
 }
 
 .wpdsac-chat__consent {
@@ -499,11 +528,19 @@ body.wpdsac-modal-open {
 }
 
 .wpdsac-chat__status {
-	flex: 0 0 auto;
 	min-height: 18px;
-	margin: 10px 0 0;
-	font-size: 13px;
+	margin: 0;
+	padding: 0 4px;
+	font-size: 12px;
 	color: var(--wpdsac-muted);
+}
+
+.wpdsac-chat__toggle .wpdsac-chat__status {
+	flex: 0 0 auto;
+	width: 100%;
+	margin: 2px 0 0 44px;
+	color: var(--wpdsac-accent-text);
+	opacity: 0.8;
 }
 
 @media (max-width: 480px) {

@@ -741,7 +741,7 @@
 		const chat = form.closest('[data-wpdsac-chat]');
 		const input = form.querySelector('input');
 		const button = form.querySelector('button[type="submit"]');
-		const status = form.parentElement.querySelector('[data-wpdsac-status]');
+		const status = chat.querySelector('[data-wpdsac-status]');
 		const message = input.value.trim();
 
 		if (!message || button.disabled) {
