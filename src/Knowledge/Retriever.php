@@ -24,12 +24,21 @@ final class Retriever {
 	private $repository;
 
 	/**
-	 * Store retrieval dependency.
+	 * Optional semantic embedding service.
 	 *
-	 * @param Repository $repository Knowledge repository.
+	 * @var EmbeddingService|null
 	 */
-	public function __construct( Repository $repository ) {
+	private $embeddings;
+
+	/**
+	 * Store retrieval dependencies.
+	 *
+	 * @param Repository            $repository Knowledge repository.
+	 * @param EmbeddingService|null $embeddings Optional embedding service.
+	 */
+	public function __construct( Repository $repository, ?EmbeddingService $embeddings = null ) {
 		$this->repository = $repository;
+		$this->embeddings = $embeddings;
 	}
 
 	/**
@@ -59,7 +68,23 @@ final class Retriever {
 			return $message;
 		}
 
-		$chunks = $this->repository->search( $message, (int) $options['knowledge_max_chunks'] );
+		$chunks = array();
+
+		if ( $this->embeddings instanceof EmbeddingService && $this->embeddings->available() && ! empty( $options['knowledge_semantic_enabled'] ) ) {
+			$semantic = $this->embeddings->search( $message, (int) $options['knowledge_max_chunks'] );
+
+			foreach ( $semantic as $item ) {
+				$chunks[] = array(
+					'title'      => $item['title'],
+					'source_url' => $item['url'],
+					'content'    => $item['content'],
+				);
+			}
+		}
+
+		if ( array() === $chunks ) {
+			$chunks = $this->repository->search( $message, (int) $options['knowledge_max_chunks'] );
+		}
 
 		if ( array() === $chunks ) {
 			return $message;
@@ -70,7 +95,7 @@ final class Retriever {
 		foreach ( $chunks as $chunk ) {
 			$source = sprintf( "Source: %s\n", $chunk['title'] );
 
-			if ( '' !== $chunk['source_url'] ) {
+			if ( '' !== ( $chunk['source_url'] ?? '' ) ) {
 				$source .= sprintf( "URL: %s\n", $chunk['source_url'] );
 			}
 

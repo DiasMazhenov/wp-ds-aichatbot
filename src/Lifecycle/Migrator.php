@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Migrator {
 
-	public const DB_VERSION = '7';
+	public const DB_VERSION = '8';
 
 	private const VERSION_OPTION = 'wpdsac_db_version';
 
@@ -68,6 +68,7 @@ final class Migrator {
 			title text NOT NULL,
 			source_url text NOT NULL,
 			content longtext NOT NULL,
+			embedding longtext DEFAULT NULL,
 			content_hash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
 			updated_at datetime NOT NULL,
 			PRIMARY KEY  (id),

@@ -310,7 +310,8 @@ final class CoreSecurityTest extends TestCase {
 	}
 
 	public function test_administrative_label_uses_current_plugin_version(): void {
-		$this->assertSame( 'DS AI Chatbot v0.5.36', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
+		$this->assertStringContainsString( 'DS AI Chatbot v', PluginInfo::versioned_label( 'DS AI Chatbot' ) );
+		$this->assertStringContainsString( 'DS AI Chatbot v' . WPDSAC_VERSION, PluginInfo::versioned_label( 'DS AI Chatbot' ) );
 	}
 
 	public function test_settings_remain_the_default_plugin_submenu(): void {
@@ -335,7 +336,7 @@ final class CoreSecurityTest extends TestCase {
 			)
 		);
 
-		$this->assertSame( 'WP DS AI Chatbot v0.5.36', $plugins[ $plugin_file ]['Name'] );
-		$this->assertSame( 'WP DS AI Chatbot v0.5.36', $plugins[ $plugin_file ]['Title'] );
+		$this->assertStringContainsString( 'WP DS AI Chatbot v' . WPDSAC_VERSION, $plugins[ $plugin_file ]['Name'] );
+		$this->assertStringContainsString( 'WP DS AI Chatbot v' . WPDSAC_VERSION, $plugins[ $plugin_file ]['Title'] );
 	}
 }

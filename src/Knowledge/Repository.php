@@ -162,6 +162,52 @@ final class Repository {
 	}
 
 	/**
+	 * Persist a JSON-encoded embedding vector for a chunk.
+	 *
+	 * @param int                $chunk_id Chunk row ID.
+	 * @param array<int, float>  $vector   Normalized float vector.
+	 * @return bool
+	 */
+	public function store_embedding( int $chunk_id, array $vector ): bool {
+		global $wpdb;
+
+		$json = wp_json_encode( $vector );
+
+		if ( false === $json ) {
+			return false;
+		}
+
+		return false !== $wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Embedding persistence.
+			Migrator::knowledge_table(),
+			array( 'embedding' => $json ),
+			array( 'id' => absint( $chunk_id ) ),
+			array( '%s' ),
+			array( '%d' )
+		);
+	}
+
+	/**
+	 * Fetch chunks that have stored embeddings, bounded.
+	 *
+	 * @param int $limit Maximum rows.
+	 * @return array<int, array{id: int, title: string, source_url: string, content: string, embedding: string}>
+	 */
+	public function fetch_chunks_with_embeddings( int $limit = 20 ): array {
+		global $wpdb;
+
+		$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Semantic retrieval.
+			$wpdb->prepare(
+				'SELECT id, title, source_url, content, embedding FROM %i WHERE embedding IS NOT NULL ORDER BY updated_at DESC LIMIT %d',
+				Migrator::knowledge_table(),
+				min( 100, max( 1, $limit ) )
+			),
+			ARRAY_A
+		);
+
+		return is_array( $rows ) ? $rows : array();
+	}
+
+	/**
 	 * Count stored fragments.
 	 *
 	 * @return int

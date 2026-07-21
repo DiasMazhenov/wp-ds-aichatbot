@@ -97,6 +97,8 @@ final class Settings {
 				'daily_request_limit'     => 500,
 				'knowledge_enabled'       => false,
 				'knowledge_max_chunks'    => 4,
+				'knowledge_semantic_enabled' => false,
+				'embeddings_model'        => 'text-embedding-3-small',
 				'logging_enabled'         => false,
 				'log_retention_days'      => 30,
 				'quick_call_label'        => __( 'Call', 'wp-ds-aichatbot' ),
@@ -347,6 +349,8 @@ final class Settings {
 		$this->add_field( 'daily_request_limit', __( 'AI requests per 24 hours', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'knowledge_enabled', __( 'Use website knowledge', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_knowledge' );
 		$this->add_field( 'knowledge_max_chunks', __( 'Knowledge fragments per answer', 'wp-ds-aichatbot' ), 'number', 'wpdsac_knowledge' );
+		$this->add_field( 'knowledge_semantic_enabled', __( 'Semantic (vector) search', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_knowledge' );
+		$this->add_field( 'embeddings_model', __( 'Embeddings model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_knowledge' );
 		$this->add_field( 'logging_enabled', __( 'Conversation logging', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_privacy' );
 		$this->add_field( 'log_retention_days', __( 'Log retention (days)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_privacy' );
 		$this->add_field( 'quick_call_label', __( 'Call button text', 'wp-ds-aichatbot' ), 'text', 'wpdsac_leads' );
@@ -411,6 +415,8 @@ final class Settings {
 			'daily_request_limit'     => min( 100000, absint( $input['daily_request_limit'] ?? 500 ) ),
 			'knowledge_enabled'       => ! empty( $input['knowledge_enabled'] ),
 			'knowledge_max_chunks'    => min( 8, max( 1, absint( $input['knowledge_max_chunks'] ?? 4 ) ) ),
+			'knowledge_semantic_enabled' => ! empty( $input['knowledge_semantic_enabled'] ),
+			'embeddings_model'        => sanitize_text_field( (string) ( $input['embeddings_model'] ?? 'text-embedding-3-small' ) ),
 			'logging_enabled'         => ! empty( $input['logging_enabled'] ),
 			'log_retention_days'      => min( 365, max( 1, absint( $input['log_retention_days'] ?? 30 ) ) ),
 			'quick_call_label'        => $this->label_or_default( $input['quick_call_label'] ?? '', $defaults['quick_call_label'] ),
