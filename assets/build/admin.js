@@ -476,9 +476,8 @@
 			var x = Number(xInput?.value) || 50;
 			var y = Number(yInput?.value) || 50;
 			var s = Number(scaleInput?.value) || 100;
-			var tx = (50 - x) * 4;
-			var ty = (50 - y) * 4;
-			cropImage.style.transform = 'translate(' + tx + 'px, ' + ty + 'px) scale(' + (s / 100) + ')';
+			cropImage.style.objectPosition = x + '% ' + y + '%';
+			cropImage.style.transform = 'scale(' + (s / 100) + ')';
 
 			document.querySelectorAll('[data-wpdsac-admin-avatar]').forEach(function(img) {
 				img.setAttribute('style', 'object-position:' + x + '% ' + y + '%;border-radius:50%;object-fit:cover;transform:scale(' + (s / 100) + ')');
@@ -555,13 +554,11 @@
 		if (cropMask) {
 			cropMask.addEventListener('mousedown', function(e) {
 				e.preventDefault();
-				var imgX = (50 - (Number(xInput?.value) || 50)) * 4;
-				var imgY = (50 - (Number(yInput?.value) || 50)) * 4;
 				dragState = {
 					startX: e.clientX,
 					startY: e.clientY,
-					imgX: imgX,
-					imgY: imgY,
+					posX: Number(xInput?.value) || 50,
+					posY: Number(yInput?.value) || 50,
 				};
 			});
 
@@ -569,14 +566,13 @@
 				if (!dragState || cropModal.hidden) return;
 				var dx = e.clientX - dragState.startX;
 				var dy = e.clientY - dragState.startY;
-				var newImgX = dragState.imgX + dx;
-				var newImgY = dragState.imgY + dy;
 				var s = Number(scaleInput?.value) || 100;
-				var maxOffset = Math.max(0, (200 * (s / 100) - 200) / 2);
-				newImgX = Math.min(maxOffset, Math.max(-maxOffset, newImgX));
-				newImgY = Math.min(maxOffset, Math.max(-maxOffset, newImgY));
-				var px = 50 - newImgX / 4;
-				var py = 50 - newImgY / 4;
+				// At scale=s%, the image is s/100 times larger than the mask.
+				// One pixel of mouse movement corresponds to 200/(200*s/100) in position %.
+				// Simplified: each pixel = 100/(200 * s/100) = 50/s position percent.
+				var sensitivity = 50 / Math.max(s, 50);
+				var px = dragState.posX - dx * sensitivity;
+				var py = dragState.posY - dy * sensitivity;
 				px = Math.round(Math.min(100, Math.max(0, px)));
 				py = Math.round(Math.min(100, Math.max(0, py)));
 				if (xInput) xInput.value = px;

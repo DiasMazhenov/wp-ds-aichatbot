@@ -1403,7 +1403,7 @@ final class Settings {
 							alt=""
 							data-wpdsac-crop-image
 							draggable="false"
-							style="transform:translate(<?php echo (float) ( ( 50 - $pos_x ) * 4 ); ?>px, <?php echo (float) ( ( 50 - $pos_y ) * 4 ); ?>px) scale(<?php echo esc_attr( round( $scale / 100, 2 ) ); ?>)"
+							style="object-position:<?php echo absint( $pos_x ); ?>% <?php echo absint( $pos_y ); ?>%;transform:scale(<?php echo esc_attr( round( $scale / 100, 2 ) ); ?>)"
 						>
 					</div>
 				</div>
