@@ -55,7 +55,8 @@ abstract class AbstractHttpProvider implements ProviderInterface {
 		$options['ai_instructions'] = PromptGuard::protected_instructions(
 			(string) $options['ai_instructions'],
 			(string) $options['topic_scope'],
-			(string) $options['guard_refusal_message']
+			(string) $options['guard_refusal_message'],
+			(string) $options['title']
 		);
 		$body                       = $this->request_body( $message, $session_id, $options );
 

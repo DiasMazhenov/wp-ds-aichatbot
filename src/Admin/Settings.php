@@ -403,7 +403,7 @@ final class Settings {
 		);
 
 		$this->add_field( 'global_enabled', __( 'Global chatbot', 'wp-ds-aichatbot' ), 'checkbox' );
-		$this->add_field( 'title', __( 'Title', 'wp-ds-aichatbot' ), 'text' );
+		$this->add_field( 'title', __( 'Chatbot name', 'wp-ds-aichatbot' ), 'text' );
 		$this->add_field( 'welcome_message', __( 'Welcome message', 'wp-ds-aichatbot' ), 'textarea' );
 		$this->add_field( 'greetings_pool', __( 'Greetings pool', 'wp-ds-aichatbot' ), 'textarea' );
 		$this->add_field( 'message_placeholder', __( 'Message input placeholder', 'wp-ds-aichatbot' ), 'text' );
@@ -478,7 +478,7 @@ final class Settings {
 
 		$settings = array(
 			'global_enabled'             => ! empty( $input['global_enabled'] ),
-			'title'                      => sanitize_text_field( $input['title'] ?? '' ),
+			'title'                      => $this->label_or_default( $input['title'] ?? '', $defaults['title'] ),
 			'welcome_message'            => sanitize_textarea_field( $input['welcome_message'] ?? '' ),
 			'greetings_pool'             => sanitize_textarea_field( $input['greetings_pool'] ?? '' ),
 			'message_placeholder'        => sanitize_text_field( $input['message_placeholder'] ?? '' ),
@@ -1103,6 +1103,13 @@ final class Settings {
 			printf(
 				'<p class="description">%s</p>',
 				esc_html__( 'Leave empty for the provider default. DeepSeek and Anthropic do not currently expose compatible embedding endpoints; choose OpenAI, Gemini, OpenRouter, or Auto.', 'wp-ds-aichatbot' )
+			);
+		}
+
+		if ( 'title' === $key ) {
+			printf(
+				'<p class="description">%s</p>',
+				esc_html__( 'Displayed in the chat header and used by the assistant when introducing itself.', 'wp-ds-aichatbot' )
 			);
 		}
 	}

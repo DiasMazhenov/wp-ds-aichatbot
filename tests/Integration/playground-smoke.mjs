@@ -148,6 +148,8 @@ assert.match(settingsPhp, /prompt_guard_enabled/);
 assert.match(promptGuardPhp, /prompt_injection/);
 assert.match(promptGuardPhp, /model_probe/);
 assert.match(promptGuardPhp, /off_topic/);
+assert.match(promptGuardPhp, /Your public chatbot name/);
+assert.match(settingsPhp, /Chatbot name/);
 assert.match(providerManagerPhp, /guard->inspect/);
 
 const playground = await runCLI({

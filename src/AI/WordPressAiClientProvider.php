@@ -36,7 +36,8 @@ final class WordPressAiClientProvider implements ProviderInterface {
 		$options['ai_instructions'] = PromptGuard::protected_instructions(
 			(string) $options['ai_instructions'],
 			(string) $options['topic_scope'],
-			(string) $options['guard_refusal_message']
+			(string) $options['guard_refusal_message'],
+			(string) $options['title']
 		);
 		$result                     = wp_ai_client_prompt( $message )
 			->using_system_instruction( (string) $options['ai_instructions'] )

@@ -514,6 +514,12 @@ msgstr "Время"
 msgid "Title"
 msgstr "Заголовок"
 
+msgid "Chatbot name"
+msgstr "Имя чат-бота"
+
+msgid "Displayed in the chat header and used by the assistant when introducing itself."
+msgstr "Отображается в шапке чата и используется ассистентом, когда он представляется."
+
 msgid "Too many chat requests. Please try again later."
 msgstr "Слишком много запросов. Попробуйте позже."
 

@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.78
+Stable tag: 0.5.79
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,10 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.79 =
+* Rename the general Title field to Chatbot name and explain how the value is used.
+* Supply the configured public chatbot name to every provider so the assistant introduces itself consistently once per conversation.
 
 = 0.5.78 =
 * Always render readable assistant and visitor sample messages in the appearance live preview, including a safe fallback when the welcome message is empty.
