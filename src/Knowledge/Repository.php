@@ -164,8 +164,8 @@ final class Repository {
 	/**
 	 * Persist a JSON-encoded embedding vector for a chunk.
 	 *
-	 * @param int                $chunk_id Chunk row ID.
-	 * @param array<int, float>  $vector   Normalized float vector.
+	 * @param int               $chunk_id Chunk row ID.
+	 * @param array<int, float> $vector   Normalized float vector.
 	 * @return bool
 	 */
 	public function store_embedding( int $chunk_id, array $vector ): bool {

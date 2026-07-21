@@ -108,8 +108,8 @@ final class EmbeddingService {
 			return array();
 		}
 
-		$chunks   = $this->repository->fetch_chunks_with_embeddings( $limit * 3 );
-		$scored   = array();
+		$chunks = $this->repository->fetch_chunks_with_embeddings( $limit * 3 );
+		$scored = array();
 
 		foreach ( $chunks as $chunk ) {
 			$vector = json_decode( $chunk['embedding'] ?? '', true );

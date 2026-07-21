@@ -45,14 +45,14 @@ final class LeadRepository {
 			Migrator::migrate();
 		}
 
-		$now             = time();
-		$session_hash    = hash_hmac( 'sha256', $session_id, wp_salt( 'auth' ) );
-		$expires_at      = $now + ( min( 730, max( 1, $retention_days ) ) * DAY_IN_SECONDS );
-		$safe_name       = sanitize_text_field( $name );
-		$safe_email      = sanitize_email( $email );
-		$safe_phone      = substr( sanitize_text_field( $phone ), 0, 50 );
-		$safe_request    = $this->bounded_text( $request_text, 4000 );
-		$safe_consent    = sanitize_textarea_field( $consent_text );
+		$now          = time();
+		$session_hash = hash_hmac( 'sha256', $session_id, wp_salt( 'auth' ) );
+		$expires_at   = $now + ( min( 730, max( 1, $retention_days ) ) * DAY_IN_SECONDS );
+		$safe_name    = sanitize_text_field( $name );
+		$safe_email   = sanitize_email( $email );
+		$safe_phone   = substr( sanitize_text_field( $phone ), 0, 50 );
+		$safe_request = $this->bounded_text( $request_text, 4000 );
+		$safe_consent = sanitize_textarea_field( $consent_text );
 
 		self::$last_sql = 'INSERT INTO `' . $table . '` (session_hash, user_id, name, email, phone, request_text, consent_text, created_at, expires_at) VALUES ('
 			. "'" . $wpdb->_real_escape( $session_hash ) . "', "
@@ -69,10 +69,11 @@ final class LeadRepository {
 			. 'phone = VALUES(phone), request_text = VALUES(request_text), consent_text = VALUES(consent_text), '
 			. 'created_at = VALUES(created_at), expires_at = VALUES(expires_at)';
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- All values independently sanitized with _real_escape and absint.
+		// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_query -- All values independently sanitized; $wpdb->query() rejects valid SQL on some hosts.
 		$result = mysqli_query( $wpdb->dbh, self::$last_sql );
 
 		if ( ! $result ) {
+			// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_error -- Human-readable diagnostics, no visitor data exposed.
 			$wpdb->last_error = 'MySQL error: ' . mysqli_error( $wpdb->dbh );
 			return false;
 		}
