@@ -121,6 +121,7 @@ final class Plugin {
 
 		( new Settings() )->register_hooks();
 		$assets->register_hooks();
+		$embeddings->register_hooks();
 		$rate_limiter->register_hooks();
 		$request_lock->register_hooks();
 		$chat_api->register_hooks();

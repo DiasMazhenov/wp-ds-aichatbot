@@ -65,6 +65,7 @@ final class Repository {
 
 			if ( false !== $inserted ) {
 				++$stored;
+				do_action( 'wpdsac_knowledge_chunk_stored', absint( $wpdb->insert_id ) );
 			}
 		}
 
@@ -199,7 +200,46 @@ final class Repository {
 			$wpdb->prepare(
 				'SELECT id, title, source_url, content, embedding FROM %i WHERE embedding IS NOT NULL ORDER BY updated_at DESC LIMIT %d',
 				Migrator::knowledge_table(),
-				min( 100, max( 1, $limit ) )
+				min( 500, max( 1, $limit ) )
+			),
+			ARRAY_A
+		);
+
+		return is_array( $rows ) ? $rows : array();
+	}
+
+	/**
+	 * Return whether at least one indexed chunk has an embedding.
+	 *
+	 * @return bool
+	 */
+	public function has_embeddings(): bool {
+		global $wpdb;
+
+		$id = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Lightweight readiness check for semantic retrieval.
+			$wpdb->prepare(
+				'SELECT id FROM %i WHERE embedding IS NOT NULL LIMIT 1',
+				Migrator::knowledge_table()
+			)
+		);
+
+		return null !== $id;
+	}
+
+	/**
+	 * Return a bounded batch of chunks awaiting embeddings.
+	 *
+	 * @param int $limit Maximum rows.
+	 * @return array<int, array{id: int, content: string}>
+	 */
+	public function fetch_chunks_without_embeddings( int $limit = 5 ): array {
+		global $wpdb;
+
+		$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Background embedding queue.
+			$wpdb->prepare(
+				'SELECT id, content FROM %i WHERE embedding IS NULL ORDER BY id ASC LIMIT %d',
+				Migrator::knowledge_table(),
+				min( 20, max( 1, $limit ) )
 			),
 			ARRAY_A
 		);

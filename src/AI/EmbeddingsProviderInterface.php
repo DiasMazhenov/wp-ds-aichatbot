@@ -15,6 +15,13 @@ defined( 'ABSPATH' ) || exit;
 interface EmbeddingsProviderInterface {
 
 	/**
+	 * Return whether the provider has usable credentials.
+	 *
+	 * @return bool
+	 */
+	public function is_configured(): bool;
+
+	/**
 	 * Convert text to a fixed-length float vector.
 	 *
 	 * @param string $text Input text to embed.

@@ -160,10 +160,29 @@ final class ProviderManager {
 				? $this->remove_repeated_greeting( $generated_reply, is_array( $history ) ? $history : array() )
 				: $generated_reply;
 		} catch ( \Throwable $e ) {
-			$debug = $e->getMessage() . ' in ' . str_replace( WP_PLUGIN_DIR . '/wp-ds-aichatbot/', '', $e->getFile() ) . ':' . $e->getLine();
+			/**
+			 * Fires when an AI provider throws an unexpected exception.
+			 *
+			 * Consumers must not expose the exception to public responses.
+			 *
+			 * @param \Throwable $e Unexpected provider exception.
+			 */
+			do_action( 'wpdsac_provider_exception', $e );
+
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug-only operational metadata without exception message or credentials.
+					sprintf(
+						'[WP DS AI Chatbot] Provider exception: %s at %s:%d',
+						get_class( $e ),
+						basename( $e->getFile() ),
+						(int) $e->getLine()
+					)
+				);
+			}
+
 			return new \WP_Error(
 				'wpdsac_fatal',
-				$debug,
+				__( 'The AI service encountered an unexpected error. Please try again later.', 'wp-ds-aichatbot' ),
 				array( 'status' => 500 )
 			);
 		} finally {

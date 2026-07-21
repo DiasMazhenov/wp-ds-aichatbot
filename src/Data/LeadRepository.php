@@ -17,13 +17,6 @@ defined( 'ABSPATH' ) || exit;
 final class LeadRepository {
 
 	/**
-	 * Last attempted SQL for diagnostics.
-	 *
-	 * @var string
-	 */
-	public static $last_sql = '';
-
-	/**
 	 * Store one consented lead per signed chat session.
 	 *
 	 * @param string $session_id    Verified session UUID.
@@ -54,31 +47,23 @@ final class LeadRepository {
 		$safe_request = $this->bounded_text( $request_text, 4000 );
 		$safe_consent = sanitize_textarea_field( $consent_text );
 
-		self::$last_sql = 'INSERT INTO `' . $table . '` (session_hash, user_id, name, email, phone, request_text, consent_text, created_at, expires_at) VALUES ('
-			. "'" . $wpdb->_real_escape( $session_hash ) . "', "
-			. absint( $user_id ) . ', '
-			. "'" . $wpdb->_real_escape( $safe_name ) . "', "
-			. "'" . $wpdb->_real_escape( $safe_email ) . "', "
-			. "'" . $wpdb->_real_escape( $safe_phone ) . "', "
-			. "'" . $wpdb->_real_escape( $safe_request ) . "', "
-			. "'" . $wpdb->_real_escape( $safe_consent ) . "', "
-			. $now . ', '
-			. $expires_at
-			. ') ON DUPLICATE KEY UPDATE '
-			. 'user_id = VALUES(user_id), name = VALUES(name), email = VALUES(email), '
-			. 'phone = VALUES(phone), request_text = VALUES(request_text), consent_text = VALUES(consent_text), '
-			. 'created_at = VALUES(created_at), expires_at = VALUES(expires_at)';
+		$result = $wpdb->replace( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Dedicated plugin repository table; writes invalidate no cached query.
+			$table,
+			array(
+				'session_hash' => $session_hash,
+				'user_id'      => absint( $user_id ),
+				'name'         => $safe_name,
+				'email'        => $safe_email,
+				'phone'        => $safe_phone,
+				'request_text' => $safe_request,
+				'consent_text' => $safe_consent,
+				'created_at'   => $now,
+				'expires_at'   => $expires_at,
+			),
+			array( '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%d', '%d' )
+		);
 
-		// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_query -- All values independently sanitized; $wpdb->query() rejects valid SQL on some hosts.
-		$result = mysqli_query( $wpdb->dbh, self::$last_sql );
-
-		if ( ! $result ) {
-			// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_error -- Human-readable diagnostics, no visitor data exposed.
-			$wpdb->last_error = 'MySQL error: ' . mysqli_error( $wpdb->dbh );
-			return false;
-		}
-
-		return true;
+		return false !== $result;
 	}
 
 	/**

@@ -44,6 +44,13 @@ const quickActionsPhp = await readFile(join(projectRoot, 'src/Chat/QuickActions.
 const postIndexerPhp = await readFile(join(projectRoot, 'src/Knowledge/PostIndexer.php'), 'utf8');
 const leadNotifierPhp = await readFile(join(projectRoot, 'src/Data/LeadNotifier.php'), 'utf8');
 const chatbotTemplate = await readFile(join(projectRoot, 'templates/chatbot.php'), 'utf8');
+const pluginPhp = await readFile(join(projectRoot, 'wp-ds-aichatbot.php'), 'utf8');
+const migratorPhp = await readFile(join(projectRoot, 'src/Lifecycle/Migrator.php'), 'utf8');
+const pluginVersion = pluginPhp.match(/define\(\s*'WPDSAC_VERSION',\s*'([^']+)'\s*\)/)?.[1];
+const databaseVersion = migratorPhp.match(/DB_VERSION\s*=\s*'([^']+)'/)?.[1];
+
+assert.ok(pluginVersion, 'The plugin version constant must be readable');
+assert.ok(databaseVersion, 'The database schema version must be readable');
 
 assert.match(adminScript, /data-wpdsac-tab/);
 assert.match(adminScript, /data-wpdsac-provider-select/);
@@ -156,8 +163,8 @@ try {
   const expectedProbe = {
     plugin_active: true,
     plugin_loaded: true,
-    plugin_version: '0.5.36',
-    db_version: '7',
+    plugin_version: pluginVersion,
+    db_version: databaseVersion,
     rate_limit_table: true,
     request_lock_table: true,
     knowledge_table: true,

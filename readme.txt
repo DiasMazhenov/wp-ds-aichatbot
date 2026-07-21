@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.36
+Stable tag: 0.5.75
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,12 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.75 =
+* Stop exposing provider exceptions, database diagnostics, SQL fragments, and visitor data through public REST responses and browser logs.
+* Save leads through the portable WordPress database API instead of direct mysqli calls.
+* Generate knowledge embeddings in bounded background batches and skip semantic API requests until stored vectors exist.
+* Synchronize integration expectations and package metadata with the current plugin and database versions.
 
 = 0.5.36 =
 * Keep a safe popup-to-chat association after moving the lead modal outside Elementor containers.

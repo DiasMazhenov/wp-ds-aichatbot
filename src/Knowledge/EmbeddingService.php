@@ -17,6 +17,8 @@ defined( 'ABSPATH' ) || exit;
  */
 final class EmbeddingService {
 
+	private const QUEUE_HOOK = 'wpdsac_process_embedding_queue';
+
 	/**
 	 * The active embedding provider.
 	 *
@@ -43,12 +45,66 @@ final class EmbeddingService {
 	}
 
 	/**
+	 * Register deferred embedding generation hooks.
+	 *
+	 * @return void
+	 */
+	public function register_hooks(): void {
+		add_action( 'wpdsac_knowledge_chunk_stored', array( $this, 'schedule_queue' ) );
+		add_action( self::QUEUE_HOOK, array( $this, 'process_queue' ) );
+		add_action( 'admin_init', array( $this, 'schedule_queue' ), 40 );
+	}
+
+	/**
 	 * Return whether embeddings are configured and available.
 	 *
 	 * @return bool
 	 */
 	public function available(): bool {
-		return $this->provider instanceof EmbeddingsProviderInterface;
+		return $this->provider instanceof EmbeddingsProviderInterface && $this->provider->is_configured();
+	}
+
+	/**
+	 * Schedule one background queue runner when semantic search is enabled.
+	 *
+	 * @return void
+	 */
+	public function schedule_queue(): void {
+		$options = Settings::get();
+
+		if ( empty( $options['knowledge_semantic_enabled'] ) || ! $this->available() ) {
+			return;
+		}
+
+		if ( false === wp_next_scheduled( self::QUEUE_HOOK ) ) {
+			wp_schedule_single_event( time() + 10, self::QUEUE_HOOK );
+		}
+	}
+
+	/**
+	 * Generate a small embedding batch without delaying post saves or admin requests.
+	 *
+	 * @return void
+	 */
+	public function process_queue(): void {
+		$options = Settings::get();
+
+		if ( empty( $options['knowledge_semantic_enabled'] ) || ! $this->available() ) {
+			return;
+		}
+
+		$chunks = $this->repository->fetch_chunks_without_embeddings( 5 );
+		$stored = 0;
+
+		foreach ( $chunks as $chunk ) {
+			if ( $this->embed_chunk( absint( $chunk['id'] ), (string) $chunk['content'] ) ) {
+				++$stored;
+			}
+		}
+
+		if ( 5 === $stored && false === wp_next_scheduled( self::QUEUE_HOOK ) ) {
+			wp_schedule_single_event( time() + 30, self::QUEUE_HOOK );
+		}
 	}
 
 	/**
@@ -59,7 +115,7 @@ final class EmbeddingService {
 	 * @return bool
 	 */
 	public function embed_chunk( int $chunk_id, string $content ): bool {
-		if ( ! $this->provider instanceof EmbeddingsProviderInterface ) {
+		if ( ! $this->available() ) {
 			return false;
 		}
 
@@ -98,7 +154,7 @@ final class EmbeddingService {
 	 * @return array<int, array{id: int, content: string, title: string, url: string, score: float}>
 	 */
 	public function search( string $query, int $limit = 5 ): array {
-		if ( ! $this->provider instanceof EmbeddingsProviderInterface ) {
+		if ( ! $this->available() || ! $this->repository->has_embeddings() ) {
 			return array();
 		}
 
@@ -108,7 +164,7 @@ final class EmbeddingService {
 			return array();
 		}
 
-		$chunks = $this->repository->fetch_chunks_with_embeddings( $limit * 3 );
+		$chunks = $this->repository->fetch_chunks_with_embeddings( 500 );
 		$scored = array();
 
 		foreach ( $chunks as $chunk ) {

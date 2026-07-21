@@ -33,6 +33,15 @@ final class OpenAIEmbeddingsProvider implements EmbeddingsProviderInterface {
 	}
 
 	/**
+	 * Return whether an OpenAI key is available for embedding requests.
+	 *
+	 * @return bool
+	 */
+	public function is_configured(): bool {
+		return '' !== $this->credentials->get_api_key( 'openai' );
+	}
+
+	/**
 	 * Generate an embedding vector via OpenAI API.
 	 *
 	 * @param string $text Text to embed.
