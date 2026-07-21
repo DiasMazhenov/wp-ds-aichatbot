@@ -61,23 +61,37 @@ if ( ! $view['show_toggle_icon'] ) {
 				</div>
 			</div>
 
-			<div class="wpdsac-chat__quick-actions" aria-label="<?php esc_attr_e( 'Quick actions', 'wp-ds-aichatbot' ); ?>" data-wpdsac-quick-actions>
+			<div class="wpdsac-chat__divider" aria-hidden="true"></div>
+
+			<div class="wpdsac-chat__quick-bar" aria-label="<?php esc_attr_e( 'Quick actions', 'wp-ds-aichatbot' ); ?>" data-wpdsac-quick-actions>
 				<?php if ( '' !== $view['call_url'] ) : ?>
 					<a href="<?php echo esc_url( $view['call_url'], array( 'http', 'https', 'tel', 'sms' ) ); ?>" class="wpdsac-chat__quick-action" data-wpdsac-quick-action="call">
-						<?php echo esc_html( $view['quick_call_label'] ); ?>
+						<span class="wpdsac-chat__quick-icon">
+							<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .57 3.57 1 1 0 0 1-.25 1.02l-2.2 2.2Z"/></svg>
+						</span>
+						<span class="wpdsac-chat__quick-label"><?php echo esc_html( $view['quick_call_label'] ); ?></span>
 					</a>
 				<?php endif; ?>
 				<button type="button" class="wpdsac-chat__quick-action" data-wpdsac-quick-action="lead" data-wpdsac-open-lead>
-					<?php echo esc_html( $view['quick_lead_label'] ); ?>
+					<span class="wpdsac-chat__quick-icon">
+						<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4.7-8 5.34L4 8.7V6.75l8 5.34 8-5.34V8.7Z"/></svg>
+					</span>
+					<span class="wpdsac-chat__quick-label"><?php echo esc_html( $view['quick_lead_label'] ); ?></span>
 				</button>
 				<?php foreach ( $view['custom_actions'] as $quick_action ) : ?>
 					<?php if ( 'url' === $quick_action['type'] ) : ?>
 						<a href="<?php echo esc_url( $quick_action['value'], array( 'http', 'https' ) ); ?>" class="wpdsac-chat__quick-action" data-wpdsac-quick-action="<?php echo esc_attr( $quick_action['id'] ); ?>">
-							<?php echo esc_html( $quick_action['label'] ); ?>
+							<span class="wpdsac-chat__quick-icon">
+								<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4M14 4h6v6M20 4 10 14"/></svg>
+							</span>
+							<span class="wpdsac-chat__quick-label"><?php echo esc_html( $quick_action['label'] ); ?></span>
 						</a>
 					<?php else : ?>
 						<button type="button" class="wpdsac-chat__quick-action" data-wpdsac-quick-action="<?php echo esc_attr( $quick_action['id'] ); ?>" data-wpdsac-quick-message="<?php echo esc_attr( $quick_action['value'] ); ?>">
-							<?php echo esc_html( $quick_action['label'] ); ?>
+							<span class="wpdsac-chat__quick-icon">
+								<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20 2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14l4 4V4a2 2 0 0 0-2-2Zm-2 12H6v-2h12v2Zm0-3H6V9h12v2Zm0-3H6V6h12v2Z"/></svg>
+							</span>
+							<span class="wpdsac-chat__quick-label"><?php echo esc_html( $quick_action['label'] ); ?></span>
 						</button>
 					<?php endif; ?>
 				<?php endforeach; ?>
@@ -87,14 +101,19 @@ if ( ! $view['show_toggle_icon'] ) {
 			<label class="screen-reader-text" for="<?php echo esc_attr( $view['id'] ); ?>-input">
 				<?php esc_html_e( 'Message', 'wp-ds-aichatbot' ); ?>
 			</label>
-			<input
-				id="<?php echo esc_attr( $view['id'] ); ?>-input"
-				type="text"
-				maxlength="2000"
-				placeholder="<?php echo esc_attr( $view['message_placeholder'] ); ?>"
-				autocomplete="off"
-			>
-			<button type="submit"><?php esc_html_e( 'Send', 'wp-ds-aichatbot' ); ?></button>
+			<div class="wpdsac-chat__input-wrap">
+				<input
+					id="<?php echo esc_attr( $view['id'] ); ?>-input"
+					type="text"
+					maxlength="2000"
+					placeholder="<?php echo esc_attr( $view['message_placeholder'] ); ?>"
+					autocomplete="off"
+				>
+				<button type="submit" aria-label="<?php esc_attr_e( 'Send message', 'wp-ds-aichatbot' ); ?>">
+					<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2 .01 7Z"/></svg>
+					<span class="wpdsac-chat__send-label"><?php esc_html_e( 'Send', 'wp-ds-aichatbot' ); ?></span>
+				</button>
+			</div>
 			</form>
 			<p class="wpdsac-chat__status" data-wpdsac-status aria-live="polite"></p>
 		</div>
