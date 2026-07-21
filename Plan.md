@@ -92,7 +92,7 @@
 - [x] Ручной FAQ через приватный WordPress admin UI с автоматической индексацией.
 - [x] Хранилище фрагментов базы знаний вне `wp_options`.
 - [x] Knowledge/RAG по страницам и записям WordPress с локальным keyword ranking.
-- [ ] Semantic embeddings — опциональный provider-neutral adapter; локальный RAG является релизным.
+- [x] Semantic embeddings — опциональный provider-neutral adapter; локальный RAG является релизным.
 - [x] PDF ingestion.
 - [x] WooCommerce source.
 - [x] Сбор лидов.
@@ -154,7 +154,9 @@ wp-ds-aichatbot/
 
 ## Текущий следующий шаг
 
-Версия `0.5.44`: `LeadRepository::save()` использует `mysqli_query()` напрямую в обход `$wpdb->query()`, который на некоторых хостингах отвергает валидный параметризованный SQL. Форма заявок работает на mazhenov.kz.
+Версия `0.5.45`: premium quick bar с иконками, pill input + semantic embeddings инфраструктура (DB v8, OpenAI embeddings provider, EmbeddingService, гибридный Retriever).
+
+Коммит `dc2abfb` запушен. PHPUnit 14/14 OK.
 
 GitHub Actions run `29664260145` полностью прошёл: PHPUnit PHP 7.4/8.3, PHP lint 7.4/8.1/8.3, WPCS, WordPress/Elementor integration и package. Artifact `8435277185` содержит installable ZIP для commit `aaf3120`.
 
