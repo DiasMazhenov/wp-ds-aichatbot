@@ -139,6 +139,9 @@ assert.match(quickActionsPhp, /MAX_ACTIONS\s*=\s*8/);
 assert.match(chatbotTemplate, /role="dialog"/);
 assert.match(chatbotTemplate, /aria-modal="true"/);
 assert.match(chatStyles, /--wpdsac-height/);
+assert.match(chatStyles, /wpdsac-launcher-gradient/);
+assert.match(chatStyles, /prefers-reduced-motion/);
+assert.match(chatbotTemplate, /data-wpdsac-launcher-animation/);
 assert.match(chatbotTemplate, /name="phone"[^>]+required/);
 assert.match(chatbotTemplate, /data-wpdsac-intro-trigger/);
 assert.match(chatbotTemplate, /wpdsac-chat__avatar/);
@@ -149,8 +152,10 @@ assert.match(promptGuardPhp, /prompt_injection/);
 assert.match(promptGuardPhp, /model_probe/);
 assert.match(promptGuardPhp, /off_topic/);
 assert.match(promptGuardPhp, /Your public chatbot name/);
+assert.match(promptGuardPhp, /Never use an em dash/);
 assert.match(settingsPhp, /Chatbot name/);
 assert.match(providerManagerPhp, /guard->inspect/);
+assert.match(providerManagerPhp, /normalize_human_punctuation/);
 
 const playground = await runCLI({
   command: 'server',

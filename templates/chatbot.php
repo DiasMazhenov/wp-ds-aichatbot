@@ -35,6 +35,7 @@ if ( ! $view['show_toggle_icon'] ) {
 	data-wpdsac-avatar-position-y="<?php echo absint( $view['avatar_position_y'] ); ?>"
 	data-wpdsac-avatar-scale="<?php echo esc_attr( $view['avatar_scale'] ); ?>"
 	data-wpdsac-welcome-message="<?php echo esc_attr( $view['welcome_message'] ); ?>"
+	data-wpdsac-launcher-animation="<?php echo esc_attr( $view['launcher_animation'] ); ?>"
 >
 	<button type="button" class="wpdsac-chat__intro-bubble" data-wpdsac-intro-bubble hidden>
 		<?php echo esc_html( $view['welcome_message'] ); ?>

@@ -29,6 +29,7 @@ final class AppearanceSettings {
 			'wpdsac-settings'
 		);
 		add_settings_section( 'wpdsac_appearance_layout', esc_html__( 'Layout and typography', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
+		add_settings_section( 'wpdsac_appearance_launcher', esc_html__( 'Collapsed launcher animation', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
 		add_settings_section( 'wpdsac_appearance_controls', esc_html__( 'Controls and shapes', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
 
 		$this->add_field( 'accent_color', __( 'Header and launcher', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_colors' );
@@ -66,7 +67,13 @@ final class AppearanceSettings {
 		$this->add_field( 'global_offset_x', __( 'Horizontal offset (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
 		$this->add_field( 'global_offset_y', __( 'Bottom offset (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
 
-		$this->add_field( 'launcher_size', __( 'Collapsed circle size (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
+		$this->add_field( 'launcher_animation', __( 'Animation', 'wp-ds-aichatbot' ), 'launcher_animation', 'wpdsac_appearance_launcher' );
+		$this->add_field( 'launcher_gradient_1', __( 'Gradient color 1', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_launcher' );
+		$this->add_field( 'launcher_gradient_2', __( 'Gradient color 2', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_launcher' );
+		$this->add_field( 'launcher_gradient_3', __( 'Gradient color 3', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_launcher' );
+		$this->add_field( 'launcher_anim_speed', __( 'Animation duration (seconds)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_launcher' );
+		$this->add_field( 'launcher_anim_intensity', __( 'Animation intensity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_launcher' );
+		$this->add_field( 'launcher_size', __( 'Collapsed circle size (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_launcher' );
 		$this->add_field( 'chat_border_radius', __( 'Panel radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
 		$this->add_field( 'toggle_radius', __( 'Expanded header radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
 		$this->add_field( 'message_radius', __( 'Message radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
@@ -163,6 +170,11 @@ final class AppearanceSettings {
 			return;
 		}
 
+		if ( 'launcher_animation' === $args['type'] ) {
+			$this->render_launcher_animation_select( $name, (string) $options[ $key ] );
+			return;
+		}
+
 		if ( 'checkbox' === $args['type'] ) {
 			printf(
 				'<label><input type="checkbox" name="%1$s" value="1" %2$s data-wpdsac-preview-icon> %3$s</label>',
@@ -204,6 +216,7 @@ final class AppearanceSettings {
 	 */
 	public function render_preview(): void {
 		$options    = Settings::get();
+		$appearance = Appearance::sanitize( $options );
 		$avatar_url = ! empty( $options['bot_avatar_id'] ) ? wp_get_attachment_image_url( absint( $options['bot_avatar_id'] ), 'wpdsac-avatar' ) : '';
 		$avatar_url = $avatar_url ? $avatar_url : WPDSAC_URL . 'wp-chatbot.svg';
 		$pos_x      = min( 100, max( 0, absint( $options['avatar_position_x'] ?? 50 ) ) );
@@ -231,8 +244,9 @@ final class AppearanceSettings {
 			<div class="wpdsac-admin-preview-stage">
 				<section
 					class="wpdsac-chat is-expanded<?php echo empty( $options['show_toggle_icon'] ) ? ' wpdsac-hide-header-icon' : ''; ?>"
-					style="<?php echo esc_attr( Appearance::inline_style( $options ) ); ?>"
+					style="<?php echo esc_attr( Appearance::inline_style( $appearance ) ); ?>"
 					data-wpdsac-preview
+					data-wpdsac-launcher-animation="<?php echo esc_attr( (string) $appearance['launcher_animation'] ); ?>"
 				>
 					<button type="button" class="wpdsac-chat__toggle" aria-expanded="true">
 						<span class="wpdsac-chat__toggle-title"><?php echo esc_html( (string) $options['title'] ); ?></span>
@@ -317,6 +331,35 @@ final class AppearanceSettings {
 	}
 
 	/**
+	 * Render accessible launcher animation choices.
+	 *
+	 * @param string $name    Input name.
+	 * @param string $current Current animation ID.
+	 * @return void
+	 */
+	private function render_launcher_animation_select( string $name, string $current ): void {
+		$labels = array(
+			'none'     => __( 'No animation', 'wp-ds-aichatbot' ),
+			'gradient' => __( 'Flowing gradient', 'wp-ds-aichatbot' ),
+			'glow'     => __( 'Soft glow', 'wp-ds-aichatbot' ),
+			'orbit'    => __( 'Orbiting ring', 'wp-ds-aichatbot' ),
+			'float'    => __( 'Gentle float', 'wp-ds-aichatbot' ),
+		);
+
+		printf( '<select name="%s" data-wpdsac-launcher-animation>', esc_attr( $name ) );
+
+		foreach ( $labels as $value => $label ) {
+			printf( '<option value="%1$s" %2$s>%3$s</option>', esc_attr( $value ), selected( $current, $value, false ), esc_html( $label ) );
+		}
+
+		echo '</select>';
+		printf(
+			'<p class="description">%s</p>',
+			esc_html__( 'Animation runs only while the chat is collapsed. Reduced-motion preferences always disable it.', 'wp-ds-aichatbot' )
+		);
+	}
+
+	/**
 	 * Render global position choices.
 	 *
 	 * @param string $name    Input name.
@@ -351,48 +394,53 @@ final class AppearanceSettings {
 	 */
 	private function css_variable( string $key ): string {
 		$variables = array(
-			'accent_color'           => '--wpdsac-accent',
-			'accent_text_color'      => '--wpdsac-accent-text',
-			'surface_color'          => '--wpdsac-surface',
-			'text_color'             => '--wpdsac-text',
-			'bot_message_color'      => '--wpdsac-bot-message',
-			'bot_text_color'         => '--wpdsac-bot-text',
-			'user_message_color'     => '--wpdsac-user-message',
-			'user_text_color'        => '--wpdsac-user-text',
-			'input_color'            => '--wpdsac-input',
-			'input_text_color'       => '--wpdsac-input-text',
-			'send_button_color'      => '--wpdsac-send',
-			'send_text_color'        => '--wpdsac-send-text',
-			'muted_text_color'       => '--wpdsac-muted',
-			'border_color'           => '--wpdsac-border',
-			'quick_action_color'     => '--wpdsac-quick-bg',
-			'quick_action_text'      => '--wpdsac-quick-text',
-			'quick_action_border'    => '--wpdsac-quick-border',
-			'chat_width'             => '--wpdsac-width',
-			'chat_height'            => '--wpdsac-height',
-			'chat_border_radius'     => '--wpdsac-radius',
-			'chat_font_size'         => '--wpdsac-font-size',
-			'chat_line_height'       => '--wpdsac-line-height',
-			'title_font_size'        => '--wpdsac-title-font-size',
-			'title_font_weight'      => '--wpdsac-title-weight',
-			'message_font_size'      => '--wpdsac-message-size',
-			'message_line_height'    => '--wpdsac-message-height',
-			'input_font_size'        => '--wpdsac-input-font-size',
-			'button_font_size'       => '--wpdsac-button-size',
-			'toggle_radius'          => '--wpdsac-toggle-radius',
-			'message_radius'         => '--wpdsac-message-radius',
-			'input_radius'           => '--wpdsac-input-radius',
-			'panel_padding'          => '--wpdsac-panel-padding',
-			'messages_height'        => '--wpdsac-messages-height',
-			'quick_action_font_size' => '--wpdsac-quick-font-size',
-			'quick_action_padding_x' => '--wpdsac-quick-padding-x',
-			'quick_action_padding_y' => '--wpdsac-quick-padding-y',
-			'quick_action_radius'    => '--wpdsac-quick-radius',
-			'quick_action_gap'       => '--wpdsac-quick-gap',
-			'launcher_size'          => '--wpdsac-launcher-size',
-			'shadow_opacity'         => '--wpdsac-shadow-opacity',
-			'global_offset_x'        => '--wpdsac-offset-x',
-			'global_offset_y'        => '--wpdsac-offset-y',
+			'accent_color'            => '--wpdsac-accent',
+			'accent_text_color'       => '--wpdsac-accent-text',
+			'surface_color'           => '--wpdsac-surface',
+			'text_color'              => '--wpdsac-text',
+			'bot_message_color'       => '--wpdsac-bot-message',
+			'bot_text_color'          => '--wpdsac-bot-text',
+			'user_message_color'      => '--wpdsac-user-message',
+			'user_text_color'         => '--wpdsac-user-text',
+			'input_color'             => '--wpdsac-input',
+			'input_text_color'        => '--wpdsac-input-text',
+			'send_button_color'       => '--wpdsac-send',
+			'send_text_color'         => '--wpdsac-send-text',
+			'muted_text_color'        => '--wpdsac-muted',
+			'border_color'            => '--wpdsac-border',
+			'quick_action_color'      => '--wpdsac-quick-bg',
+			'quick_action_text'       => '--wpdsac-quick-text',
+			'quick_action_border'     => '--wpdsac-quick-border',
+			'launcher_gradient_1'     => '--wpdsac-launcher-color-1',
+			'launcher_gradient_2'     => '--wpdsac-launcher-color-2',
+			'launcher_gradient_3'     => '--wpdsac-launcher-color-3',
+			'chat_width'              => '--wpdsac-width',
+			'chat_height'             => '--wpdsac-height',
+			'chat_border_radius'      => '--wpdsac-radius',
+			'chat_font_size'          => '--wpdsac-font-size',
+			'chat_line_height'        => '--wpdsac-line-height',
+			'title_font_size'         => '--wpdsac-title-font-size',
+			'title_font_weight'       => '--wpdsac-title-weight',
+			'message_font_size'       => '--wpdsac-message-size',
+			'message_line_height'     => '--wpdsac-message-height',
+			'input_font_size'         => '--wpdsac-input-font-size',
+			'button_font_size'        => '--wpdsac-button-size',
+			'toggle_radius'           => '--wpdsac-toggle-radius',
+			'message_radius'          => '--wpdsac-message-radius',
+			'input_radius'            => '--wpdsac-input-radius',
+			'panel_padding'           => '--wpdsac-panel-padding',
+			'messages_height'         => '--wpdsac-messages-height',
+			'quick_action_font_size'  => '--wpdsac-quick-font-size',
+			'quick_action_padding_x'  => '--wpdsac-quick-padding-x',
+			'quick_action_padding_y'  => '--wpdsac-quick-padding-y',
+			'quick_action_radius'     => '--wpdsac-quick-radius',
+			'quick_action_gap'        => '--wpdsac-quick-gap',
+			'launcher_size'           => '--wpdsac-launcher-size',
+			'launcher_anim_speed'     => '--wpdsac-launcher-speed',
+			'launcher_anim_intensity' => '--wpdsac-launcher-glow',
+			'shadow_opacity'          => '--wpdsac-shadow-opacity',
+			'global_offset_x'         => '--wpdsac-offset-x',
+			'global_offset_y'         => '--wpdsac-offset-y',
 		);
 
 		return $variables[ $key ] ?? '';

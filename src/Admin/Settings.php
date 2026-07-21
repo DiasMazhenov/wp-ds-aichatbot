@@ -804,7 +804,7 @@ final class Settings {
 				<?php $this->render_tab_panel( 'general', $tabs['general'], array( 'wpdsac_display' ) ); ?>
 				<?php $this->render_tab_panel( 'ai', $tabs['ai'], array( 'wpdsac_ai' ) ); ?>
 				<?php $this->render_tab_panel( 'knowledge', $tabs['knowledge'], array( 'wpdsac_knowledge' ) ); ?>
-				<?php $this->render_tab_panel( 'appearance', $tabs['appearance'], array( 'wpdsac_appearance_colors', 'wpdsac_appearance_layout', 'wpdsac_appearance_controls' ), true ); ?>
+				<?php $this->render_tab_panel( 'appearance', $tabs['appearance'], array( 'wpdsac_appearance_colors', 'wpdsac_appearance_layout', 'wpdsac_appearance_launcher', 'wpdsac_appearance_controls' ), true ); ?>
 				<?php $this->render_tab_panel( 'privacy', $tabs['privacy'], array( 'wpdsac_privacy' ) ); ?>
 				<?php $this->render_tab_panel( 'leads', $tabs['leads'], array( 'wpdsac_leads' ) ); ?>
 				<div class="wpdsac-settings-actions">
@@ -862,6 +862,7 @@ final class Settings {
 		$section_titles = array(
 			'wpdsac_appearance_colors'   => __( 'Colors', 'wp-ds-aichatbot' ),
 			'wpdsac_appearance_layout'   => __( 'Layout and typography', 'wp-ds-aichatbot' ),
+			'wpdsac_appearance_launcher' => __( 'Collapsed launcher animation', 'wp-ds-aichatbot' ),
 			'wpdsac_appearance_controls' => __( 'Controls and shapes', 'wp-ds-aichatbot' ),
 		);
 		?>

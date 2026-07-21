@@ -58,6 +58,7 @@ final class Renderer {
 		$triggers   = array( 'delay', 'scroll', 'exit', 'immediate', 'disabled' );
 		$trigger    = sanitize_key( (string) $options['intro_trigger'] );
 		$trigger    = in_array( $trigger, $triggers, true ) ? $trigger : 'delay';
+		$appearance = Appearance::sanitize( $options );
 		$call_url   = esc_url_raw( (string) $options['quick_call_url'], array( 'http', 'https', 'tel', 'sms' ) );
 		$call_url   = '' !== $call_url ? $call_url : $this->contacts->call_url();
 
@@ -86,7 +87,8 @@ final class Renderer {
 			'avatar_position_y'   => $pos_y,
 			'avatar_scale'        => round( $scale / 100, 2 ),
 			'expanded'            => ! empty( $options['expanded'] ),
-			'appearance'          => Appearance::inline_style( $options ),
+			'appearance'          => Appearance::inline_style( $appearance ),
+			'launcher_animation'  => $appearance['launcher_animation'],
 			'position_class'      => Appearance::position_class( $options ),
 			'show_toggle_icon'    => ! empty( $options['show_toggle_icon'] ),
 			'quick_call_label'    => sanitize_text_field( (string) $options['quick_call_label'] ),

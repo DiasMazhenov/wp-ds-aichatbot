@@ -658,6 +658,16 @@
         input.dataset.wpdsacCssVar,
         `${input.value}${input.dataset.wpdsacUnit || ''}`
       );
+
+      if (input.name === 'wpdsac_settings[launcher_anim_intensity]') {
+        const intensity = Math.min(100, Math.max(0, Number(input.value) || 0));
+        preview.style.setProperty('--wpdsac-launcher-scale', String(1 + intensity / 1000));
+        preview.style.setProperty('--wpdsac-launcher-float', `${2 + intensity / 20}px`);
+      }
+
+      if (input.type === 'color' && input.nextElementSibling?.tagName === 'CODE') {
+        input.nextElementSibling.textContent = input.value;
+      }
     };
 
     input.addEventListener('input', update);
@@ -701,6 +711,14 @@
         '--wpdsac-font-family',
         fontStacks[fontSelect.value] || fontStacks.system
       );
+    });
+  }
+
+  const launcherAnimationSelect = document.querySelector('select[data-wpdsac-launcher-animation]');
+
+  if (launcherAnimationSelect) {
+    launcherAnimationSelect.addEventListener('change', () => {
+      preview.dataset.wpdsacLauncherAnimation = launcherAnimationSelect.value;
     });
   }
 

@@ -156,9 +156,13 @@ final class ProviderManager {
 				$generated_reply = trim( preg_replace( '/\n{3,}/', "\n\n", $generated_reply ) );
 			}
 
-			return is_string( $generated_reply )
-				? $this->remove_repeated_greeting( $generated_reply, is_array( $history ) ? $history : array() )
-				: $generated_reply;
+			if ( is_string( $generated_reply ) ) {
+				$generated_reply = $this->remove_repeated_greeting( $generated_reply, is_array( $history ) ? $history : array() );
+
+				return $this->normalize_human_punctuation( $generated_reply );
+			}
+
+			return $generated_reply;
 		} catch ( \Throwable $e ) {
 			/**
 			 * Fires when an AI provider throws an unexpected exception.
@@ -309,5 +313,17 @@ final class ProviderManager {
 		}
 
 		return 'Чем именно я могу вам помочь?';
+	}
+
+	/**
+	 * Replace typography strongly associated with generated copy.
+	 *
+	 * Keep this deterministic across providers without rewriting sentence meaning.
+	 *
+	 * @param string $reply Provider reply.
+	 * @return string
+	 */
+	private function normalize_human_punctuation( string $reply ): string {
+		return str_replace( array( '—', '–' ), '-', $reply );
 	}
 }

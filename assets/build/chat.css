@@ -25,6 +25,13 @@
 	--wpdsac-quick-bg: #fff;
 	--wpdsac-quick-text: #2563eb;
 	--wpdsac-quick-border: #b8c8ea;
+	--wpdsac-launcher-color-1: #2563eb;
+	--wpdsac-launcher-color-2: #7c3aed;
+	--wpdsac-launcher-color-3: #06b6d4;
+	--wpdsac-launcher-speed: 6s;
+	--wpdsac-launcher-glow: 40%;
+	--wpdsac-launcher-scale: 1.04;
+	--wpdsac-launcher-float: 4px;
 	--wpdsac-width: 380px;
 	--wpdsac-height: 500px;
 	--wpdsac-radius: 18px;
@@ -116,6 +123,8 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 }
 
 .wpdsac-chat__toggle {
+	position: relative;
+	isolation: isolate;
 	display: flex;
 	align-items: center;
 	gap: 20px;
@@ -150,6 +159,99 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	padding: 0;
 	border-radius: 50%;
 	box-shadow: 0 10px 30px rgb(23 32 51 / var(--wpdsac-shadow-opacity));
+	overflow: visible;
+}
+
+.wpdsac-chat:not(.is-expanded) .wpdsac-chat__toggle > * {
+	position: relative;
+	z-index: 1;
+}
+
+.wpdsac-chat[data-wpdsac-launcher-animation="gradient"]:not(.is-expanded) .wpdsac-chat__toggle {
+	background: linear-gradient(120deg, var(--wpdsac-launcher-color-1), var(--wpdsac-launcher-color-2), var(--wpdsac-launcher-color-3), var(--wpdsac-launcher-color-1));
+	background-size: 260% 260%;
+	animation: wpdsac-launcher-gradient var(--wpdsac-launcher-speed) cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.wpdsac-chat[data-wpdsac-launcher-animation="glow"]:not(.is-expanded) .wpdsac-chat__toggle::after {
+	position: absolute;
+	inset: -14px;
+	z-index: -1;
+	border-radius: 50%;
+	background: radial-gradient(circle, color-mix(in srgb, var(--wpdsac-launcher-color-2) var(--wpdsac-launcher-glow), transparent) 0 34%, transparent 72%);
+	content: "";
+	opacity: 0.35;
+	transform: scale(0.86);
+	animation: wpdsac-launcher-glow var(--wpdsac-launcher-speed) cubic-bezier(0.16, 1, 0.3, 1) infinite;
+	pointer-events: none;
+}
+
+.wpdsac-chat[data-wpdsac-launcher-animation="orbit"]:not(.is-expanded) .wpdsac-chat__toggle::before {
+	position: absolute;
+	inset: -5px;
+	z-index: 0;
+	box-sizing: border-box;
+	border: 3px solid transparent;
+	border-radius: 50%;
+	background: conic-gradient(from 0deg, transparent 0 28%, var(--wpdsac-launcher-color-2) 42%, var(--wpdsac-launcher-color-3) 56%, transparent 70% 100%) border-box;
+	content: "";
+	opacity: var(--wpdsac-launcher-glow);
+	-webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	mask-composite: exclude;
+	animation: wpdsac-launcher-orbit var(--wpdsac-launcher-speed) linear infinite;
+	pointer-events: none;
+}
+
+.wpdsac-chat[data-wpdsac-launcher-animation="float"]:not(.is-expanded) .wpdsac-chat__toggle {
+	animation: wpdsac-launcher-float var(--wpdsac-launcher-speed) cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.wpdsac-chat:not(.is-expanded) .wpdsac-chat__toggle:hover,
+.wpdsac-chat:not(.is-expanded) .wpdsac-chat__toggle:focus-visible,
+.wpdsac-chat:not(.is-expanded) .wpdsac-chat__toggle:hover::before,
+.wpdsac-chat:not(.is-expanded) .wpdsac-chat__toggle:focus-visible::before,
+.wpdsac-chat:not(.is-expanded) .wpdsac-chat__toggle:hover::after,
+.wpdsac-chat:not(.is-expanded) .wpdsac-chat__toggle:focus-visible::after {
+	animation-play-state: paused;
+}
+
+@keyframes wpdsac-launcher-gradient {
+	0%, 100% {
+		background-position: 0% 50%;
+	}
+
+	50% {
+		background-position: 100% 50%;
+	}
+}
+
+@keyframes wpdsac-launcher-glow {
+	0%, 100% {
+		opacity: 0.28;
+		transform: scale(0.86);
+	}
+
+	50% {
+		opacity: 0.92;
+		transform: scale(var(--wpdsac-launcher-scale));
+	}
+}
+
+@keyframes wpdsac-launcher-orbit {
+	to {
+		transform: rotate(1turn);
+	}
+}
+
+@keyframes wpdsac-launcher-float {
+	0%, 100% {
+		transform: translate3d(0, 0, 0);
+	}
+
+	50% {
+		transform: translate3d(0, calc(-1 * var(--wpdsac-launcher-float)), 0);
+	}
 }
 
 .wpdsac-chat:not(.is-expanded) .wpdsac-chat__toggle-title {
@@ -704,5 +806,6 @@ svg.wpdsac-chat__icon {
 	.wpdsac-chat *::after {
 		scroll-behavior: auto !important;
 		transition: none !important;
+		animation: none !important;
 	}
 }
