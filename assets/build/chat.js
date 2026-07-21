@@ -13,6 +13,8 @@
 	const modalReturnFocus = new WeakMap();
 	const leadModalByChat = new WeakMap();
 	const chatByLeadModal = new WeakMap();
+	const userMessageCounters = new WeakMap();
+	const leadAutoTriggered = new WeakMap();
 
 	const ensureAudioContext = () => {
 		const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -964,6 +966,20 @@
 			playReplySound(chat.dataset.wpdsacReplySound || 'off');
 			input.value = '';
 			status.textContent = '';
+
+			const count = (userMessageCounters.get(chat) || 0) + 1;
+			userMessageCounters.set(chat, count);
+
+			if (count >= 2 && !leadAutoTriggered.get(chat)) {
+				leadAutoTriggered.set(chat, true);
+				hideQuickAction(chat.querySelector('[data-wpdsac-quick-action="lead"]'));
+				const leadEl = chat.querySelector('[data-wpdsac-lead]');
+				const leadPrompt = leadEl?.dataset?.wpdsacLeadPrompt || '';
+				setTimeout(() => {
+					appendMessage(chat, leadPrompt, 'bot');
+					openLeadForm(chat, { request: '' });
+				}, 600);
+			}
 		} catch (error) {
 			if (error.status === 401) {
 				window.sessionStorage.removeItem(sessionStorageKey);
