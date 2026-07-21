@@ -15,7 +15,7 @@
 	const chatByLeadModal = new WeakMap();
 	const userMessageCounters = new WeakMap();
 	const leadAutoTriggered = new WeakMap();
-	const waitingForContact = new WeakMap();
+	const leadState = new WeakMap();
 
 	const ensureAudioContext = () => {
 		const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -933,45 +933,93 @@
 
 		button.disabled = true;
 
-		if (waitingForContact.get(chat)) {
-			waitingForContact.set(chat, false);
-			const details = extractLeadDetails(message);
-			const name = details.name || message.split(/[,;\n]/)[0]?.trim().slice(0, 100) || '';
-			const phone = details.phone || '';
+		const ls = leadState.get(chat);
 
-			if (!name || !phone || phone.replace(/\D/g, '').length < 7) {
-				appendMessage(chat, message, 'user');
-				appendMessage(chat, strings.leadContactInvalid || 'Укажите имя и телефон, например: Иван, 89001234567', 'bot');
-				input.value = '';
+		if (ls && ls.phase !== 'idle') {
+			appendMessage(chat, message, 'user');
+			input.value = '';
+
+			if (ls.phase === 'waiting_name') {
+				const details = extractLeadDetails(message);
+				const name = details.name || message.split(/[,;\n]/)[0]?.trim().slice(0, 100) || '';
+				const phone = details.phone || '';
+
+				if (!name || name.length < 2) {
+					appendMessage(chat, strings.leadNameInvalid || 'Пожалуйста, укажите ваше имя.', 'bot');
+					button.disabled = false;
+					persistConversationHistory(chat);
+					return;
+				}
+
+				if (phone && phone.replace(/\D/g, '').length >= 7) {
+					leadState.set(chat, { phase: 'idle', name: '' });
+					window.sessionStorage.setItem(visitorNameStorageKey, name.slice(0, 100));
+					status.textContent = strings.leadSaving || '';
+					try {
+						const session = await getSessionToken();
+						await request('/lead', {
+							session,
+							name,
+							phone,
+							consent: true,
+							request: '',
+							transcript: getConversationHistory(chat).map((e) => `${e.role === 'assistant' ? 'Bot' : 'User'}: ${e.content}`).join('\n'),
+						});
+						appendMessage(chat, strings.leadSaved || 'Спасибо! Мы свяжемся с вами в ближайшее время.', 'bot');
+						playReplySound(chat.dataset.wpdsacReplySound || 'off');
+						status.textContent = '';
+					} catch (error) {
+						status.textContent = error.message || strings.leadError || 'Не удалось сохранить заявку.';
+					} finally {
+						button.disabled = false;
+					}
+					persistConversationHistory(chat);
+					return;
+				}
+
+				ls.name = name;
+				ls.phase = 'waiting_phone';
+				window.sessionStorage.setItem(visitorNameStorageKey, name.slice(0, 100));
+				appendMessage(chat, strings.leadAskPhone || 'Отлично! Теперь укажите номер телефона для связи.', 'bot');
+				playReplySound(chat.dataset.wpdsacReplySound || 'off');
 				button.disabled = false;
 				persistConversationHistory(chat);
 				return;
 			}
 
-			appendMessage(chat, message, 'user');
-			input.value = '';
-			status.textContent = strings.leadSaving || '';
+			if (ls.phase === 'waiting_phone') {
+				const phone = extractLeadDetails(message).phone || message.replace(/[^0-9+().\/\-\s]/g, '').trim();
+				if (!phone || phone.replace(/\D/g, '').length < 7) {
+					appendMessage(chat, strings.leadPhoneInvalid || 'Некорректный номер. Укажите телефон, например: 8 900 123-45-67', 'bot');
+					button.disabled = false;
+					persistConversationHistory(chat);
+					return;
+				}
 
-			try {
-				const session = await getSessionToken();
-				await request('/lead', {
-					session,
-					name,
-					phone,
-					consent: true,
-					request: '',
-					transcript: getConversationHistory(chat).map((e) => `${e.role === 'assistant' ? 'Bot' : 'User'}: ${e.content}`).join('\n'),
-				});
-				appendMessage(chat, strings.leadSaved || 'Спасибо! Мы свяжемся с вами в ближайшее время.', 'bot');
-				playReplySound(chat.dataset.wpdsacReplySound || 'off');
-				status.textContent = '';
-			} catch (error) {
-				status.textContent = error.message || strings.leadError || 'Не удалось сохранить заявку.';
-			} finally {
-				button.disabled = false;
+				leadState.set(chat, { phase: 'idle', name: '' });
+				status.textContent = strings.leadSaving || '';
+
+				try {
+					const session = await getSessionToken();
+					await request('/lead', {
+						session,
+						name: ls.name,
+						phone,
+						consent: true,
+						request: '',
+						transcript: getConversationHistory(chat).map((e) => `${e.role === 'assistant' ? 'Bot' : 'User'}: ${e.content}`).join('\n'),
+					});
+					appendMessage(chat, strings.leadSaved || 'Спасибо! Мы свяжемся с вами в ближайшее время.', 'bot');
+					playReplySound(chat.dataset.wpdsacReplySound || 'off');
+					status.textContent = '';
+				} catch (error) {
+					status.textContent = error.message || strings.leadError || 'Не удалось сохранить заявку.';
+				} finally {
+					button.disabled = false;
+				}
+				persistConversationHistory(chat);
+				return;
 			}
-			persistConversationHistory(chat);
-			return;
 		}
 
 		const leadDetails = extractLeadDetails(message);
@@ -1012,14 +1060,14 @@
 			const count = (userMessageCounters.get(chat) || 0) + 1;
 			userMessageCounters.set(chat, count);
 
-			if (count >= 2 && !leadAutoTriggered.get(chat)) {
+			if (count >= 5 && !leadAutoTriggered.get(chat)) {
 				leadAutoTriggered.set(chat, true);
 				hideQuickAction(chat.querySelector('[data-wpdsac-quick-action="lead"]'));
 				const leadEl = chat.querySelector('[data-wpdsac-lead]');
 				const leadPrompt = leadEl?.dataset?.wpdsacLeadPrompt || '';
 				setTimeout(() => {
 					appendMessage(chat, leadPrompt || 'Пожалуйста, оставьте ваше имя и телефон для связи.', 'bot');
-					waitingForContact.set(chat, true);
+					leadState.set(chat, { phase: 'waiting_name', name: '' });
 				}, 600);
 			}
 		} catch (error) {
