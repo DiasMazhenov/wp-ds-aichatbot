@@ -89,6 +89,8 @@ final class Renderer {
 			'expanded'            => ! empty( $options['expanded'] ),
 			'appearance'          => Appearance::inline_style( $appearance ),
 			'launcher_animation'  => $appearance['launcher_animation'],
+			'message_animation'   => ! empty( $appearance['message_animation_enabled'] ),
+			'message_word_delay'  => absint( $appearance['message_word_delay'] ),
 			'position_class'      => Appearance::position_class( $options ),
 			'show_toggle_icon'    => ! empty( $options['show_toggle_icon'] ),
 			'quick_call_label'    => sanitize_text_field( (string) $options['quick_call_label'] ),

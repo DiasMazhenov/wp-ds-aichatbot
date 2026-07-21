@@ -354,6 +354,48 @@
 		renderMarkdown(container, message.slice(offset));
 	};
 
+	const assistantPreviewText = (message) => message
+		.replace(/\[\[WPDSAC_(?:NAV|ACTION|QA)\|[^\]]+\]\]/giu, '')
+		.replace(/\[([^\]]+)\]\([^)]+\)/gu, '$1')
+		.replace(/(^|\s)[#>*_`]+/gu, '$1')
+		.replace(/[*_`]+/gu, '')
+		.trim();
+
+	const animateAssistantContent = async (chat, messages, item, message) => {
+		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const enabled = chat.dataset.wpdsacMessageAnimation !== '0';
+		const preview = assistantPreviewText(message);
+		const words = preview.match(/\S+\s*/gu) || [];
+
+		if (!enabled || reduceMotion || words.length < 2) {
+			appendAssistantContent(item, message);
+			return;
+		}
+
+		const configuredDelay = Math.min(250, Math.max(20, Number.parseInt(chat.dataset.wpdsacMessageWordDelay || '70', 10)));
+		const delay = Math.max(20, Math.min(configuredDelay, Math.floor(12000 / words.length)));
+		messages.setAttribute('aria-busy', 'true');
+		item.classList.add('is-typing');
+		item.setAttribute('aria-label', preview);
+
+		for (const word of words) {
+			const span = document.createElement('span');
+			span.className = 'wpdsac-chat__typing-word';
+			span.setAttribute('aria-hidden', 'true');
+			span.textContent = word;
+			item.appendChild(span);
+			scrollToLatest(chat);
+			await new Promise((resolve) => window.setTimeout(resolve, delay));
+		}
+
+		item.textContent = '';
+		item.classList.remove('is-typing');
+		item.removeAttribute('aria-label');
+		appendAssistantContent(item, message);
+		messages.setAttribute('aria-busy', 'false');
+		scrollToLatest(chat);
+	};
+
 	const scrollToLatest = (chat, behavior = 'auto') => {
 		const messages = chat.querySelector('.wpdsac-chat__messages');
 		if (!messages) {
@@ -365,7 +407,7 @@
 		});
 	};
 
-	const appendMessage = (chat, message, role) => {
+	const appendMessage = (chat, message, role, animate = false) => {
 		const messages = chat.querySelector('.wpdsac-chat__messages');
 		if (role === 'bot') {
 			messages.querySelectorAll('.wpdsac-chat__qa-action').forEach(function(b) { b.remove(); });
@@ -375,6 +417,7 @@
 		const item = document.createElement(isBot ? 'div' : 'p');
 		row.className = `wpdsac-chat__message-row wpdsac-chat__message-row--${role}`;
 		item.className = `wpdsac-chat__message wpdsac-chat__message--${role}`;
+		item.dataset.wpdsacMessageContent = message;
 		if (isBot) {
 			const avatarUrl = chat.dataset.wpdsacAvatarUrl || '';
 			if (avatarUrl) {
@@ -402,13 +445,19 @@
 				avatar.innerHTML = '<path fill="currentColor" d="M12 2.75c.47 4.88 4.37 8.78 9.25 9.25-4.88.47-8.78 4.37-9.25 9.25C11.53 16.37 7.63 12.47 2.75 12 7.63 11.53 11.53 7.63 12 2.75Z"/>';
 				row.appendChild(avatar);
 			}
-			appendAssistantContent(item, message);
+			if (!animate) {
+				appendAssistantContent(item, message);
+			}
 		} else {
 			item.textContent = message;
 		}
 		row.appendChild(item);
 		messages.appendChild(row);
 		scrollToLatest(chat);
+
+		return isBot && animate
+			? animateAssistantContent(chat, messages, item, message)
+			: Promise.resolve();
 	};
 
 	const getVisitorName = () => window.sessionStorage.getItem(visitorNameStorageKey) || '';
@@ -462,7 +511,8 @@
 
 		for (let index = entries.length - 1; index >= 0 && history.length < 30 && remainingCharacters > 0; index -= 1) {
 			const entry = entries[index];
-			const content = entry.textContent.trim().slice(0, Math.min(4000, remainingCharacters));
+			const storedContent = entry.dataset.wpdsacMessageContent || entry.textContent;
+			const content = storedContent.trim().slice(0, Math.min(4000, remainingCharacters));
 
 			if (!content) {
 				continue;
@@ -1048,8 +1098,9 @@
 				});
 
 			appendMessage(chat, message, 'user');
-			appendMessage(chat, response.reply, 'bot');
+			const replyAnimation = appendMessage(chat, response.reply, 'bot', true);
 			persistConversationHistory(chat);
+			await replyAnimation;
 			playReplySound(chat.dataset.wpdsacReplySound || 'off');
 			input.value = '';
 			status.textContent = '';

@@ -54,27 +54,29 @@ final class CoreSecurityTest extends TestCase {
 	public function test_appearance_rejects_untrusted_values(): void {
 		$values = Appearance::sanitize(
 			array(
-				'accent_color'            => 'url(javascript:alert(1))',
-				'chat_width'              => 99999,
-				'chat_height'             => 99999,
-				'chat_border_radius'      => 999,
-				'chat_font_size'          => 1,
-				'chat_line_height'        => 999,
-				'title_font_size'         => 99,
-				'title_font_weight'       => 1,
-				'message_font_size'       => 1,
-				'message_line_height'     => 1,
-				'input_font_size'         => 99,
-				'button_font_size'        => 1,
-				'messages_height'         => 9999,
-				'launcher_size'           => 1,
-				'launcher_animation'      => 'javascript',
-				'launcher_gradient_2'     => 'expression(alert(1))',
-				'launcher_anim_speed'     => 999,
-				'launcher_anim_intensity' => 999,
-				'shadow_opacity'          => 999,
-				'font_family'             => 'javascript',
-				'global_position'         => 'top_center',
+				'accent_color'              => 'url(javascript:alert(1))',
+				'chat_width'                => 99999,
+				'chat_height'               => 99999,
+				'chat_border_radius'        => 999,
+				'chat_font_size'            => 1,
+				'chat_line_height'          => 999,
+				'title_font_size'           => 99,
+				'title_font_weight'         => 1,
+				'message_font_size'         => 1,
+				'message_line_height'       => 1,
+				'input_font_size'           => 99,
+				'button_font_size'          => 1,
+				'messages_height'           => 9999,
+				'launcher_size'             => 1,
+				'launcher_animation'        => 'javascript',
+				'launcher_gradient_2'       => 'expression(alert(1))',
+				'launcher_anim_speed'       => 999,
+				'launcher_anim_intensity'   => 999,
+				'message_animation_enabled' => '1',
+				'message_word_delay'        => 999,
+				'shadow_opacity'            => 999,
+				'font_family'               => 'javascript',
+				'global_position'           => 'top_center',
 			)
 		);
 
@@ -96,6 +98,8 @@ final class CoreSecurityTest extends TestCase {
 		$this->assertSame( '#7c3aed', $values['launcher_gradient_2'] );
 		$this->assertSame( 20, $values['launcher_anim_speed'] );
 		$this->assertSame( 100, $values['launcher_anim_intensity'] );
+		$this->assertTrue( $values['message_animation_enabled'] );
+		$this->assertSame( 250, $values['message_word_delay'] );
 		$this->assertSame( 40, $values['shadow_opacity'] );
 		$this->assertSame( 'system', $values['font_family'] );
 		$this->assertSame( 'bottom_right', $values['global_position'] );

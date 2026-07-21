@@ -730,6 +730,44 @@
     });
   }
 
+	const typingPreviewButton = document.querySelector('[data-wpdsac-preview-typing]');
+	const typingPreviewMessage = preview.querySelector('[data-wpdsac-preview-message]');
+	let typingPreviewRun = 0;
+
+	if (typingPreviewButton && typingPreviewMessage) {
+		typingPreviewButton.addEventListener('click', async () => {
+			const run = ++typingPreviewRun;
+			const text = typingPreviewMessage.textContent.trim() || typingPreviewMessage.dataset.wpdsacPreviewFallback || '';
+			const enabled = document.querySelector('[data-wpdsac-message-animation]')?.checked !== false;
+			const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+			const delayInput = document.querySelector('[name="wpdsac_settings[message_word_delay]"]');
+			const delay = Math.min(250, Math.max(20, Number.parseInt(delayInput?.value || '70', 10)));
+			const words = text.match(/\S+\s*/gu) || [];
+
+			if (!enabled || reduceMotion || words.length < 2) {
+				typingPreviewMessage.textContent = text;
+				return;
+			}
+
+			typingPreviewButton.disabled = true;
+			typingPreviewMessage.textContent = '';
+			typingPreviewMessage.classList.add('is-typing');
+
+			for (const word of words) {
+				if (run !== typingPreviewRun) break;
+				const span = document.createElement('span');
+				span.className = 'wpdsac-chat__typing-word';
+				span.textContent = word;
+				typingPreviewMessage.appendChild(span);
+				await new Promise((resolve) => window.setTimeout(resolve, delay));
+			}
+
+			typingPreviewMessage.classList.remove('is-typing');
+			typingPreviewMessage.textContent = text;
+			typingPreviewButton.disabled = false;
+		});
+	}
+
   const previewPanel = preview.querySelector('[data-wpdsac-preview-panel]');
   const previewStateButtons = document.querySelectorAll('[data-wpdsac-preview-state]');
 

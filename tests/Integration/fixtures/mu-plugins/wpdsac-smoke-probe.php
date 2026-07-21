@@ -165,19 +165,21 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$credential_bundle_resolved = $test_credential === ( new \DiasMazhenov\WPDsAiChatbot\AI\CredentialResolver() )->get_api_key( 'deepseek' );
 	update_option( 'wpdsac_provider_credentials', is_array( $credential_store ) ? $credential_store : array(), false );
 
-	$global_settings                        = is_array( $settings ) ? $settings : array();
-	$global_settings['global_enabled']      = true;
-	$global_settings['accent_color']        = '#123456';
-	$global_settings['user_message_color']  = '#654321';
-	$global_settings['chat_width']          = 512;
-	$global_settings['message_line_height'] = 165;
-	$global_settings['title_font_weight']   = 800;
-	$global_settings['launcher_size']       = 72;
-	$global_settings['launcher_animation']  = 'orbit';
-	$global_settings['launcher_gradient_2'] = '#7c3aed';
-	$global_settings['launcher_anim_speed'] = 9;
-	$global_settings['global_position']     = 'bottom_left';
-	$global_settings['message_placeholder'] = 'Ask about delivery';
+	$global_settings                              = is_array( $settings ) ? $settings : array();
+	$global_settings['global_enabled']            = true;
+	$global_settings['accent_color']              = '#123456';
+	$global_settings['user_message_color']        = '#654321';
+	$global_settings['chat_width']                = 512;
+	$global_settings['message_line_height']       = 165;
+	$global_settings['title_font_weight']         = 800;
+	$global_settings['launcher_size']             = 72;
+	$global_settings['launcher_animation']        = 'orbit';
+	$global_settings['launcher_gradient_2']       = '#7c3aed';
+	$global_settings['launcher_anim_speed']       = 9;
+	$global_settings['message_animation_enabled'] = true;
+	$global_settings['message_word_delay']        = 95;
+	$global_settings['global_position']           = 'bottom_left';
+	$global_settings['message_placeholder']       = 'Ask about delivery';
 	update_option( 'wpdsac_settings', $global_settings, false );
 
 	ob_start();
@@ -247,6 +249,8 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$lead_rendered                   = false;
 	$lead_saved                      = false;
 	$lead_mail_sent                  = false;
+	$conversation_mail_scheduled     = false;
+	$conversation_mail_sent          = false;
 	$lead_privacy_exported           = false;
 	$lead_privacy_erased             = false;
 	$rate_limit_enforced             = false;
@@ -513,6 +517,43 @@ function wpdsac_test_probe(): WP_REST_Response {
 		&& false !== strpos( $captured_mail['message'], 'Visitor: Hello' );
 	remove_filter( 'pre_wp_mail', $mail_filter, 10 );
 
+	$conversation_settings                                     = $lead_settings;
+	$conversation_settings['conversation_email_enabled']       = true;
+	$conversation_settings['conversation_email_delay_minutes'] = 1;
+	update_option( 'wpdsac_settings', $conversation_settings, false );
+	$conversation_notifier = new \DiasMazhenov\WPDsAiChatbot\Data\ConversationNotifier();
+	$conversation_request  = new WP_REST_Request();
+	$conversation_request->set_param( 'visitor_name', 'Chat Test' );
+	$conversation_request->set_param(
+		'history',
+		array(
+			array(
+				'role'    => 'assistant',
+				'content' => 'Welcome',
+			),
+		)
+	);
+	$conversation_session = 'conversation-email-test';
+	$key_method           = new ReflectionMethod( $conversation_notifier, 'session_key' );
+	$key_method->setAccessible( true );
+	$conversation_key = (string) $key_method->invoke( $conversation_notifier, $conversation_session );
+	$conversation_notifier->queue( $conversation_session, 'Tell me more', 'Here are the details', $conversation_request );
+	$conversation_mail_scheduled = false !== wp_next_scheduled( 'wpdsac_send_conversation_notification', array( $conversation_key ) );
+	$captured_conversation_mail  = array();
+	$conversation_mail_filter    = static function ( $return, $attributes ) use ( &$captured_conversation_mail ) {
+		$captured_conversation_mail = $attributes;
+		return true;
+	};
+	add_filter( 'pre_wp_mail', $conversation_mail_filter, 10, 2 );
+	$conversation_mail_sent = $conversation_notifier->send( $conversation_key )
+		&& 'owner@example.test' === $captured_conversation_mail['to']
+		&& false !== strpos( $captured_conversation_mail['subject'], 'New chatbot conversation' )
+		&& false !== strpos( $captured_conversation_mail['message'], 'Visitor: Tell me more' )
+		&& false !== strpos( $captured_conversation_mail['message'], 'Chatbot: Here are the details' );
+	remove_filter( 'pre_wp_mail', $conversation_mail_filter, 10 );
+	wp_clear_scheduled_hook( 'wpdsac_send_conversation_notification', array( $conversation_key ) );
+	update_option( 'wpdsac_settings', $lead_settings, false );
+
 	$lead_html       = do_shortcode( '[ds_ai_chatbot]' );
 	$lead_rendered   = false !== strpos( $lead_html, 'data-wpdsac-lead-form' )
 		&& false === strpos( $lead_html, 'data-wpdsac-name-form' )
@@ -576,6 +617,7 @@ function wpdsac_test_probe(): WP_REST_Response {
 	\DiasMazhenov\WPDsAiChatbot\Lifecycle\Deactivator::deactivate();
 	$deactivation_clean = false === wp_next_scheduled( 'wpdsac_cleanup_rate_limits' )
 		&& false === wp_next_scheduled( 'wpdsac_cleanup_conversations' )
+		&& false === wp_next_scheduled( 'wpdsac_send_conversation_notification' )
 		&& false === wp_next_scheduled( 'wpdsac_cleanup_leads' );
 	\DiasMazhenov\WPDsAiChatbot\Lifecycle\Activator::activate();
 	$lifecycle_rescheduled = false !== wp_next_scheduled( 'wpdsac_cleanup_rate_limits' )
@@ -596,6 +638,7 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'leads_table'                         => wpdsac_test_table_exists( $wpdb->prefix . 'wpdsac_leads' ),
 			'conversation_cleanup_cron'           => false !== wp_next_scheduled( 'wpdsac_cleanup_conversations' ),
 			'lead_cleanup_cron'                   => false !== wp_next_scheduled( 'wpdsac_cleanup_leads' ),
+			'conversation_mail_scheduled'         => $conversation_mail_scheduled,
 			'settings_non_autoloaded'             => ! array_key_exists( 'wpdsac_settings', $all_options ),
 			'shortcode_registered'                => shortcode_exists( 'ds_ai_chatbot' ),
 			'shortcode_rendered'                  => false !== strpos( $shortcode_html, 'wpdsac-chat' ),
@@ -603,6 +646,8 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'global_widget_rendered'              => false !== strpos( $global_html, 'wpdsac-chat' ),
 			'custom_message_placeholder_rendered' => false !== strpos( $global_html, 'placeholder="Ask about delivery"' ),
 			'reply_sound_rendered'                => false !== strpos( $global_html, 'data-wpdsac-reply-sound="soft"' ),
+			'message_animation_rendered'          => false !== strpos( $global_html, 'data-wpdsac-message-animation="1"' )
+				&& false !== strpos( $global_html, 'data-wpdsac-message-word-delay="95"' ),
 			'appearance_rendered'                 => false !== strpos( $global_html, '--wpdsac-accent:#123456;' )
 				&& false !== strpos( $global_html, '--wpdsac-user-message:#654321;' )
 				&& false !== strpos( $global_html, '--wpdsac-width:512px;' )
@@ -641,6 +686,7 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'lead_rendered'                       => $lead_rendered,
 			'lead_saved'                          => $lead_saved,
 			'lead_mail_sent'                      => $lead_mail_sent,
+			'conversation_mail_sent'              => $conversation_mail_sent,
 			'lead_privacy_exported'               => $lead_privacy_exported,
 			'lead_privacy_erased'                 => $lead_privacy_erased,
 			'rate_limit_enforced'                 => $rate_limit_enforced,

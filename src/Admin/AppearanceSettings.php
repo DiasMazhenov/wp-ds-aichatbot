@@ -30,6 +30,7 @@ final class AppearanceSettings {
 		);
 		add_settings_section( 'wpdsac_appearance_layout', esc_html__( 'Layout and typography', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
 		add_settings_section( 'wpdsac_appearance_launcher', esc_html__( 'Collapsed launcher animation', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
+		add_settings_section( 'wpdsac_appearance_messages', esc_html__( 'Message animation', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
 		add_settings_section( 'wpdsac_appearance_controls', esc_html__( 'Controls and shapes', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
 
 		$this->add_field( 'accent_color', __( 'Header and launcher', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_colors' );
@@ -74,6 +75,8 @@ final class AppearanceSettings {
 		$this->add_field( 'launcher_anim_speed', __( 'Animation duration (seconds)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_launcher' );
 		$this->add_field( 'launcher_anim_intensity', __( 'Animation intensity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_launcher' );
 		$this->add_field( 'launcher_size', __( 'Collapsed circle size (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_launcher' );
+		$this->add_field( 'message_animation_enabled', __( 'Word-by-word replies', 'wp-ds-aichatbot' ), 'message_animation_checkbox', 'wpdsac_appearance_messages' );
+		$this->add_field( 'message_word_delay', __( 'Delay between words (ms)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages' );
 		$this->add_field( 'chat_border_radius', __( 'Panel radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
 		$this->add_field( 'toggle_radius', __( 'Expanded header radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
 		$this->add_field( 'message_radius', __( 'Message radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
@@ -185,6 +188,17 @@ final class AppearanceSettings {
 			return;
 		}
 
+		if ( 'message_animation_checkbox' === $args['type'] ) {
+			printf(
+				'<label><input type="checkbox" name="%1$s" value="1" %2$s data-wpdsac-message-animation> %3$s</label><p class="description">%4$s</p>',
+				esc_attr( $name ),
+				checked( ! empty( $options[ $key ] ), true, false ),
+				esc_html__( 'Show each new AI reply one word at a time.', 'wp-ds-aichatbot' ),
+				esc_html__( 'The full response is stored immediately. Reduced-motion mode always shows it without animation.', 'wp-ds-aichatbot' )
+			);
+			return;
+		}
+
 		if ( 'color' === $args['type'] ) {
 			printf(
 				'<input type="color" name="%1$s" value="%2$s" data-wpdsac-css-var="%3$s"> <code>%2$s</code>',
@@ -240,6 +254,7 @@ final class AppearanceSettings {
 			<div class="wpdsac-preview-toolbar" role="group" aria-label="<?php esc_attr_e( 'Preview state', 'wp-ds-aichatbot' ); ?>">
 				<button type="button" class="button is-active" data-wpdsac-preview-state="expanded" aria-pressed="true"><?php esc_html_e( 'Open', 'wp-ds-aichatbot' ); ?></button>
 				<button type="button" class="button" data-wpdsac-preview-state="collapsed" aria-pressed="false"><?php esc_html_e( 'Collapsed circle', 'wp-ds-aichatbot' ); ?></button>
+				<button type="button" class="button" data-wpdsac-preview-typing><?php esc_html_e( 'Replay typing', 'wp-ds-aichatbot' ); ?></button>
 			</div>
 			<div class="wpdsac-admin-preview-stage">
 				<section
@@ -258,7 +273,7 @@ final class AppearanceSettings {
 								<span class="wpdsac-chat__avatar-frame" aria-hidden="true">
 									<img class="wpdsac-chat__avatar" src="<?php echo esc_url( $avatar_url ); ?>" width="32" height="32" alt="" data-wpdsac-admin-avatar style="<?php echo esc_attr( $obj_pos ); ?>">
 								</span>
-								<p class="wpdsac-chat__message wpdsac-chat__message--bot" data-wpdsac-preview-fallback="<?php echo esc_attr( $fallback_sample ); ?>">
+								<p class="wpdsac-chat__message wpdsac-chat__message--bot" data-wpdsac-preview-message data-wpdsac-preview-fallback="<?php echo esc_attr( $fallback_sample ); ?>">
 									<?php echo nl2br( esc_html( $sample ) ); ?>
 								</p>
 							</div>

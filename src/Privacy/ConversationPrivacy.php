@@ -154,7 +154,7 @@ final class ConversationPrivacy {
 			wp_kses_post(
 				sprintf(
 					'<p>%s</p>',
-					esc_html__( 'When conversation logging is enabled, chatbot messages are stored for the configured retention period. Session identifiers are stored only as one-way hashes. Logs associated with authenticated WordPress users can be exported or erased using the WordPress privacy tools. Anonymous logs cannot be linked back to an email address.', 'wp-ds-aichatbot' )
+					esc_html__( 'When conversation logging is enabled, chatbot messages are stored for the configured retention period. If email notifications for dialogs without a request are enabled, the latest bounded transcript is held temporarily for up to 24 hours and sent after the configured inactivity delay. Session identifiers are stored only as one-way hashes. Logs associated with authenticated WordPress users can be exported or erased using the WordPress privacy tools. Anonymous logs cannot be linked back to an email address.', 'wp-ds-aichatbot' )
 				)
 			)
 		);

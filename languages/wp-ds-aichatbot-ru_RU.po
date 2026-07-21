@@ -1043,3 +1043,51 @@ msgstr "Лёгкое парение"
 
 msgid "Animation runs only while the chat is collapsed. Reduced-motion preferences always disable it."
 msgstr "Анимация работает только в свернутом виде. Системная настройка уменьшения движения всегда отключает её."
+
+msgid "Message animation"
+msgstr "Анимация сообщений"
+
+msgid "Word-by-word replies"
+msgstr "Ответы по словам"
+
+msgid "Delay between words (ms)"
+msgstr "Задержка между словами (мс)"
+
+msgid "Show each new AI reply one word at a time."
+msgstr "Показывать каждый новый ответ AI по одному слову."
+
+msgid "The full response is stored immediately. Reduced-motion mode always shows it without animation."
+msgstr "Полный ответ сохраняется сразу. В режиме уменьшения движения он всегда показывается без анимации."
+
+msgid "Replay typing"
+msgstr "Повторить печать"
+
+msgid "Dialogs without a request"
+msgstr "Диалоги без заявки"
+
+msgid "Send after inactivity (minutes)"
+msgstr "Отправить после бездействия (минуты)"
+
+msgid "Send one transcript after the visitor stops writing. If a contact request is submitted first, only the request email is sent."
+msgstr "Отправить одну историю после того, как посетитель перестал писать. Если раньше создана заявка, отправляется только письмо о заявке."
+
+msgid "Contact requests and conversations without a request will be sent to this address with different subjects."
+msgstr "Заявки и диалоги без заявки будут отправляться на этот адрес с разными темами письма."
+
+msgid "New chatbot conversation with %s"
+msgstr "Новый диалог в чат-боте с %s"
+
+msgid "A visitor started a chatbot conversation but has not submitted a contact request."
+msgstr "Посетитель начал диалог с чат-ботом, но не оставил контактную заявку."
+
+msgid "Not provided"
+msgstr "Не указано"
+
+msgid "Visitor:"
+msgstr "Посетитель:"
+
+msgid "Chatbot:"
+msgstr "Чат-бот:"
+
+msgid "When conversation logging is enabled, chatbot messages are stored for the configured retention period. If email notifications for dialogs without a request are enabled, the latest bounded transcript is held temporarily for up to 24 hours and sent after the configured inactivity delay. Session identifiers are stored only as one-way hashes. Logs associated with authenticated WordPress users can be exported or erased using the WordPress privacy tools. Anonymous logs cannot be linked back to an email address."
+msgstr "Когда включено журналирование, сообщения чат-бота хранятся в течение заданного срока. Если включены email-уведомления о диалогах без заявки, последняя ограниченная история временно хранится до 24 часов и отправляется после заданной паузы. Идентификаторы сессий хранятся только как необратимые хэши. Журналы авторизованных пользователей WordPress можно экспортировать или удалить через инструменты конфиденциальности WordPress. Анонимные журналы нельзя связать с email-адресом."

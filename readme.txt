@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.80
+Stable tag: 0.5.81
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,9 +18,9 @@ API keys remain server-side. Public requests use signed sessions, atomic rate li
 
 Each request includes a sanitized, bounded copy of the current browser chat history so every provider can continue the conversation without greeting or introducing itself again. The history remains available while the visitor navigates between pages in the same browser tab. This context is not stored separately on the server when optional conversation logging is disabled.
 
-The Design tab includes separate colors for the header, panel, assistant and visitor messages, input and send button; layout, typography, radii, spacing, shadow and launcher size controls; and open/collapsed live preview. The same appearance applies to global, shortcode, and Elementor chatbots. The collapsed chatbot is a compact circular launcher.
+The Design tab includes separate colors for the header, panel, assistant and visitor messages, input and send button; layout, typography, radii, spacing, shadow and launcher size controls; and open/collapsed live preview. New AI replies can appear word by word while their message bubble grows naturally; speed and replay preview controls are included, and reduced-motion preferences bypass the effect. The same appearance applies to global, shortcode, and Elementor chatbots. The collapsed chatbot is a compact circular launcher.
 
-Contact collection appears only after the visitor explicitly requests contact or presses the request action. The assistant asks for a required name and phone number, while consent, bounded retention, scheduled cleanup, rate limits, administrator email notifications, and a bounded transcript remain enforced.
+Contact collection appears only after the visitor explicitly requests contact or presses the request action. The assistant asks for a required name and phone number, while consent, bounded retention, scheduled cleanup, rate limits, administrator email notifications, and a bounded transcript remain enforced. Optionally, one separately titled transcript email is sent after an unfinished conversation becomes inactive; its timer is postponed after every reply and cancelled when that session submits a contact request.
 
 An optional knowledge layer indexes published WordPress pages, posts, administrator-managed FAQs, WooCommerce products, and selected text PDFs into a dedicated table. Relevant bounded fragments are added as untrusted reference context before any configured AI provider is called.
 
@@ -33,6 +33,10 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.81 =
+* Add configurable word-by-word animation for new AI replies with naturally growing message bubbles, immediate full-history persistence, replay preview, and reduced-motion fallback.
+* Add one debounced transcript email for conversations without contact details, with a separate subject, configurable inactivity delay, bounded temporary storage, retry handling, and automatic cancellation when the session becomes a lead.
 
 = 0.5.80 =
 * Add provider-independent human writing rules that avoid em dashes, canned assistant phrases, filler, repeated summaries, and excessive formatting; normalize long dashes in provider output.

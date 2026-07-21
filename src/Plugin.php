@@ -31,6 +31,7 @@ use DiasMazhenov\WPDsAiChatbot\Chat\Assets;
 use DiasMazhenov\WPDsAiChatbot\Chat\Renderer;
 use DiasMazhenov\WPDsAiChatbot\Chat\Shortcode;
 use DiasMazhenov\WPDsAiChatbot\Data\ConversationLogger;
+use DiasMazhenov\WPDsAiChatbot\Data\ConversationNotifier;
 use DiasMazhenov\WPDsAiChatbot\Data\ConversationRepository;
 use DiasMazhenov\WPDsAiChatbot\Data\LeadRepository;
 use DiasMazhenov\WPDsAiChatbot\Data\LeadNotifier;
@@ -105,6 +106,7 @@ final class Plugin {
 		$leads          = new LeadRepository();
 		$lead_notifier  = new LeadNotifier();
 		$logger         = new ConversationLogger( $conversations );
+		$chat_notifier  = new ConversationNotifier();
 		$providers      = new ProviderManager(
 			array(
 				'openai'       => new OpenAIProvider( $credentials ),
@@ -136,6 +138,7 @@ final class Plugin {
 		$retriever->register_hooks();
 		( new AnswerEnricher( $knowledge, $contact_source ) )->register_hooks();
 		$logger->register_hooks();
+		$chat_notifier->register_hooks();
 		( new ConversationPrivacy( $conversations ) )->register_hooks();
 		( new LeadPrivacy( $leads ) )->register_hooks();
 		( new FaqPostType() )->register_hooks();

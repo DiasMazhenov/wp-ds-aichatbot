@@ -110,6 +110,12 @@ assert.match(chatStyles, /wpdsac-chat__message-row/);
 assert.match(chatStyles, /--wpdsac-message-height/);
 assert.match(chatStyles, /--wpdsac-title-weight/);
 assert.match(appearancePhp, /message_line_height/);
+assert.match(appearancePhp, /message_animation_enabled/);
+assert.match(chatScript, /animateAssistantContent/);
+assert.match(chatScript, /wpdsacMessageContent/);
+assert.match(chatScript, /prefers-reduced-motion:\s*reduce/);
+assert.match(chatStyles, /wpdsac-chat__typing-word/);
+assert.match(chatbotTemplate, /data-wpdsac-message-word-delay/);
 assert.match(settingsPhp, /reply_sound/);
 assert.match(settingsPhp, /\{username\}/);
 assert.match(providerManagerPhp, /Visitor name \(untrusted profile data\)/);
@@ -191,6 +197,7 @@ try {
     leads_table: true,
     conversation_cleanup_cron: true,
     lead_cleanup_cron: true,
+    conversation_mail_scheduled: true,
     settings_non_autoloaded: true,
     shortcode_registered: true,
     shortcode_rendered: true,
@@ -198,6 +205,7 @@ try {
     global_widget_rendered: true,
     custom_message_placeholder_rendered: true,
     reply_sound_rendered: true,
+    message_animation_rendered: true,
     appearance_rendered: true,
     appearance_positioned: true,
     appearance_sanitized: true,
@@ -229,6 +237,7 @@ try {
     lead_rendered: true,
     lead_saved: true,
     lead_mail_sent: true,
+    conversation_mail_sent: true,
     lead_privacy_exported: true,
     lead_privacy_erased: true,
     rate_limit_enforced: true,
