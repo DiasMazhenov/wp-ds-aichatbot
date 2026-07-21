@@ -46,7 +46,7 @@ if ( ! $view['show_toggle_icon'] ) {
 		<span class="wpdsac-chat__toggle-title"><?php echo esc_html( $view['title'] ); ?></span>
 		<p class="wpdsac-chat__status" data-wpdsac-status aria-live="polite"></p>
 		<?php if ( '' !== $view['avatar_url'] ) : ?>
-			<img class="wpdsac-chat__icon" src="<?php echo esc_url( $view['avatar_url'] ); ?>" width="32" height="32" alt="">
+			<img class="wpdsac-chat__icon" src="<?php echo esc_url( $view['avatar_url'] ); ?>" width="32" height="32" alt="" style="<?php echo esc_attr( $view['avatar_position'] ); ?>">
 		<?php else : ?>
 			<svg class="wpdsac-chat__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2.75c.47 4.88 4.37 8.78 9.25 9.25-4.88.47-8.78 4.37-9.25 9.25C11.53 16.37 7.63 12.47 2.75 12 7.63 11.53 11.53 7.63 12 2.75Z"/></svg>
 		<?php endif; ?>
@@ -61,7 +61,7 @@ if ( ! $view['show_toggle_icon'] ) {
 			<div class="wpdsac-chat__messages" aria-live="polite">
 				<div class="wpdsac-chat__message-row wpdsac-chat__message-row--bot">
 					<?php if ( '' !== $view['avatar_url'] ) : ?>
-						<img class="wpdsac-chat__avatar" src="<?php echo esc_url( $view['avatar_url'] ); ?>" width="32" height="32" alt="">
+						<img class="wpdsac-chat__avatar" src="<?php echo esc_url( $view['avatar_url'] ); ?>" width="32" height="32" alt="" style="<?php echo esc_attr( $view['avatar_position'] ); ?>">
 					<?php else : ?>
 						<svg class="wpdsac-chat__avatar" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2.75c.47 4.88 4.37 8.78 9.25 9.25-4.88.47-8.78 4.37-9.25 9.25C11.53 16.37 7.63 12.47 2.75 12 7.63 11.53 11.53 7.63 12 2.75Z"/></svg>
 					<?php endif; ?>

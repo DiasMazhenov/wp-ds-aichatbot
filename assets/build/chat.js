@@ -968,6 +968,10 @@
 						appendMessage(chat, strings.leadSaved || 'Спасибо! Мы свяжемся с вами в ближайшее время.', 'bot');
 						playReplySound(chat.dataset.wpdsacReplySound || 'off');
 						status.textContent = '';
+						const leadWrap = chat.querySelector('[data-wpdsac-lead]');
+						if (leadWrap) leadWrap.hidden = true;
+						const quickLead = chat.querySelector('[data-wpdsac-quick-action="lead"]');
+						if (quickLead) quickLead.hidden = true;
 					} catch (error) {
 						status.textContent = error.message || strings.leadError || 'Не удалось сохранить заявку.';
 					} finally {
@@ -1012,6 +1016,10 @@
 					appendMessage(chat, strings.leadSaved || 'Спасибо! Мы свяжемся с вами в ближайшее время.', 'bot');
 					playReplySound(chat.dataset.wpdsacReplySound || 'off');
 					status.textContent = '';
+					const leadWrap2 = chat.querySelector('[data-wpdsac-lead]');
+					if (leadWrap2) leadWrap2.hidden = true;
+					const quickLead2 = chat.querySelector('[data-wpdsac-quick-action="lead"]');
+					if (quickLead2) quickLead2.hidden = true;
 				} catch (error) {
 					status.textContent = error.message || strings.leadError || 'Не удалось сохранить заявку.';
 				} finally {

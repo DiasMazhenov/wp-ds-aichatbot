@@ -197,8 +197,11 @@ final class AppearanceSettings {
 	 */
 	public function render_preview(): void {
 		$options    = Settings::get();
-		$avatar_url = ! empty( $options['bot_avatar_id'] ) ? wp_get_attachment_image_url( absint( $options['bot_avatar_id'] ), 'thumbnail' ) : '';
+		$avatar_url = ! empty( $options['bot_avatar_id'] ) ? wp_get_attachment_image_url( absint( $options['bot_avatar_id'] ), 'wpdsac-avatar' ) : '';
 		$avatar_url = $avatar_url ? $avatar_url : WPDSAC_URL . 'wp-chatbot.svg';
+		$pos_x      = min( 100, max( 0, absint( $options['avatar_position_x'] ?? 50 ) ) );
+		$pos_y      = min( 100, max( 0, absint( $options['avatar_position_y'] ?? 50 ) ) );
+		$obj_pos    = sprintf( 'object-position:%d%% %d%%;', $pos_x, $pos_y );
 		?>
 		<div class="wpdsac-admin-preview-wrap" aria-live="polite">
 			<h2><?php esc_html_e( 'Live preview', 'wp-ds-aichatbot' ); ?></h2>
@@ -222,7 +225,7 @@ final class AppearanceSettings {
 					<div class="wpdsac-chat__panel" data-wpdsac-preview-panel>
 						<div class="wpdsac-chat__messages">
 							<div class="wpdsac-chat__message-row wpdsac-chat__message-row--bot">
-								<img class="wpdsac-chat__avatar" src="<?php echo esc_url( $avatar_url ); ?>" width="32" height="32" alt="" data-wpdsac-admin-avatar>
+								<img class="wpdsac-chat__avatar" src="<?php echo esc_url( $avatar_url ); ?>" width="32" height="32" alt="" data-wpdsac-admin-avatar style="<?php echo esc_attr( $obj_pos ); ?>">
 								<p class="wpdsac-chat__message wpdsac-chat__message--bot">
 									<?php echo nl2br( esc_html( (string) $options['welcome_message'] ) ); ?>
 								</p>

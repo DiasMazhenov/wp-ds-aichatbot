@@ -140,6 +140,8 @@ final class Settings {
 				'intro_trigger'              => 'delay',
 				'intro_delay_seconds'        => 10,
 				'bot_avatar_id'              => 0,
+				'avatar_position_x'          => 50,
+				'avatar_position_y'          => 50,
 				'rate_limit_requests'        => 10,
 				'rate_limit_window'          => 60,
 				'daily_request_limit'        => 500,
@@ -401,6 +403,8 @@ final class Settings {
 		$this->add_field( 'intro_trigger', __( 'Intro bubble trigger', 'wp-ds-aichatbot' ), 'intro_trigger_select' );
 		$this->add_field( 'intro_delay_seconds', __( 'Intro bubble delay (seconds)', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'bot_avatar_id', __( 'Chatbot avatar', 'wp-ds-aichatbot' ), 'media' );
+		$this->add_field( 'avatar_position_x', __( 'Avatar horizontal position', 'wp-ds-aichatbot' ), 'number' );
+		$this->add_field( 'avatar_position_y', __( 'Avatar vertical position', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'rate_limit_requests', __( 'Requests per window', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'rate_limit_window', __( 'Rate-limit window (seconds)', 'wp-ds-aichatbot' ), 'number' );
 		$this->add_field( 'daily_request_limit', __( 'AI requests per 24 hours', 'wp-ds-aichatbot' ), 'number' );
@@ -468,6 +472,8 @@ final class Settings {
 			'intro_trigger'              => $this->sanitize_intro_trigger( $input['intro_trigger'] ?? 'delay' ),
 			'intro_delay_seconds'        => min( 300, max( 0, absint( $input['intro_delay_seconds'] ?? 10 ) ) ),
 			'bot_avatar_id'              => absint( $input['bot_avatar_id'] ?? 0 ),
+			'avatar_position_x'          => min( 100, max( 0, absint( $input['avatar_position_x'] ?? 50 ) ) ),
+			'avatar_position_y'          => min( 100, max( 0, absint( $input['avatar_position_y'] ?? 50 ) ) ),
 			'rate_limit_requests'        => min( 100, max( 1, absint( $input['rate_limit_requests'] ?? 10 ) ) ),
 			'rate_limit_window'          => min( HOUR_IN_SECONDS, max( 10, absint( $input['rate_limit_window'] ?? 60 ) ) ),
 			'daily_request_limit'        => min( 100000, absint( $input['daily_request_limit'] ?? 500 ) ),
@@ -987,7 +993,17 @@ final class Settings {
 		}
 
 		if ( 'number' === $args['type'] ) {
-			$minimum = in_array( $key, array( 'daily_request_limit', 'intro_delay_seconds' ), true ) ? 0 : 1;
+			$minimum = in_array( $key, array( 'daily_request_limit', 'intro_delay_seconds', 'avatar_position_x', 'avatar_position_y' ), true ) ? 0 : 1;
+
+			if ( in_array( $key, array( 'avatar_position_x', 'avatar_position_y' ), true ) ) {
+				printf(
+					'<input class="small-text" type="range" min="0" max="100" step="1" name="%1$s" value="%2$d" style="vertical-align:middle;width:160px"> <span class="wpdsac-range-value">%2$d%%</span><p class="description">%3$s</p>',
+					esc_attr( $name ),
+					(int) $options[ $key ],
+					esc_html__( 'Adjust the focal point inside the circle (0 = left/top, 100 = right/bottom).', 'wp-ds-aichatbot' )
+				);
+				return;
+			}
 
 			printf(
 				'<input class="small-text" type="number" min="%1$d" step="1" name="%2$s" value="%3$d">',
@@ -1331,11 +1347,11 @@ final class Settings {
 	 */
 	private function render_avatar_field( string $name, int $attachment_id ): void {
 		$default_url = WPDSAC_URL . 'wp-chatbot.svg';
-		$avatar_url  = $attachment_id ? wp_get_attachment_image_url( $attachment_id, 'thumbnail' ) : '';
+		$avatar_url  = $attachment_id ? wp_get_attachment_image_url( $attachment_id, 'wpdsac-avatar' ) : '';
 		$avatar_url  = $avatar_url ? $avatar_url : $default_url;
 		?>
 		<div class="wpdsac-avatar-control" data-wpdsac-avatar-control data-wpdsac-default-avatar="<?php echo esc_url( $default_url ); ?>">
-			<img src="<?php echo esc_url( $avatar_url ); ?>" width="64" height="64" alt="" data-wpdsac-avatar-preview>
+			<img src="<?php echo esc_url( $avatar_url ); ?>" width="64" height="64" alt="" data-wpdsac-avatar-preview style="border-radius:50%;object-fit:cover">
 			<input type="hidden" name="<?php echo esc_attr( $name ); ?>" value="<?php echo absint( $attachment_id ); ?>" data-wpdsac-avatar-id>
 			<div>
 				<button type="button" class="button" data-wpdsac-avatar-select><?php esc_html_e( 'Choose avatar', 'wp-ds-aichatbot' ); ?></button>

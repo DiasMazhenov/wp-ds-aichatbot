@@ -147,6 +147,7 @@ final class Plugin {
 		}
 
 		add_action( 'init', array( $this, 'load_textdomain' ), 0 );
+		add_action( 'init', array( $this, 'register_image_sizes' ), 10 );
 		add_action( 'wp_footer', array( $renderer, 'render_global' ) );
 	}
 
@@ -161,6 +162,15 @@ final class Plugin {
 			false,
 			dirname( plugin_basename( WPDSAC_FILE ) ) . '/languages'
 		);
+	}
+
+	/**
+	 * Register custom image sizes for the avatar.
+	 *
+	 * @return void
+	 */
+	public function register_image_sizes(): void {
+		add_image_size( 'wpdsac-avatar', 200, 200, true );
 	}
 
 	/**

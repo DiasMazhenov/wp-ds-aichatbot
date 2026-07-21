@@ -433,7 +433,7 @@
 					if (!attachment) {
 						return;
 					}
-					updateAvatar(attachment.id, attachment.sizes?.thumbnail?.url || attachment.url);
+					updateAvatar(attachment.id, attachment.sizes?.['wpdsac-avatar']?.url || attachment.sizes?.thumbnail?.url || attachment.url);
 				});
 			}
 
@@ -444,6 +444,25 @@
 			updateAvatar('0', avatarControl.dataset.wpdsacDefaultAvatar);
 		});
 	}
+
+	const posInputs = document.querySelectorAll('[name="wpdsac_settings[avatar_position_x]"], [name="wpdsac_settings[avatar_position_y]"]');
+	posInputs.forEach(function(input) {
+		var valueSpan = input.parentNode.querySelector('.wpdsac-range-value');
+		var updatePosition = function() {
+			var xInput = document.querySelector('[name="wpdsac_settings[avatar_position_x]"]');
+			var yInput = document.querySelector('[name="wpdsac_settings[avatar_position_y]"]');
+			if (!xInput || !yInput) return;
+			var posStyle = 'object-position:' + xInput.value + '% ' + yInput.value + '%;';
+			document.querySelectorAll('[data-wpdsac-admin-avatar]').forEach(function(img) {
+				img.setAttribute('style', posStyle);
+			});
+			document.querySelectorAll('.wpdsac-chat__icon[src], .wpdsac-chat__avatar[src]').forEach(function(img) {
+				img.setAttribute('style', posStyle);
+			});
+			if (valueSpan) valueSpan.textContent = input.value + '%';
+		};
+		input.addEventListener('input', updatePosition);
+	});
 
 	document.querySelectorAll('[data-wpdsac-action-repeater]').forEach((repeater) => {
 		const rows = repeater.querySelector('[data-wpdsac-action-rows]');
