@@ -408,7 +408,7 @@
 		const removeAvatar = avatarControl.querySelector('[data-wpdsac-avatar-remove]');
 		let mediaFrame = null;
 
-		const updateAvatar = (id, url) => {
+		const updateAvatar = (id, url, fullUrl) => {
 			const hasAvatar = Number.parseInt(id, 10) > 0;
 			avatarId.value = id;
 			avatarPreview.src = url;
@@ -416,7 +416,9 @@
 			const cropBtn = document.querySelector('[data-wpdsac-avatar-crop]');
 			if (cropBtn) cropBtn.hidden = !hasAvatar;
 			const cropImg = document.querySelector('[data-wpdsac-crop-image]');
-			if (cropImg && hasAvatar) {
+			if (cropImg && hasAvatar && fullUrl) {
+				cropImg.src = fullUrl;
+			} else if (cropImg && hasAvatar) {
 				cropImg.src = url;
 			}
 			document.querySelectorAll('[data-wpdsac-admin-avatar]').forEach((image) => {
@@ -439,7 +441,11 @@
 					if (!attachment) {
 						return;
 					}
-					updateAvatar(attachment.id, attachment.sizes?.['wpdsac-avatar']?.url || attachment.sizes?.thumbnail?.url || attachment.url);
+					const previewUrl = attachment.sizes?.['wpdsac-avatar']?.url || attachment.sizes?.thumbnail?.url || attachment.url;
+					const fullUrl = attachment.url;
+					updateAvatar(attachment.id, previewUrl, fullUrl);
+					const openBtn = document.querySelector('[data-wpdsac-avatar-crop]');
+					if (openBtn) openBtn.click();
 				});
 			}
 

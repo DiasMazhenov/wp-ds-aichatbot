@@ -68,7 +68,7 @@ final class Renderer {
 				explode( "\n", sanitize_textarea_field( (string) ( $options['greetings_pool'] ?? '' ) ) )
 			)
 		);
-		if ( array() !== $greetings ) {
+		if ( '' === $welcome_text && array() !== $greetings ) {
 			$welcome_text = $greetings[ array_rand( $greetings ) ];
 		}
 
