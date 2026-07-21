@@ -476,8 +476,8 @@
 			var x = Number(xInput?.value) || 50;
 			var y = Number(yInput?.value) || 50;
 			var s = Number(scaleInput?.value) || 100;
-			var tx = ((50 - x) / 100) * 200;
-			var ty = ((50 - y) / 100) * 200;
+			var tx = (50 - x) * 4;
+			var ty = (50 - y) * 4;
 			cropImage.style.transform = 'translate(' + tx + 'px, ' + ty + 'px) scale(' + (s / 100) + ')';
 
 			document.querySelectorAll('[data-wpdsac-admin-avatar]').forEach(function(img) {
@@ -549,9 +549,8 @@
 		if (cropMask) {
 			cropMask.addEventListener('mousedown', function(e) {
 				e.preventDefault();
-				var rect = cropMask.getBoundingClientRect();
-				var imgX = ((50 - (Number(xInput?.value) || 50)) / 100) * 200;
-				var imgY = ((50 - (Number(yInput?.value) || 50)) / 100) * 200;
+				var imgX = (50 - (Number(xInput?.value) || 50)) * 4;
+				var imgY = (50 - (Number(yInput?.value) || 50)) * 4;
 				dragState = {
 					startX: e.clientX,
 					startY: e.clientY,
@@ -564,15 +563,14 @@
 				if (!dragState || cropModal.hidden) return;
 				var dx = e.clientX - dragState.startX;
 				var dy = e.clientY - dragState.startY;
-				var s = Number(scaleInput?.value) || 100;
 				var newImgX = dragState.imgX + dx;
 				var newImgY = dragState.imgY + dy;
-				var maxOffset = (200 * (s / 100) - 200) / 2;
-				maxOffset = Math.max(0, maxOffset);
+				var s = Number(scaleInput?.value) || 100;
+				var maxOffset = Math.max(0, (200 * (s / 100) - 200) / 2);
 				newImgX = Math.min(maxOffset, Math.max(-maxOffset, newImgX));
 				newImgY = Math.min(maxOffset, Math.max(-maxOffset, newImgY));
-				var px = 50 - (newImgX / 200) * 100;
-				var py = 50 - (newImgY / 200) * 100;
+				var px = 50 - newImgX / 4;
+				var py = 50 - newImgY / 4;
 				px = Math.round(Math.min(100, Math.max(0, px)));
 				py = Math.round(Math.min(100, Math.max(0, py)));
 				if (xInput) xInput.value = px;
