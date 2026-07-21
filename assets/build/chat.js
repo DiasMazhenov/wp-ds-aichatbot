@@ -149,6 +149,158 @@
 		});
 	};
 
+	const renderMarkdown = (container, text) => {
+		const lines = text.split('\n');
+		let i = 0;
+
+		while (i < lines.length) {
+			const line = lines[i];
+
+			// Code block (```...```)
+			if (line.startsWith('```')) {
+				const codeLines = [];
+				i++;
+				while (i < lines.length && !lines[i].startsWith('```')) {
+					codeLines.push(lines[i]);
+					i++;
+				}
+				i++; // skip closing ```
+				const pre = document.createElement('pre');
+				pre.className = 'wpdsac-chat__code';
+				const code = document.createElement('code');
+				code.textContent = codeLines.join('\n');
+				pre.appendChild(code);
+				container.appendChild(pre);
+				continue;
+			}
+
+			// Horizontal rule
+			if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
+				container.appendChild(document.createElement('hr'));
+				i++;
+				continue;
+			}
+
+			// Heading
+			const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
+			if (headingMatch) {
+				const level = headingMatch[1].length;
+				const tag = `h${Math.min(level, 6)}`;
+				const heading = document.createElement(tag);
+				applyInlineMarkdown(heading, headingMatch[2]);
+				container.appendChild(heading);
+				i++;
+				continue;
+			}
+
+			// Blockquote
+			if (line.startsWith('> ')) {
+				const bq = document.createElement('blockquote');
+				bq.className = 'wpdsac-chat__blockquote';
+				applyInlineMarkdown(bq, line.slice(2));
+				container.appendChild(bq);
+				i++;
+				continue;
+			}
+
+			// Unordered list
+			const ulMatch = line.match(/^[\s]*[-*+]\s+(.*)/);
+			if (ulMatch) {
+				const ul = document.createElement('ul');
+				while (i < lines.length) {
+					const lm = lines[i].match(/^[\s]*[-*+]\s+(.*)/);
+					if (!lm) break;
+					const li = document.createElement('li');
+					applyInlineMarkdown(li, lm[1]);
+					ul.appendChild(li);
+					i++;
+				}
+				container.appendChild(ul);
+				continue;
+			}
+
+			// Ordered list
+			const olMatch = line.match(/^[\s]*\d+\.\s+(.*)/);
+			if (olMatch) {
+				const ol = document.createElement('ol');
+				while (i < lines.length) {
+					const lm = lines[i].match(/^[\s]*\d+\.\s+(.*)/);
+					if (!lm) break;
+					const li = document.createElement('li');
+					applyInlineMarkdown(li, lm[1]);
+					ol.appendChild(li);
+					i++;
+				}
+				container.appendChild(ol);
+				continue;
+			}
+
+			// Empty line
+			if (line.trim() === '') {
+				i++;
+				continue;
+			}
+
+			// Paragraph
+			const p = document.createElement('p');
+			p.className = 'wpdsac-chat__md-paragraph';
+			applyInlineMarkdown(p, line);
+			container.appendChild(p);
+			i++;
+		}
+	};
+
+	const applyInlineMarkdown = (el, text) => {
+		const regex = /\*\*(.+?)\*\*|__(.+?)__|_(.+?)_|\*(.+?)\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)/g;
+		let lastIndex = 0;
+		let match;
+
+		while ((match = regex.exec(text)) !== null) {
+			if (match.index > lastIndex) {
+				el.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+			}
+
+			if (match[1] || match[2]) {
+				const strong = document.createElement('strong');
+				strong.textContent = match[1] || match[2];
+				el.appendChild(strong);
+			} else if (match[3]) {
+				const em = document.createElement('em');
+				em.textContent = match[3];
+				el.appendChild(em);
+			} else if (match[4]) {
+				const em = document.createElement('em');
+				em.textContent = match[4];
+				el.appendChild(em);
+			} else if (match[5]) {
+				const code = document.createElement('code');
+				code.className = 'wpdsac-chat__inline-code';
+				code.textContent = match[5];
+				el.appendChild(code);
+			} else if (match[6] && match[7]) {
+				const linkText = match[6];
+				const href = match[7];
+				const isUrl = /^https?:\/\//i.test(href);
+				if (isUrl) {
+					const a = document.createElement('a');
+					a.href = href;
+					a.textContent = linkText;
+					a.target = '_blank';
+					a.rel = 'noopener noreferrer';
+					el.appendChild(a);
+				} else {
+					el.appendChild(document.createTextNode(`[${linkText}](${href})`));
+				}
+			}
+
+			lastIndex = regex.lastIndex;
+		}
+
+		if (lastIndex < text.length) {
+			el.appendChild(document.createTextNode(text.slice(lastIndex)));
+		}
+	};
+
 	const safeNavigationUrl = (value) => {
 		try {
 			const url = new URL(value, window.location.href);
@@ -164,7 +316,7 @@
 		let match;
 
 		while ((match = marker.exec(message)) !== null) {
-			appendLinkedText(container, message.slice(offset, match.index));
+			renderMarkdown(container, message.slice(offset, match.index));
 			const markerType = match[1].toUpperCase();
 			const markerValue = match[2].trim();
 			const label = match[3].trim().slice(0, 120);
@@ -189,7 +341,7 @@
 			offset = marker.lastIndex;
 		}
 
-		appendLinkedText(container, message.slice(offset));
+		renderMarkdown(container, message.slice(offset));
 	};
 
 	const scrollToLatest = (chat, behavior = 'auto') => {
@@ -206,10 +358,11 @@
 	const appendMessage = (chat, message, role) => {
 		const messages = chat.querySelector('.wpdsac-chat__messages');
 		const row = document.createElement('div');
-		const item = document.createElement('p');
+		const isBot = role === 'bot';
+		const item = document.createElement(isBot ? 'div' : 'p');
 		row.className = `wpdsac-chat__message-row wpdsac-chat__message-row--${role}`;
 		item.className = `wpdsac-chat__message wpdsac-chat__message--${role}`;
-		if (role === 'bot') {
+		if (isBot) {
 			const avatarUrl = chat.dataset.wpdsacAvatarUrl || '';
 			if (avatarUrl) {
 				const avatar = document.createElement('img');
