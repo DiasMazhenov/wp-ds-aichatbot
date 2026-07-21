@@ -313,7 +313,7 @@
 	};
 
 	const appendAssistantContent = (container, message) => {
-		const marker = /\[\[WPDSAC_(NAV|ACTION)\|([^|\]]+)\|([^\]]+)\]\]/giu;
+		const marker = /\[\[WPDSAC_(NAV|ACTION|QA)\|([^|\]]+)\|([^|\]]+)(?:\|([^\]]+))?\]\]/giu;
 		let offset = 0;
 		let match;
 
@@ -322,11 +322,23 @@
 			const markerType = match[1].toUpperCase();
 			const markerValue = match[2].trim();
 			const label = match[3].trim().slice(0, 120);
+			const extra = (match[4] || '').trim().slice(0, 500);
 			const url = markerType === 'NAV' ? safeNavigationUrl(markerValue) : null;
 			const isLeadAction = (markerType === 'ACTION' && markerValue === 'lead_form')
 				|| (url && url.hash === leadNavigationHash);
 
-			if (label && (url || isLeadAction)) {
+			if (markerType === 'QA' && label && extra) {
+				const qaBtn = document.createElement('button');
+				qaBtn.type = 'button';
+				qaBtn.className = 'wpdsac-chat__quick-action wpdsac-chat__qa-action';
+				qaBtn.textContent = label;
+				if (markerValue === 'url') {
+					qaBtn.dataset.wpdsacQaUrl = extra;
+				} else {
+					qaBtn.dataset.wpdsacQaMessage = extra;
+				}
+				container.appendChild(qaBtn);
+			} else if (label && (url || isLeadAction)) {
 				const action = document.createElement('button');
 				action.type = 'button';
 				action.className = 'wpdsac-chat__navigation-action';
@@ -359,6 +371,9 @@
 
 	const appendMessage = (chat, message, role) => {
 		const messages = chat.querySelector('.wpdsac-chat__messages');
+		if (role === 'bot') {
+			messages.querySelectorAll('.wpdsac-chat__qa-action').forEach(function(b) { b.remove(); });
+		}
 		const row = document.createElement('div');
 		const isBot = role === 'bot';
 		const item = document.createElement(isBot ? 'div' : 'p');
@@ -827,6 +842,27 @@
 		}
 
 		window.location.assign(url.href);
+	});
+
+	document.addEventListener('click', (event) => {
+		const action = event.target.closest('[data-wpdsac-qa-message], [data-wpdsac-qa-url]');
+		if (!action) {
+			return;
+		}
+
+		const chat = action.closest('[data-wpdsac-chat]');
+		const form = chat?.querySelector('[data-wpdsac-form]');
+
+		if (action.dataset.wpdsacQaMessage && form) {
+			form.querySelector('input').value = action.dataset.wpdsacQaMessage;
+			form.requestSubmit();
+			return;
+		}
+
+		const url = safeNavigationUrl(action.dataset.wpdsacQaUrl || '');
+		if (url) {
+			window.open(url.href, '_blank', 'noopener');
+		}
 	});
 
 	document.addEventListener('keydown', (event) => {

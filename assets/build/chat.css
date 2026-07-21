@@ -428,6 +428,10 @@ svg.wpdsac-chat__icon {
 	color: var(--wpdsac-quick-text);
 }
 
+.wpdsac-chat__qa-action {
+	margin: 4px 6px 0 0;
+}
+
 .wpdsac-chat__form {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) auto;
