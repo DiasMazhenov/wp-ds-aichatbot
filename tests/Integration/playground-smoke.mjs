@@ -110,7 +110,7 @@ assert.ok(
   'Quick actions should be rendered before the message form.',
 );
 assert.doesNotMatch(chatbotTemplate, /name="email"/);
-assert.match(chatScript, /hideQuickAction/);
+assert.doesNotMatch(chatScript, /hideQuickAction/);
 assert.match(chatScript, /openLeadForm/);
 assert.match(chatScript, /extractLeadDetails/);
 assert.match(chatScript, /lead\.hidden = true/);
@@ -123,7 +123,7 @@ assert.match(chatScript, /prepareLeadModal/);
 assert.match(chatScript, /chatByLeadModal/);
 assert.match(providerManagerPhp, /WPDSAC_ACTION\|lead_form/);
 assert.match(chatControllerPhp, /sanitize_navigation_targets/);
-assert.match(providerManagerPhp, /SITE NAVIGATION POLICY/);
+assert.match(providerManagerPhp, /SITE ACTION POLICY/);
 assert.match(quickActionsPhp, /MAX_ACTIONS\s*=\s*8/);
 assert.match(chatbotTemplate, /role="dialog"/);
 assert.match(chatbotTemplate, /aria-modal="true"/);

@@ -2,7 +2,7 @@
 
 Последнее обновление: 2026-07-21
 
-## Последние изменения (сессия 2026-07-21, версии 0.5.55 – 0.5.75)
+## Последние изменения (сессия 2026-07-21, версии 0.5.55 – 0.5.76)
 
 - **0.5.55**: Multi-step inline lead collection (имя → телефон → отправка без попапа), триггер на 5-м сообщении.
 - **0.5.56**: 10 пресетов стилей общения (Заботливый консьерж, Профессиональный гид, etc.) + Custom поле в AI-вкладке.
@@ -25,6 +25,18 @@
 - **0.5.73**: try-catch с выводом деталей PHP-ошибки в консоль браузера.
 - **0.5.74**: **Критический фикс** — `resolve()` → `get_api_key()` в `OpenAIEmbeddingsProvider`. Эта ошибка вызывала 500 на каждом запросе в чат (метод не существовал).
 - **0.5.75**: Закрыты критические результаты аудита: публичные REST-ответы больше не содержат исключения, SQL и диагностику БД; лиды сохраняются через `$wpdb->replace()`; embeddings формируются фоновыми пакетами и не вызывают API до появления сохранённых векторов; CI и readme синхронизированы с plugin `0.5.75` / DB `8`.
+- **0.5.76**: Исправлен постоянно падавший CI: smoke-тест требовал удалённую функцию `hideQuickAction`, хотя с 0.5.64 быстрые кнопки намеренно не скрываются, а также старое имя `SITE NAVIGATION POLICY` вместо текущего `SITE ACTION POLICY`. Версии integration probe теперь вычисляются из `WPDSAC_VERSION` и `Migrator::DB_VERSION`, а не дублируются вручную. Локально полностью прошли core и Elementor Playground smoke tests.
+
+## Обязательная инструкция агенту перед каждым push
+
+1. Не пушить сразу после правок. Сначала повысить только третью цифру версии `0.5.x` в plugin header, `WPDSAC_VERSION`, unit bootstrap, `readme.txt`, `Plan.md` и `Context.md`.
+2. Если изменилось поведение frontend, REST, лидов, базы знаний или Elementor, проверить связанные assertions в `tests/Integration/playground-smoke.mjs`. Нельзя оставлять тест, который требует уже удалённую функцию. Нельзя просто ослаблять тест: assertion должен отражать согласованное текущее поведение.
+3. Обязательный локальный preflight без Playground: `composer lint`, `composer test:unit`, `composer validate --strict`, `node --check assets/build/chat.js`, `node --check assets/build/admin.js`, `node --check tests/Integration/playground-smoke.mjs`, `git diff --check`.
+4. WordPress Playground запускать локально только при изменениях runtime/lifecycle/integration или после падения integration job. Для обычной документации/CSS не запускать. Перед исправлением всегда читать первый `AssertionError` или PHP fatal из failed job, а не весь шумный лог.
+5. До push создать локальный commit, выполнить `scripts/build-zip.sh`, проверить `unzip -t`, версию plugin header внутри ZIP и наличие `assets/build/{chat,admin}.{css,js}`. Скрипт собирает `HEAD`, поэтому незакоммиченные изменения в ZIP не попадут.
+6. После push обязательно дождаться завершения GitHub Actions через `gh run list`/`gh run view`. Работа не считается завершённой, пока `integration`, `package`, PHP lint, WPCS и PHPUnit не зелёные. При failure прочитать конкретный failed job/step, исправить, снова повысить patch-версию, commit и push.
+7. Не маскировать проблему через `continue-on-error`, `if: always()` или удаление полезной проверки. Job `package` намеренно зависит от успешных проверок и должен оставаться skipped при настоящем падении integration.
+8. Не добавлять в commit пользовательские `.playwright-mcp/`, диагностические скриншоты и snapshot-файлы.
 
 ## Известные проблемы
 

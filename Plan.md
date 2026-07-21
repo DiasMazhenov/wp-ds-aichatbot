@@ -156,7 +156,7 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.75`: исправлены критические проблемы безопасности, БД, embeddings и CI, выявленные аудитом после серии изменений 0.5.55–0.5.74.
+Версия `0.5.76`: исправлены критические проблемы безопасности, БД и embeddings, а также устаревший quick-action assertion, из-за которого GitHub CI постоянно падал до запуска Playground.
 
 ### Критический аудит 0.5.75
 
@@ -165,7 +165,10 @@ wp-ds-aichatbot/
 - [x] Перевести сохранение лидов с прямого `mysqli_query()` на `$wpdb->replace()`.
 - [x] Подключить фоновую пакетную генерацию embeddings и исключить пустые API-вызовы.
 - [x] Обновить integration expectations до plugin `0.5.75` / DB `8`, stable tag и changelog.
-- [ ] Подтвердить зелёный GitHub Actions run и получить новый installable ZIP artifact.
+- [x] Найти причину падения run `29855924222`: устаревший `/hideQuickAction/` assertion.
+- [x] Исправить assertions `/hideQuickAction/` и `SITE NAVIGATION POLICY` в соответствии с текущим поведением и добавить обязательный pre-push протокол в `Context.md`.
+- [x] Локально подтвердить core и Elementor WordPress Playground smoke tests.
+- [ ] Подтвердить зелёный GitHub Actions run 0.5.76 и получить новый installable ZIP artifact.
 
 ### Выполнено в сессии 2026-07-21 (0.5.55 – 0.5.74)
 
