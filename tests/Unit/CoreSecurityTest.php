@@ -59,6 +59,13 @@ final class CoreSecurityTest extends TestCase {
 				'chat_height'        => 99999,
 				'chat_border_radius' => 999,
 				'chat_font_size'     => 1,
+				'chat_line_height'   => 999,
+				'title_font_size'    => 99,
+				'title_font_weight'  => 1,
+				'message_font_size'  => 1,
+				'message_line_height' => 1,
+				'input_font_size'    => 99,
+				'button_font_size'   => 1,
 				'messages_height'    => 9999,
 				'launcher_size'      => 1,
 				'shadow_opacity'     => 999,
@@ -72,11 +79,19 @@ final class CoreSecurityTest extends TestCase {
 		$this->assertSame( 760, $values['chat_height'] );
 		$this->assertSame( 40, $values['chat_border_radius'] );
 		$this->assertSame( 12, $values['chat_font_size'] );
+		$this->assertSame( 200, $values['chat_line_height'] );
+		$this->assertSame( 28, $values['title_font_size'] );
+		$this->assertSame( 400, $values['title_font_weight'] );
+		$this->assertSame( 12, $values['message_font_size'] );
+		$this->assertSame( 120, $values['message_line_height'] );
+		$this->assertSame( 22, $values['input_font_size'] );
+		$this->assertSame( 12, $values['button_font_size'] );
 		$this->assertSame( 640, $values['messages_height'] );
 		$this->assertSame( 44, $values['launcher_size'] );
 		$this->assertSame( 40, $values['shadow_opacity'] );
 		$this->assertSame( 'system', $values['font_family'] );
 		$this->assertSame( 'bottom_right', $values['global_position'] );
+		$this->assertStringContainsString( '--wpdsac-message-height:120%;', Appearance::inline_style( $values ) );
 	}
 
 	public function test_lead_field_boundaries_and_honeypot(): void {

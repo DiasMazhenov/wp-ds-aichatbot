@@ -671,7 +671,7 @@
     }
 
     input.addEventListener('input', () => {
-      target.textContent = input.value;
+      target.textContent = input.value.trim() || target.dataset.wpdsacPreviewFallback || '';
     });
   });
 

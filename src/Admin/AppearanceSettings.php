@@ -52,7 +52,14 @@ final class AppearanceSettings {
 		$this->add_field( 'chat_width', __( 'Chat width (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
 		$this->add_field( 'chat_height', __( 'Chat height (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
 		$this->add_field( 'panel_padding', __( 'Panel padding (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
-		$this->add_field( 'chat_font_size', __( 'Font size (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
+		$this->add_field( 'chat_font_size', __( 'Base font size (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
+		$this->add_field( 'chat_line_height', __( 'Base line height (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
+		$this->add_field( 'title_font_size', __( 'Header title size (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
+		$this->add_field( 'title_font_weight', __( 'Header title weight', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
+		$this->add_field( 'message_font_size', __( 'Message font size (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
+		$this->add_field( 'message_line_height', __( 'Message line height (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
+		$this->add_field( 'input_font_size', __( 'Input font size (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
+		$this->add_field( 'button_font_size', __( 'Send button font size (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
 		$this->add_field( 'font_family', __( 'Font style', 'wp-ds-aichatbot' ), 'font', 'wpdsac_appearance_layout' );
 		$this->add_field( 'shadow_opacity', __( 'Panel shadow (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_layout' );
 		$this->add_field( 'global_position', __( 'Global position', 'wp-ds-aichatbot' ), 'position', 'wpdsac_appearance_layout' );
@@ -203,6 +210,14 @@ final class AppearanceSettings {
 		$pos_y      = min( 100, max( 0, absint( $options['avatar_position_y'] ?? 50 ) ) );
 		$scale      = min( 200, max( 50, absint( $options['avatar_scale'] ?? 100 ) ) );
 		$obj_pos    = sprintf( 'object-position:%d%% %d%%;transform:scale(%s)', $pos_x, $pos_y, round( $scale / 100, 2 ) );
+		$sample     = trim( (string) $options['welcome_message'] );
+
+		if ( '' === $sample ) {
+			$greetings = array_values( array_filter( array_map( 'trim', explode( "\n", (string) ( $options['greetings_pool'] ?? '' ) ) ) ) );
+			$sample    = $greetings[0] ?? __( 'Hello! I can help you choose the right service. What would you like to know?', 'wp-ds-aichatbot' );
+		}
+
+		$fallback_sample = __( 'Hello! I can help you choose the right service. What would you like to know?', 'wp-ds-aichatbot' );
 		?>
 		<div class="wpdsac-admin-preview-wrap" aria-live="polite">
 			<h2><?php esc_html_e( 'Live preview', 'wp-ds-aichatbot' ); ?></h2>
@@ -229,8 +244,13 @@ final class AppearanceSettings {
 								<span class="wpdsac-chat__avatar-frame" aria-hidden="true">
 									<img class="wpdsac-chat__avatar" src="<?php echo esc_url( $avatar_url ); ?>" width="32" height="32" alt="" data-wpdsac-admin-avatar style="<?php echo esc_attr( $obj_pos ); ?>">
 								</span>
-								<p class="wpdsac-chat__message wpdsac-chat__message--bot">
-									<?php echo nl2br( esc_html( (string) $options['welcome_message'] ) ); ?>
+								<p class="wpdsac-chat__message wpdsac-chat__message--bot" data-wpdsac-preview-fallback="<?php echo esc_attr( $fallback_sample ); ?>">
+									<?php echo nl2br( esc_html( $sample ) ); ?>
+								</p>
+							</div>
+							<div class="wpdsac-chat__message-row wpdsac-chat__message-row--user">
+								<p class="wpdsac-chat__message wpdsac-chat__message--user">
+									<?php esc_html_e( 'Please tell me about the available options and pricing.', 'wp-ds-aichatbot' ); ?>
 								</p>
 							</div>
 						</div>
@@ -352,6 +372,13 @@ final class AppearanceSettings {
 			'chat_height'            => '--wpdsac-height',
 			'chat_border_radius'     => '--wpdsac-radius',
 			'chat_font_size'         => '--wpdsac-font-size',
+			'chat_line_height'       => '--wpdsac-line-height',
+			'title_font_size'        => '--wpdsac-title-font-size',
+			'title_font_weight'      => '--wpdsac-title-weight',
+			'message_font_size'      => '--wpdsac-message-size',
+			'message_line_height'    => '--wpdsac-message-height',
+			'input_font_size'        => '--wpdsac-input-font-size',
+			'button_font_size'       => '--wpdsac-button-size',
 			'toggle_radius'          => '--wpdsac-toggle-radius',
 			'message_radius'         => '--wpdsac-message-radius',
 			'input_radius'           => '--wpdsac-input-radius',

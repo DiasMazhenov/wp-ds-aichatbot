@@ -32,6 +32,13 @@
 	--wpdsac-message-radius: 14px;
 	--wpdsac-input-radius: 18px;
 	--wpdsac-font-size: 16px;
+	--wpdsac-line-height: 150%;
+	--wpdsac-title-font-size: 16px;
+	--wpdsac-title-weight: 700;
+	--wpdsac-message-size: 16px;
+	--wpdsac-message-height: 150%;
+	--wpdsac-input-font-size: 16px;
+	--wpdsac-button-size: 16px;
 	--wpdsac-panel-padding: 18px;
 	--wpdsac-messages-height: 320px;
 	--wpdsac-quick-font-size: 13px;
@@ -49,7 +56,7 @@
 	box-sizing: border-box;
 	width: min(100%, var(--wpdsac-width));
 	color: var(--wpdsac-text);
-	font: 400 var(--wpdsac-font-size)/1.5 var(--wpdsac-font-family);
+	font: 400 var(--wpdsac-font-size)/var(--wpdsac-line-height) var(--wpdsac-font-family);
 }
 
 .wpdsac-chat[hidden],
@@ -120,7 +127,8 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	background: var(--wpdsac-accent);
 	color: var(--wpdsac-accent-text);
 	font: inherit;
-	font-weight: 700;
+	font-size: var(--wpdsac-title-font-size);
+	font-weight: var(--wpdsac-title-weight);
 }
 
 .wpdsac-chat__toggle-title {
@@ -200,6 +208,8 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	border-radius: var(--wpdsac-message-radius) var(--wpdsac-message-radius) var(--wpdsac-message-radius) calc(var(--wpdsac-message-radius) / 3);
 	background: var(--wpdsac-bot-message);
 	color: var(--wpdsac-bot-text);
+	font-size: var(--wpdsac-message-size);
+	line-height: var(--wpdsac-message-height);
 	white-space: pre-wrap;
 	text-align: left;
 	overflow-wrap: anywhere;
@@ -466,6 +476,7 @@ svg.wpdsac-chat__icon {
 	background: var(--wpdsac-input);
 	color: var(--wpdsac-input-text);
 	font: inherit;
+	font-size: var(--wpdsac-input-font-size);
 }
 
 .wpdsac-chat__form button {
@@ -478,6 +489,7 @@ svg.wpdsac-chat__icon {
 	background: var(--wpdsac-send);
 	color: var(--wpdsac-send-text);
 	font: inherit;
+	font-size: var(--wpdsac-button-size);
 	font-weight: 700;
 	line-height: 1.2;
 	white-space: nowrap;

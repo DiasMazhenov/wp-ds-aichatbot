@@ -41,6 +41,7 @@ const promptGuardPhp = await readFile(join(projectRoot, 'src/AI/PromptGuard.php'
 const providerManagerPhp = await readFile(join(projectRoot, 'src/AI/ProviderManager.php'), 'utf8');
 const chatControllerPhp = await readFile(join(projectRoot, 'src/Api/ChatController.php'), 'utf8');
 const quickActionsPhp = await readFile(join(projectRoot, 'src/Chat/QuickActions.php'), 'utf8');
+const appearancePhp = await readFile(join(projectRoot, 'src/Chat/Appearance.php'), 'utf8');
 const postIndexerPhp = await readFile(join(projectRoot, 'src/Knowledge/PostIndexer.php'), 'utf8');
 const leadNotifierPhp = await readFile(join(projectRoot, 'src/Data/LeadNotifier.php'), 'utf8');
 const chatbotTemplate = await readFile(join(projectRoot, 'templates/chatbot.php'), 'utf8');
@@ -54,6 +55,7 @@ assert.ok(pluginVersion, 'The plugin version constant must be readable');
 assert.ok(databaseVersion, 'The database schema version must be readable');
 
 assert.match(adminScript, /data-wpdsac-tab/);
+assert.match(adminScript, /wpdsacPreviewFallback/);
 assert.match(adminScript, /data-wpdsac-provider-select/);
 assert.match(adminScript, /wpdsacActiveSettingsTab/);
 assert.match(adminScript, /wpdsac_save_settings/);
@@ -105,6 +107,9 @@ assert.match(embeddingsFactoryPhp, /OpenRouterEmbeddingsProvider/);
 assert.match(chatScript, /wpdsacMessageTemplate/);
 assert.match(chatStyles, /backdrop-filter:\s*blur/);
 assert.match(chatStyles, /wpdsac-chat__message-row/);
+assert.match(chatStyles, /--wpdsac-message-height/);
+assert.match(chatStyles, /--wpdsac-title-weight/);
+assert.match(appearancePhp, /message_line_height/);
 assert.match(settingsPhp, /reply_sound/);
 assert.match(settingsPhp, /\{username\}/);
 assert.match(providerManagerPhp, /Visitor name \(untrusted profile data\)/);

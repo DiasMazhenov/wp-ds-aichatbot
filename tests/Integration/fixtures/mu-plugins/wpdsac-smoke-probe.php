@@ -170,6 +170,8 @@ function wpdsac_test_probe(): WP_REST_Response {
 	$global_settings['accent_color']    = '#123456';
 	$global_settings['user_message_color'] = '#654321';
 	$global_settings['chat_width']      = 512;
+	$global_settings['message_line_height'] = 165;
+	$global_settings['title_font_weight'] = 800;
 	$global_settings['launcher_size']   = 72;
 	$global_settings['global_position'] = 'bottom_left';
 	$global_settings['message_placeholder'] = 'Ask about delivery';
@@ -601,6 +603,8 @@ function wpdsac_test_probe(): WP_REST_Response {
 			'appearance_rendered'         => false !== strpos( $global_html, '--wpdsac-accent:#123456;' )
 				&& false !== strpos( $global_html, '--wpdsac-user-message:#654321;' )
 				&& false !== strpos( $global_html, '--wpdsac-width:512px;' )
+				&& false !== strpos( $global_html, '--wpdsac-message-height:165%;' )
+				&& false !== strpos( $global_html, '--wpdsac-title-weight:800;' )
 				&& false !== strpos( $global_html, '--wpdsac-launcher-size:72px;' ),
 			'appearance_positioned'       => false !== strpos( $global_html, 'wpdsac-position--bottom-left' ),
 			'appearance_sanitized'        => $appearance_sanitized,
