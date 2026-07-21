@@ -159,6 +159,13 @@ final class ProviderManager {
 			return is_string( $generated_reply )
 				? $this->remove_repeated_greeting( $generated_reply, is_array( $history ) ? $history : array() )
 				: $generated_reply;
+		} catch ( \Throwable $e ) {
+			$debug = $e->getMessage() . ' in ' . str_replace( WP_PLUGIN_DIR . '/wp-ds-aichatbot/', '', $e->getFile() ) . ':' . $e->getLine();
+			return new \WP_Error(
+				'wpdsac_fatal',
+				$debug,
+				array( 'status' => 500 )
+			);
 		} finally {
 			Settings::clear_runtime_variables();
 		}
