@@ -957,8 +957,8 @@ msgstr "Спасибо! Мы свяжемся с вами в ближайшее 
 msgid "Greetings pool"
 msgstr "Пул приветствий"
 
-msgid "One greeting per line. When filled, a random greeting replaces the static welcome message. Leave empty to use the welcome message above."
-msgstr "По одному приветствию на строку. Если заполнено, случайное приветствие заменяет статичное сообщение. Оставьте пустым, чтобы использовать приветствие выше."
+msgid "One greeting per line. Use {time_greeting} for a natural greeting based on the site time. Common forms such as \"Доброе/ый (утро, день, вечер, ночь)!\" are also resolved automatically. Leave empty to use the welcome message above."
+msgstr "По одному приветствию на строку. Используйте {time_greeting}, чтобы подставить естественное приветствие по времени сайта. Формы вроде «Доброе/ый (утро, день, вечер, ночь)!» также преобразуются автоматически. Оставьте пустым, чтобы использовать приветствие выше."
 
 msgid "The AI service encountered an unexpected error. Please try again later."
 msgstr "В AI-сервисе произошла непредвиденная ошибка. Повторите попытку позже."
@@ -1082,6 +1082,18 @@ msgstr "Посетитель начал диалог с чат-ботом, но 
 
 msgid "Not provided"
 msgstr "Не указано"
+
+msgid "Good morning!"
+msgstr "Доброе утро!"
+
+msgid "Good afternoon!"
+msgstr "Добрый день!"
+
+msgid "Good evening!"
+msgstr "Добрый вечер!"
+
+msgid "Good night!"
+msgstr "Доброй ночи!"
 
 msgid "Visitor:"
 msgstr "Посетитель:"

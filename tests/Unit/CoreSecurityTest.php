@@ -19,6 +19,7 @@ use DiasMazhenov\WPDsAiChatbot\AI\OpenRouterEmbeddingsProvider;
 use DiasMazhenov\WPDsAiChatbot\AI\PromptGuard;
 use DiasMazhenov\WPDsAiChatbot\AI\ProviderManager;
 use DiasMazhenov\WPDsAiChatbot\Chat\Appearance;
+use DiasMazhenov\WPDsAiChatbot\Chat\GreetingResolver;
 use DiasMazhenov\WPDsAiChatbot\Chat\QuickActions;
 use DiasMazhenov\WPDsAiChatbot\Knowledge\Chunker;
 use DiasMazhenov\WPDsAiChatbot\Support\PluginInfo;
@@ -206,6 +207,16 @@ final class CoreSecurityTest extends TestCase {
 		$this->assertSame( 'Сколько стоит сайт?', $actions[0]['value'] );
 		$this->assertSame( 'url', $actions[1]['type'] );
 		$this->assertStringStartsWith( 'custom-', $actions[1]['id'] );
+	}
+
+	public function test_time_greeting_templates_are_resolved_naturally(): void {
+		$template = 'Доброе/ый (утро, день, вечер, ночь)! Чем могу помочь?';
+
+		$this->assertSame( 'Доброе утро! Чем могу помочь?', GreetingResolver::resolve( $template, 8 ) );
+		$this->assertSame( 'Добрый день! Чем могу помочь?', GreetingResolver::resolve( $template, 13 ) );
+		$this->assertSame( 'Добрый вечер! Чем могу помочь?', GreetingResolver::resolve( $template, 20 ) );
+		$this->assertSame( 'Доброй ночи! Чем могу помочь?', GreetingResolver::resolve( $template, 2 ) );
+		$this->assertSame( 'Добрый вечер! Анна', GreetingResolver::resolve( '{time_greeting} Анна', 19 ) );
 	}
 
 	public function test_contact_form_uses_a_semantic_action_instead_of_a_navigation_url(): void {

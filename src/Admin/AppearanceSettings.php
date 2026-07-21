@@ -8,6 +8,7 @@
 namespace DiasMazhenov\WPDsAiChatbot\Admin;
 
 use DiasMazhenov\WPDsAiChatbot\Chat\Appearance;
+use DiasMazhenov\WPDsAiChatbot\Chat\GreetingResolver;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -243,6 +244,7 @@ final class AppearanceSettings {
 			$greetings = array_values( array_filter( array_map( 'trim', explode( "\n", (string) ( $options['greetings_pool'] ?? '' ) ) ) ) );
 			$sample    = $greetings[0] ?? __( 'Hello! I can help you choose the right service. What would you like to know?', 'wp-ds-aichatbot' );
 		}
+		$sample = GreetingResolver::resolve( $sample );
 
 		$fallback_sample = __( 'Hello! I can help you choose the right service. What would you like to know?', 'wp-ds-aichatbot' );
 		?>

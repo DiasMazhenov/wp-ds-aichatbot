@@ -72,6 +72,7 @@ final class Renderer {
 		if ( '' === $welcome_text && array() !== $greetings ) {
 			$welcome_text = $greetings[ array_rand( $greetings ) ];
 		}
+		$welcome_text = GreetingResolver::resolve( $welcome_text );
 
 		$view = array(
 			'id'                  => wp_unique_id( 'wpdsac-chat-' ),

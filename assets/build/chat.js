@@ -888,8 +888,8 @@
 		if (target) {
 			setExpanded(chat, false);
 			target.scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'});
-			target.classList.add('wpdsac-navigation-highlight');
-			window.setTimeout(() => target.classList.remove('wpdsac-navigation-highlight'), 2200);
+			target.setAttribute('data-wpdsac-navigation-highlight', '');
+			window.setTimeout(() => target.removeAttribute('data-wpdsac-navigation-highlight'), 2200);
 			return;
 		}
 

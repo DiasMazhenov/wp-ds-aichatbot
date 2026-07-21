@@ -8,6 +8,7 @@
 namespace DiasMazhenov\WPDsAiChatbot\AI;
 
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
+use DiasMazhenov\WPDsAiChatbot\Chat\GreetingResolver;
 use DiasMazhenov\WPDsAiChatbot\Data\LeadRepository;
 
 defined( 'ABSPATH' ) || exit;
@@ -157,6 +158,7 @@ final class ProviderManager {
 			}
 
 			if ( is_string( $generated_reply ) ) {
+				$generated_reply = GreetingResolver::resolve( $generated_reply );
 				$generated_reply = $this->remove_repeated_greeting( $generated_reply, is_array( $history ) ? $history : array() );
 
 				return $this->normalize_human_punctuation( $generated_reply );

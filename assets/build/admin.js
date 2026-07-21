@@ -652,6 +652,23 @@
     return;
   }
 
+  const resolveGreetingTemplate = (text) => {
+    const hour = new Date().getHours();
+    const russian = /[а-яё]/iu.test(text);
+    const greeting = hour >= 5 && hour < 12
+      ? (russian ? 'Доброе утро!' : 'Good morning!')
+      : hour >= 12 && hour < 17
+        ? (russian ? 'Добрый день!' : 'Good afternoon!')
+        : hour >= 17 && hour < 23
+          ? (russian ? 'Добрый вечер!' : 'Good evening!')
+          : (russian ? 'Доброй ночи!' : 'Good night!');
+
+    return text
+      .replace(/\{time_greeting\}/giu, greeting)
+      .replace(/доброе\s*\/\s*(?:ый|добрый)\s*\(\s*утро\s*[,\/]\s*день\s*[,\/]\s*вечер\s*[,\/]\s*ночь\s*\)\s*!?/giu, greeting)
+      .replace(/доброе\s+утро\s*\/\s*добрый\s+день\s*\/\s*добрый\s+вечер\s*\/\s*доброй\s+ночи\s*!?/giu, greeting);
+  };
+
   document.querySelectorAll('[data-wpdsac-css-var]').forEach((input) => {
     const update = () => {
       preview.style.setProperty(
@@ -681,7 +698,8 @@
     }
 
     input.addEventListener('input', () => {
-      target.textContent = input.value.trim() || target.dataset.wpdsacPreviewFallback || '';
+      const rawText = input.value.trim() || target.dataset.wpdsacPreviewFallback || '';
+      target.textContent = resolveGreetingTemplate(rawText);
     });
   });
 

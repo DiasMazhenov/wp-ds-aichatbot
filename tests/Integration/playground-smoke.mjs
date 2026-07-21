@@ -115,6 +115,15 @@ assert.match(chatScript, /animateAssistantContent/);
 assert.match(chatScript, /wpdsacMessageContent/);
 assert.match(chatScript, /prefers-reduced-motion:\s*reduce/);
 assert.match(chatStyles, /wpdsac-chat__typing-word/);
+assert.match(chatStyles, /contain:\s*style/);
+assert.doesNotMatch(
+  chatStyles,
+  /^\s*(?:\.wpdsac-chat__|(?:img|svg)\.wpdsac-chat__)/m,
+  'Every chatbot component selector must be scoped by the chatbot root.',
+);
+assert.doesNotMatch(chatStyles, /\.wpdsac-navigation-highlight/);
+assert.match(chatStyles, /\[data-wpdsac-navigation-highlight\]/);
+assert.match(chatScript, /data-wpdsac-navigation-highlight/);
 assert.match(chatbotTemplate, /data-wpdsac-message-word-delay/);
 assert.match(settingsPhp, /reply_sound/);
 assert.match(settingsPhp, /\{username\}/);
@@ -159,6 +168,7 @@ assert.match(promptGuardPhp, /model_probe/);
 assert.match(promptGuardPhp, /off_topic/);
 assert.match(promptGuardPhp, /Your public chatbot name/);
 assert.match(promptGuardPhp, /Never use an em dash/);
+assert.match(promptGuardPhp, /never copy the choice notation literally/);
 assert.match(settingsPhp, /Chatbot name/);
 assert.match(providerManagerPhp, /guard->inspect/);
 assert.match(providerManagerPhp, /normalize_human_punctuation/);

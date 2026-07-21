@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.81
+Stable tag: 0.5.82
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,11 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.82 =
+
+* Isolated every frontend component selector under the chatbot root and added a regression guard against site-wide CSS leakage.
+* Added natural time-aware greetings with the `{time_greeting}` token and automatic handling of common Russian choice notation.
 
 = 0.5.81 =
 * Add configurable word-by-word animation for new AI replies with naturally growing message bubbles, immediate full-history persistence, replay preview, and reduced-motion fallback.
