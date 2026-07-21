@@ -935,3 +935,15 @@ msgstr "Закрыть форму заявки"
 
 msgid "Go to"
 msgstr "Перейти"
+
+msgid "Please enter your name."
+msgstr "Пожалуйста, укажите ваше имя."
+
+msgid "Great! Now please enter your phone number."
+msgstr "Отлично! Теперь укажите номер телефона для связи."
+
+msgid "Invalid number. Enter your phone, e.g.: 8 900 123-45-67"
+msgstr "Некорректный номер. Укажите телефон, например: 8 900 123-45-67"
+
+msgid "Thank you! We will contact you shortly."
+msgstr "Спасибо! Мы свяжемся с вами в ближайшее время."
