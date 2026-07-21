@@ -30,6 +30,54 @@ final class Settings {
 	private static $runtime_variables = array();
 
 	/**
+	 * Communication style presets.
+	 *
+	 * @var array<string, array{label: string, instructions: string}>
+	 */
+	public static $communication_styles = array(
+		'concierge'   => array(
+			'label'        => 'Заботливый консьерж',
+			'instructions' => 'Ты заботливый консьерж. Фокусируйся на пользе, решении проблем и комфорте клиента. Предлагай помощь проактивно, уточняй детали, чтобы дать максимально точный ответ. Забота о клиенте — твой главный приоритет.',
+		),
+		'guide'       => array(
+			'label'        => 'Профессиональный гид',
+			'instructions' => 'Ты профессиональный гид. Общайся языком цифр, фактов и четких преимуществ. Приводи конкретные данные, сравнивай варианты, помогай принимать обоснованные решения.',
+		),
+		'partner'     => array(
+			'label'        => 'Бизнес-партнер',
+			'instructions' => 'Ты бизнес-партнер. Строгий тон на равных, экономия времени собеседника, готовые решения без лишних вопросов. Будь лаконичен, профессионален и ориентирован на результат.',
+		),
+		'insider'     => array(
+			'label'        => 'Стильный инсайдер',
+			'instructions' => 'Ты стильный инсайдер. Легкий тон, акцент на трендах и «секретных» предложениях. Делись инсайдами, создавай ощущение эксклюзивности и оперативности.',
+		),
+		'buddy'       => array(
+			'label'        => 'Свой парень',
+			'instructions' => 'Ты свой парень. Дружеская атмосфера, разговорные обороты и простые рекомендации. Общайся как друг — тепло, без формальностей, но по делу.',
+		),
+		'mentor'      => array(
+			'label'        => 'Эмпатичный ментор',
+			'instructions' => 'Ты эмпатичный ментор. Мягко поддерживай, снимай страхи и сомнения перед покупкой. Объясняй просто, терпеливо, помогай пережить сомнения и принять решение.',
+		),
+		'promoter'    => array(
+			'label'        => 'Зажигательный промоутер',
+			'instructions' => 'Ты зажигательный промоутер. Создавай ажиотаж, динамику и акцент на упущенной выгоде. Используй энергичные формулировки, подчеркивай срочность и выгоду.',
+		),
+		'coach'       => array(
+			'label'        => 'Спортивный коуч',
+			'instructions' => 'Ты спортивный коуч. Энергичный призыв к действию, мотивация на быстрый результат. Будь динамичен, вдохновляй на行动у, ставь цели и помогай их достичь.',
+		),
+		'scholar'     => array(
+			'label'        => 'Ироничный эрудит',
+			'instructions' => 'Ты ироничный эрудит. Используй юмор, мемы и культурные отсылки. Будь остроумен, но полезен — за каждым шуткой стоят точные рекомендации.',
+		),
+		'storyteller' => array(
+			'label'        => 'Бот-сторителлер',
+			'instructions' => 'Ты бот-сторителлер. Продавай через яркие истории, отзывы и эмоции. Рассказывай кейсы, приводи примеры реальных клиентов, создавай образ через повествование.',
+		),
+	);
+
+	/**
 	 * Request-only protected instruction suffix.
 	 *
 	 * @var string
@@ -111,6 +159,7 @@ final class Settings {
 				'lead_consent_text'          => __( 'I agree that my contact details may be stored and used to respond to my request.', 'wp-ds-aichatbot' ),
 				'lead_retention_days'        => 90,
 				'ai_provider'                => 'openai',
+				'communication_style'        => 'concierge',
 				'ai_instructions'            => __( 'You are a proactive sales assistant for this website. Your goal is to convert visitors into customers. First, understand the visitor’s needs by asking 1–2 qualifying questions before presenting solutions. Highlight specific products, services, or benefits that match their situation. Use confident, benefit-focused language. If the visitor goes silent for more than a minute, gently re-engage with a follow-up question. Always end your response with a question or a call to action. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
 				'ai_max_output_tokens'       => 1200,
 				'prompt_guard_enabled'       => true,
@@ -372,6 +421,7 @@ final class Settings {
 		$this->add_field( 'lead_retention_days', __( 'Lead retention (days)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_leads' );
 		$this->appearance->register_fields();
 		$this->add_field( 'ai_provider', __( 'Provider', 'wp-ds-aichatbot' ), 'provider_select', 'wpdsac_ai' );
+		$this->add_field( 'communication_style', __( 'Communication style', 'wp-ds-aichatbot' ), 'communication_style_select', 'wpdsac_ai' );
 		$this->add_field( 'prompt_guard_enabled', __( 'Prompt injection protection', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_ai' );
 		$this->add_field( 'topic_scope', __( 'Allowed topics and keywords', 'wp-ds-aichatbot' ), 'textarea', 'wpdsac_ai' );
 		$this->add_field( 'guard_refusal_message', __( 'Blocked request response', 'wp-ds-aichatbot' ), 'text', 'wpdsac_ai' );
@@ -437,6 +487,7 @@ final class Settings {
 			'lead_consent_text'          => $lead_consent,
 			'lead_retention_days'        => min( 730, max( 1, absint( $input['lead_retention_days'] ?? 90 ) ) ),
 			'ai_provider'                => $provider,
+			'communication_style'        => sanitize_text_field( $input['communication_style'] ?? 'concierge' ),
 			'ai_instructions'            => sanitize_textarea_field( $input['ai_instructions'] ?? '' ),
 			'ai_max_output_tokens'       => min( 8000, max( 100, absint( $input['ai_max_output_tokens'] ?? 1200 ) ) ),
 			'prompt_guard_enabled'       => ! empty( $input['prompt_guard_enabled'] ),
@@ -724,6 +775,31 @@ final class Settings {
 					<span class="wpdsac-save-note" data-wpdsac-save-status aria-live="polite"><?php esc_html_e( 'Unsaved changes apply only after saving.', 'wp-ds-aichatbot' ); ?></span>
 				</div>
 			</form>
+			<script>
+			(function(){
+				var style=document.getElementById('wpdsac-communication-style'),
+					ta=document.querySelector('textarea[name="wpdsac_settings[ai_instructions]"]');
+				if(!style||!ta)return;
+				var presets=<?php echo wp_json_encode( wp_list_pluck( self::$communication_styles, 'instructions' ) ); ?>;
+				var saved=ta.value;
+				var isPreset=Object.values(presets).some(function(v){return v===saved;});
+				if(isPreset){
+					var k=Object.keys(presets).find(function(k){return presets[k]===saved;});
+					if(k)style.value=k;
+				}
+				style.addEventListener('change',function(){
+					if(this.value==='custom')return;
+					if(presets[this.value]){
+						ta.value=presets[this.value];
+						ta.dispatchEvent(new Event('input',{bubbles:true}));
+					}
+				});
+				ta.addEventListener('input',function(){
+					var match=Object.keys(presets).find(function(k){return presets[k]===ta.value;});
+					style.value=match||'custom';
+				});
+			})();
+			</script>
 		</div>
 		<?php
 	}
@@ -845,6 +921,11 @@ final class Settings {
 
 		if ( 'intro_trigger_select' === $args['type'] ) {
 			$this->render_intro_trigger_select( $name, (string) $options[ $key ] );
+			return;
+		}
+
+		if ( 'communication_style_select' === $args['type'] ) {
+			$this->render_communication_style_select( $name, (string) $options[ $key ] );
 			return;
 		}
 
@@ -1205,6 +1286,39 @@ final class Settings {
 		printf(
 			'<p class="description">%s</p>',
 			esc_html__( 'The name request remains inside the chat when a visitor opens it before the bubble appears.', 'wp-ds-aichatbot' )
+		);
+	}
+
+	/**
+	 * Render the communication style select with preset instructions.
+	 *
+	 * @param string $name    Input name.
+	 * @param string $current Currently saved style key.
+	 * @return void
+	 */
+	private function render_communication_style_select( string $name, string $current ): void {
+		if ( ! in_array( $current, array_keys( self::$communication_styles ), true ) ) {
+			$current = 'custom';
+		}
+
+		printf( '<select name="%1$s" id="wpdsac-communication-style">', esc_attr( $name ) );
+		foreach ( self::$communication_styles as $key => $style ) {
+			printf(
+				'<option value="%1$s" %2$s>%3$s</option>',
+				esc_attr( $key ),
+				selected( $current, $key, false ),
+				esc_html( $style['label'] )
+			);
+		}
+		printf(
+			'<option value="custom"%1$s>%2$s</option>',
+			selected( $current, 'custom', false ),
+			esc_html__( 'Custom…', 'wp-ds-aichatbot' )
+		);
+		echo '</select>';
+		printf(
+			'<p class="description">%s</p>',
+			esc_html__( 'Choose a ready-made communication style or select "Custom…" and write your own instructions below.', 'wp-ds-aichatbot' )
 		);
 	}
 
