@@ -514,6 +514,10 @@
 			cropModal.hidden = true;
 			document.body.classList.remove('wpdsac-modal-open');
 			commitCrop();
+			var form = document.querySelector('[data-wpdsac-settings-form]');
+			if (form) {
+				form.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+			}
 		};
 
 		if (cropButton) cropButton.addEventListener('click', openCrop);

@@ -186,6 +186,16 @@ final class ProviderManager {
 			return is_string( $generated_reply )
 				? $this->remove_repeated_greeting( $generated_reply, is_array( $history ) ? $history : array() )
 				: $generated_reply;
+		} catch ( \Throwable $e ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+				error_log( '[WP DS AI Chatbot] Provider error: ' . $e->getMessage() );
+			}
+			return new \WP_Error(
+				'wpdsac_provider_error',
+				__( 'The AI service is temporarily unavailable. Please try again in a moment.', 'wp-ds-aichatbot' ),
+				array( 'status' => 502 )
+			);
 		} finally {
 			Settings::clear_runtime_variables();
 		}
