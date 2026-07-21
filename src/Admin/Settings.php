@@ -140,6 +140,14 @@ final class Settings {
 			$value['ai_instructions'] = $value['openai_instructions'];
 		}
 
+		$old_default = __( 'You are a concise and helpful website support assistant. Reply in the same language as the visitor.', 'wp-ds-aichatbot' );
+		$new_default = __( 'You are a proactive sales assistant for this website. Your goal is to convert visitors into customers. First, understand the visitor\'s needs by asking 1–2 qualifying questions before presenting solutions. Highlight specific products, services, or benefits that match their situation. Use confident, benefit-focused language. If the visitor goes silent for more than a minute, gently re-engage with a follow-up question. Always end your response with a question or a call to action. Reply in the same language as the visitor.', 'wp-ds-aichatbot' );
+
+		if ( isset( $value['ai_instructions'] ) && trim( (string) $value['ai_instructions'] ) === trim( $old_default ) ) {
+			$value['ai_instructions'] = $new_default;
+			update_option( self::OPTION_NAME, $value, false );
+		}
+
 		if ( ! isset( $value['ai_max_output_tokens'] ) && isset( $value['openai_max_output_tokens'] ) ) {
 			$value['ai_max_output_tokens'] = $value['openai_max_output_tokens'];
 		}

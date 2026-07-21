@@ -151,6 +151,10 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	display: none;
 }
 
+.wpdsac-chat:not(.is-expanded) .wpdsac-chat__icon {
+	display: none;
+}
+
 .wpdsac-chat:not(.is-expanded) .wpdsac-chat__toggle-title {
 	position: absolute;
 	width: 1px;
@@ -163,7 +167,7 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	border: 0;
 }
 
-.wpdsac-chat__icon {
+img.wpdsac-chat__icon {
 	box-sizing: border-box;
 	width: 32px;
 	height: 32px;
@@ -171,6 +175,11 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	border: 1px solid var(--wpdsac-border);
 	border-radius: 50%;
 	object-fit: cover;
+}
+
+svg.wpdsac-chat__icon {
+	flex: 0 0 20px;
+	color: currentColor;
 }
 
 .wpdsac-chat.is-expanded.wpdsac-hide-header-icon .wpdsac-chat__icon {
