@@ -6,7 +6,6 @@
 	const sessionStorageKey = 'wpdsacSessionToken';
 	const visitorNameStorageKey = 'wpdsacVisitorName';
 	const conversationHistoryStorageKey = 'wpdsacConversationHistory';
-	const hiddenQuickActionsStorageKey = 'wpdsacHiddenQuickActions';
 	const leadNavigationHash = '#wpdsac-contact-form';
 	const conversationLifetime = 24 * 60 * 60 * 1000;
 	let audioContext = null;
@@ -550,7 +549,6 @@
 
 		if (stored.expired) {
 			window.sessionStorage.removeItem(sessionStorageKey);
-			window.sessionStorage.removeItem(hiddenQuickActionsStorageKey);
 		}
 
 		if (!Array.isArray(history) || history.length === 0) {
@@ -578,7 +576,6 @@
 		const welcome = formatVisitorTemplate(chat.dataset.wpdsacWelcomeMessage || '', name);
 		const messages = chat.querySelector('.wpdsac-chat__messages');
 		window.sessionStorage.removeItem(sessionStorageKey);
-		window.sessionStorage.removeItem(hiddenQuickActionsStorageKey);
 		messages.textContent = '';
 		appendMessage(chat, welcome, 'bot');
 	};
@@ -667,50 +664,6 @@
 		}
 	};
 
-	const getHiddenQuickActions = () => {
-		try {
-			const actions = JSON.parse(window.sessionStorage.getItem(hiddenQuickActionsStorageKey) || '[]');
-			return Array.isArray(actions) ? actions : [];
-		} catch (error) {
-			return [];
-		}
-	};
-
-	const hideQuickAction = (action) => {
-		if (!action) {
-			return;
-		}
-
-		action.hidden = true;
-		const actionId = action.dataset.wpdsacQuickAction;
-		const hiddenActions = Array.from(new Set([...getHiddenQuickActions(), actionId]));
-
-		try {
-			window.sessionStorage.setItem(hiddenQuickActionsStorageKey, JSON.stringify(hiddenActions));
-		} catch (error) {
-			// The action remains hidden on the current page.
-		}
-
-		const container = action.closest('[data-wpdsac-quick-actions]');
-		if (container && !container.querySelector('[data-wpdsac-quick-action]:not([hidden])')) {
-			container.hidden = true;
-		}
-	};
-
-	const restoreQuickActions = (chat) => {
-		const hiddenActions = getHiddenQuickActions();
-		chat.querySelectorAll('[data-wpdsac-quick-action]').forEach((action) => {
-			if (hiddenActions.includes(action.dataset.wpdsacQuickAction)) {
-				action.hidden = true;
-			}
-		});
-
-		const container = chat.querySelector('[data-wpdsac-quick-actions]');
-		if (container) {
-			container.hidden = !container.querySelector('[data-wpdsac-quick-action]:not([hidden])');
-		}
-	};
-
 	const prepareLeadModal = (chat) => {
 		const lead = chat.querySelector('[data-wpdsac-lead]');
 		if (!lead) {
@@ -767,7 +720,6 @@
 	document.querySelectorAll('[data-wpdsac-chat]').forEach((chat) => {
 		prepareLeadModal(chat);
 		restoreConversationHistory(chat);
-		restoreQuickActions(chat);
 		revealConversation(chat, getVisitorName());
 		scheduleIntroBubble(chat);
 	});
@@ -804,8 +756,6 @@
 		if (!action) {
 			return;
 		}
-
-		hideQuickAction(action);
 
 		if (action.matches('[data-wpdsac-open-lead]')) {
 			openLeadForm(action.closest('[data-wpdsac-chat]'));
@@ -1038,7 +988,8 @@
 			appendMessage(chat, message, 'user');
 			input.value = '';
 			button.disabled = false;
-			hideQuickAction(chat.querySelector('[data-wpdsac-quick-action="lead"]'));
+			const qa = chat.querySelector('[data-wpdsac-quick-action="lead"]');
+			if (qa) qa.hidden = true;
 			openLeadForm(chat, {...leadDetails, request: message});
 			persistConversationHistory(chat);
 			return;
@@ -1070,7 +1021,8 @@
 
 			if (count >= 5 && !leadAutoTriggered.get(chat)) {
 				leadAutoTriggered.set(chat, true);
-				hideQuickAction(chat.querySelector('[data-wpdsac-quick-action="lead"]'));
+				const qb = chat.querySelector('[data-wpdsac-quick-action="lead"]');
+				if (qb) qb.hidden = true;
 				const leadEl = chat.querySelector('[data-wpdsac-lead]');
 				const leadPrompt = leadEl?.dataset?.wpdsacLeadPrompt || '';
 				setTimeout(() => {
