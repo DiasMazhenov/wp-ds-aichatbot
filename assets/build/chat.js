@@ -15,6 +15,7 @@
 	const chatByLeadModal = new WeakMap();
 	const userMessageCounters = new WeakMap();
 	const leadAutoTriggered = new WeakMap();
+	const waitingForContact = new WeakMap();
 
 	const ensureAudioContext = () => {
 		const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -719,7 +720,6 @@
 		leadModalByChat.set(chat, lead);
 		chatByLeadModal.set(lead, chat);
 		lead.classList.add('wpdsac-chat');
-		lead.style.cssText = chat.style.cssText;
 		document.body.appendChild(lead);
 	};
 
@@ -932,6 +932,48 @@
 		ensureAudioContext();
 
 		button.disabled = true;
+
+		if (waitingForContact.get(chat)) {
+			waitingForContact.set(chat, false);
+			const details = extractLeadDetails(message);
+			const name = details.name || message.split(/[,;\n]/)[0]?.trim().slice(0, 100) || '';
+			const phone = details.phone || '';
+
+			if (!name || !phone || phone.replace(/\D/g, '').length < 7) {
+				appendMessage(chat, message, 'user');
+				appendMessage(chat, strings.leadContactInvalid || 'Укажите имя и телефон, например: Иван, 89001234567', 'bot');
+				input.value = '';
+				button.disabled = false;
+				persistConversationHistory(chat);
+				return;
+			}
+
+			appendMessage(chat, message, 'user');
+			input.value = '';
+			status.textContent = strings.leadSaving || '';
+
+			try {
+				const session = await getSessionToken();
+				await request('/lead', {
+					session,
+					name,
+					phone,
+					consent: true,
+					request: '',
+					transcript: getConversationHistory(chat).map((e) => `${e.role === 'assistant' ? 'Bot' : 'User'}: ${e.content}`).join('\n'),
+				});
+				appendMessage(chat, strings.leadSaved || 'Спасибо! Мы свяжемся с вами в ближайшее время.', 'bot');
+				playReplySound(chat.dataset.wpdsacReplySound || 'off');
+				status.textContent = '';
+			} catch (error) {
+				status.textContent = error.message || strings.leadError || 'Не удалось сохранить заявку.';
+			} finally {
+				button.disabled = false;
+			}
+			persistConversationHistory(chat);
+			return;
+		}
+
 		const leadDetails = extractLeadDetails(message);
 		const contactDigits = leadDetails.phone.replace(/\D/g, '').length;
 		const hasContactIntent = /\b(оставить\s+(?:заявк[а-яё]*|контакт[а-яё]*)|хочу\s+оставить\s+(?:номер|телефон)|связаться|перезвон[а-яё]*|позвон[а-яё]*|contact\s+me|leave\s+(?:my\s+contacts?|a\s+request)|call\s+me)\b/iu.test(message);
@@ -976,8 +1018,8 @@
 				const leadEl = chat.querySelector('[data-wpdsac-lead]');
 				const leadPrompt = leadEl?.dataset?.wpdsacLeadPrompt || '';
 				setTimeout(() => {
-					appendMessage(chat, leadPrompt, 'bot');
-					openLeadForm(chat, { request: '' });
+					appendMessage(chat, leadPrompt || 'Пожалуйста, оставьте ваше имя и телефон для связи.', 'bot');
+					waitingForContact.set(chat, true);
 				}, 600);
 			}
 		} catch (error) {
