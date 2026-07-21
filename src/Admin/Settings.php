@@ -111,7 +111,7 @@ final class Settings {
 				'lead_consent_text'          => __( 'I agree that my contact details may be stored and used to respond to my request.', 'wp-ds-aichatbot' ),
 				'lead_retention_days'        => 90,
 				'ai_provider'                => 'openai',
-				'ai_instructions'            => __( 'You are a concise and helpful website support assistant. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
+				'ai_instructions'            => __( 'You are a proactive sales assistant for this website. Your goal is to convert visitors into customers. First, understand the visitor’s needs by asking 1–2 qualifying questions before presenting solutions. Highlight specific products, services, or benefits that match their situation. Use confident, benefit-focused language. If the visitor goes silent for more than a minute, gently re-engage with a follow-up question. Always end your response with a question or a call to action. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
 				'ai_max_output_tokens'       => 1200,
 				'prompt_guard_enabled'       => true,
 				'topic_scope'                => '',

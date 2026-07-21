@@ -170,7 +170,6 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	flex: 0 0 32px;
 	border: 1px solid var(--wpdsac-border);
 	border-radius: 50%;
-	background: var(--wpdsac-surface);
 	object-fit: cover;
 }
 

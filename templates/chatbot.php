@@ -36,16 +36,17 @@ if ( ! $view['show_toggle_icon'] ) {
 	<button type="button" class="wpdsac-chat__intro-bubble" data-wpdsac-intro-bubble hidden>
 		<?php echo esc_html( $view['welcome_message'] ); ?>
 	</button>
-	<button
-		type="button"
+	<div
 		class="wpdsac-chat__toggle"
+		role="button"
+		tabindex="0"
 		aria-expanded="<?php echo $view['expanded'] ? 'true' : 'false'; ?>"
 		aria-controls="<?php echo esc_attr( $panel_id ); ?>"
 	>
 		<span class="wpdsac-chat__toggle-title"><?php echo esc_html( $view['title'] ); ?></span>
 		<img class="wpdsac-chat__icon" src="<?php echo esc_url( $view['avatar_url'] ); ?>" width="32" height="32" alt="">
 		<p class="wpdsac-chat__status" data-wpdsac-status aria-live="polite"></p>
-	</button>
+	</div>
 
 	<div
 		id="<?php echo esc_attr( $panel_id ); ?>"

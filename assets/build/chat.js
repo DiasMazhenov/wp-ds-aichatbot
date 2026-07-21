@@ -618,6 +618,20 @@
 		setExpanded(chat, toggle.matches('[data-wpdsac-intro-bubble]') ? true : !expanded);
 	});
 
+	document.addEventListener('keydown', (event) => {
+		if (event.key !== 'Enter' && event.key !== ' ') {
+			return;
+		}
+
+		const toggle = event.target.closest('[data-wpdsac-chat] .wpdsac-chat__toggle');
+		if (!toggle || toggle !== event.target) {
+			return;
+		}
+
+		event.preventDefault();
+		toggle.click();
+	});
+
 	document.addEventListener('click', (event) => {
 		const action = event.target.closest('[data-wpdsac-quick-action]');
 		if (!action) {
