@@ -1,4 +1,4 @@
-:root {
+.wpdsac-chat {
 	--wpdsac-panel-mt: 0;
 	--wpdsac-panel-pr: 10px;
 	--wpdsac-panel-pl: 20px;
@@ -8,9 +8,6 @@
 	--wpdsac-msg-pt: 20px;
 	--wpdsac-msg-pb: 20px;
 	--wpdsac-msg-px: 3px;
-}
-
-.wpdsac-chat {
 	--wpdsac-accent: #2563eb;
 	--wpdsac-accent-text: #fff;
 	--wpdsac-surface: #ffffff;
