@@ -168,7 +168,7 @@ wp-ds-aichatbot/
 - [x] Найти причину падения run `29855924222`: устаревший `/hideQuickAction/` assertion.
 - [x] Исправить assertions `/hideQuickAction/` и `SITE NAVIGATION POLICY` в соответствии с текущим поведением и добавить обязательный pre-push протокол в `Context.md`.
 - [x] Локально подтвердить core и Elementor WordPress Playground smoke tests.
-- [ ] Подтвердить зелёный GitHub Actions run 0.5.76 и получить новый installable ZIP artifact.
+- [x] Подтвердить зелёный GitHub Actions run `29856541857` для 0.5.76; package job создал installable ZIP artifact.
 
 ### Выполнено в сессии 2026-07-21 (0.5.55 – 0.5.74)
 
