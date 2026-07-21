@@ -515,7 +515,9 @@
 			document.body.classList.remove('wpdsac-modal-open');
 			commitCrop();
 			var form = document.querySelector('[data-wpdsac-settings-form]');
-			if (form) {
+			if (form && typeof form.requestSubmit === 'function') {
+				form.requestSubmit();
+			} else if (form) {
 				form.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
 			}
 		};

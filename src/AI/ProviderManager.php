@@ -80,22 +80,16 @@ final class ProviderManager {
 
 		$suffix = '';
 
-		$options = Settings::get();
-		$now     = time();
-		$hour    = (int) gmdate( 'G', $now );
-		$dow     = gmdate( 'l', $now );
-		$suffix  = sprintf(
+		$now    = time();
+		$hour   = (int) gmdate( 'G', $now );
+		$dow    = gmdate( 'l', $now );
+		$suffix = sprintf(
 			"CONTEXT:\n- Current server time: %s (%s, %s)\n- Time of day: %s\n",
 			gmdate( 'H:i T', $now ),
 			gmdate( 'j F Y', $now ),
 			$dow,
 			$hour < 6 ? 'night' : ( $hour < 12 ? 'morning' : ( $hour < 18 ? 'afternoon' : 'evening' ) )
 		);
-
-		$greetings_pool = trim( (string) ( $options['greetings_pool'] ?? '' ) );
-		if ( '' !== $greetings_pool ) {
-			$suffix .= "- Available greeting templates (adapt to context, never paste verbatim):\n" . $greetings_pool . "\n";
-		}
 
 		$suffix .= "\nGREETING RULES:\n- Match the visitor's time-of-day greeting (Доброе утро → Доброе утро! / Добрый вечер → Добрый вечер!) with appropriate enthusiasm.\n- If the visitor writes a plain greeting (привет, здравствуйте), respond with a time-appropriate greeting: Доброе утро (before 12:00), Добрый день (12:00-18:00), Добрый вечер (18:00-00:00), Доброй ночи (00:00-06:00).\n- After the greeting, immediately ask a contextual question or offer help. Do not just repeat the greeting.\n- CRITICAL: NEVER introduce yourself or repeat a greeting phrase you already used in this conversation. If the conversation history already contains your greeting, do NOT greet again — skip straight to the contextual follow-up.";
 
