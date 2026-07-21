@@ -135,6 +135,7 @@ final class Settings {
 				'global_enabled'             => false,
 				'title'                      => __( 'AI Assistant', 'wp-ds-aichatbot' ),
 				'welcome_message'            => __( 'Hello! How can I help you?', 'wp-ds-aichatbot' ),
+				'greetings_pool'             => '',
 				'message_placeholder'        => __( 'Type your message…', 'wp-ds-aichatbot' ),
 				'reply_sound'                => 'soft',
 				'intro_trigger'              => 'delay',
@@ -162,7 +163,7 @@ final class Settings {
 				'lead_retention_days'        => 90,
 				'ai_provider'                => 'openai',
 				'communication_style'        => 'concierge',
-				'ai_instructions'            => __( 'You are a proactive sales assistant for this website. Your goal is to convert visitors into customers. First, understand the visitor’s needs by asking 1–2 qualifying questions before presenting solutions. Highlight specific products, services, or benefits that match their situation. Use confident, benefit-focused language. If the visitor goes silent for more than a minute, gently re-engage with a follow-up question. Always end your response with a question or a call to action. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
+				'ai_instructions'            => __( 'You are a proactive sales assistant for this website. Your goal is to understand the visitor\'s needs and convert them into customers. Vary your greetings — never repeat the same opening. Start by asking one probing question that uncovers the visitor\'s pain points, goals, or frustrations. Follow up with specific, benefit-oriented questions. Before suggesting any solution, discover: what problem they are trying to solve, what they have tried before, what matters most to them (price, speed, quality, convenience). Be conversational — not robotic. Adapt your tone to {username} when a name is known. If the visitor goes silent, re-engage with a fresh question about their situation. Always end with a question or a low-pressure call to action. Reply in the same language as the visitor.', 'wp-ds-aichatbot' ),
 				'ai_max_output_tokens'       => 1200,
 				'prompt_guard_enabled'       => true,
 				'topic_scope'                => '',
@@ -192,11 +193,14 @@ final class Settings {
 		}
 
 		$old_default = __( 'You are a concise and helpful website support assistant. Reply in the same language as the visitor.', 'wp-ds-aichatbot' );
-		$new_default = __( 'You are a proactive sales assistant for this website. Your goal is to convert visitors into customers. First, understand the visitor\'s needs by asking 1–2 qualifying questions before presenting solutions. Highlight specific products, services, or benefits that match their situation. Use confident, benefit-focused language. If the visitor goes silent for more than a minute, gently re-engage with a follow-up question. Always end your response with a question or a call to action. Reply in the same language as the visitor.', 'wp-ds-aichatbot' );
+		$mid_default = __( 'You are a proactive sales assistant for this website. Your goal is to convert visitors into customers. First, understand the visitor\'s needs by asking 1–2 qualifying questions before presenting solutions. Highlight specific products, services, or benefits that match their situation. Use confident, benefit-focused language. If the visitor goes silent for more than a minute, gently re-engage with a follow-up question. Always end your response with a question or a call to action. Reply in the same language as the visitor.', 'wp-ds-aichatbot' );
+		$new_default = self::defaults()['ai_instructions'];
 
-		if ( isset( $value['ai_instructions'] ) && trim( (string) $value['ai_instructions'] ) === trim( $old_default ) ) {
-			$value['ai_instructions'] = $new_default;
-			update_option( self::OPTION_NAME, $value, false );
+		if ( isset( $value['ai_instructions'] ) ) {
+			$trimmed = trim( (string) $value['ai_instructions'] );
+			if ( trim( $old_default ) === $trimmed || trim( $mid_default ) === $trimmed ) {
+				$value['ai_instructions'] = $new_default;
+			}
 		}
 
 		if ( ! isset( $value['ai_max_output_tokens'] ) && isset( $value['openai_max_output_tokens'] ) ) {
@@ -398,6 +402,7 @@ final class Settings {
 		$this->add_field( 'global_enabled', __( 'Global chatbot', 'wp-ds-aichatbot' ), 'checkbox' );
 		$this->add_field( 'title', __( 'Title', 'wp-ds-aichatbot' ), 'text' );
 		$this->add_field( 'welcome_message', __( 'Welcome message', 'wp-ds-aichatbot' ), 'textarea' );
+		$this->add_field( 'greetings_pool', __( 'Greetings pool', 'wp-ds-aichatbot' ), 'textarea' );
 		$this->add_field( 'message_placeholder', __( 'Message input placeholder', 'wp-ds-aichatbot' ), 'text' );
 		$this->add_field( 'reply_sound', __( 'Reply notification sound', 'wp-ds-aichatbot' ), 'sound_select' );
 		$this->add_field( 'intro_trigger', __( 'Intro bubble trigger', 'wp-ds-aichatbot' ), 'intro_trigger_select' );
@@ -467,6 +472,7 @@ final class Settings {
 			'global_enabled'             => ! empty( $input['global_enabled'] ),
 			'title'                      => sanitize_text_field( $input['title'] ?? '' ),
 			'welcome_message'            => sanitize_textarea_field( $input['welcome_message'] ?? '' ),
+			'greetings_pool'             => sanitize_textarea_field( $input['greetings_pool'] ?? '' ),
 			'message_placeholder'        => sanitize_text_field( $input['message_placeholder'] ?? '' ),
 			'reply_sound'                => $this->sanitize_reply_sound( $input['reply_sound'] ?? 'soft' ),
 			'intro_trigger'              => $this->sanitize_intro_trigger( $input['intro_trigger'] ?? 'delay' ),
@@ -987,6 +993,13 @@ final class Settings {
 				printf(
 					'<p class="description">%s</p>',
 					esc_html__( 'Use {username} to insert the visitor name. The (username) alias is also supported.', 'wp-ds-aichatbot' )
+				);
+			}
+
+			if ( 'greetings_pool' === $key ) {
+				printf(
+					'<p class="description">%s</p>',
+					esc_html__( 'One greeting per line. When filled, a random greeting replaces the static welcome message. Leave empty to use the welcome message above.', 'wp-ds-aichatbot' )
 				);
 			}
 			return;

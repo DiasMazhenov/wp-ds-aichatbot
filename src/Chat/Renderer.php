@@ -59,10 +59,22 @@ final class Renderer {
 		$trigger    = in_array( $trigger, $triggers, true ) ? $trigger : 'delay';
 		$call_url   = esc_url_raw( (string) $options['quick_call_url'], array( 'http', 'https', 'tel', 'sms' ) );
 		$call_url   = '' !== $call_url ? $call_url : $this->contacts->call_url();
-		$view       = array(
+
+		$welcome_text = sanitize_textarea_field( (string) $options['welcome_message'] );
+		$greetings    = array_filter(
+			array_map(
+				'trim',
+				explode( "\n", sanitize_textarea_field( (string) ( $options['greetings_pool'] ?? '' ) ) )
+			)
+		);
+		if ( array() !== $greetings ) {
+			$welcome_text = $greetings[ array_rand( $greetings ) ];
+		}
+
+		$view = array(
 			'id'                  => wp_unique_id( 'wpdsac-chat-' ),
 			'title'               => sanitize_text_field( (string) $options['title'] ),
-			'welcome_message'     => sanitize_textarea_field( (string) $options['welcome_message'] ),
+			'welcome_message'     => $welcome_text,
 			'message_placeholder' => sanitize_text_field( (string) $options['message_placeholder'] ),
 			'reply_sound'         => sanitize_key( (string) $options['reply_sound'] ),
 			'intro_trigger'       => $trigger,

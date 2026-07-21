@@ -947,3 +947,9 @@ msgstr "Некорректный номер. Укажите телефон, на
 
 msgid "Thank you! We will contact you shortly."
 msgstr "Спасибо! Мы свяжемся с вами в ближайшее время."
+
+msgid "Greetings pool"
+msgstr "Пул приветствий"
+
+msgid "One greeting per line. When filled, a random greeting replaces the static welcome message. Leave empty to use the welcome message above."
+msgstr "По одному приветствию на строку. Если заполнено, случайное приветствие заменяет статичное сообщение. Оставьте пустым, чтобы использовать приветствие выше."
