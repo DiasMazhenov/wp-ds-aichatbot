@@ -152,12 +152,31 @@ wp-ds-aichatbot/
 └── .github/workflows/ci.yml
 ```
 
-## Текущий следующий шаг
+Последнее обновление: 2026-07-21
 
-Версия `0.5.45`: premium quick bar с иконками, pill input + semantic embeddings инфраструктура (DB v8, OpenAI embeddings provider, EmbeddingService, гибридный Retriever).
+## Текущий статус
 
-Коммит `dc2abfb` запушен. PHPUnit 14/14 OK.
+Версия `0.5.74`: критический фикс 500 ошибки (`resolve()` → `get_api_key()` в OpenAIEmbeddingsProvider). Чат работает.
 
-GitHub Actions run `29664260145` полностью прошёл: PHPUnit PHP 7.4/8.3, PHP lint 7.4/8.1/8.3, WPCS, WordPress/Elementor integration и package. Artifact `8435277185` содержит installable ZIP для commit `aaf3120`.
+### Выполнено в сессии 2026-07-21 (0.5.55 – 0.5.74)
 
-Локальные `node_modules` и dev-`vendor` удалены после финальной проверки; они восстанавливаются через `npm ci` и `composer install`. Installable ZIP содержит только production Composer runtime PDF parser; dev-зависимости и `vendor/bin` исключены.
+- **Lead collection**: multi-step inline (имя → телефон), триггер на 5-м сообщении, скрытие после отправки
+- **Communication styles**: 10 пресетов + Custom в AI-вкладке
+- **Greetings pool**: рандомный выбор из textarea, fallback при пустом welcome
+- **AI instructions**: наводящие вопросы о болях клиента, time-of-day контекст, запрет повторных приветствий, чтение всей истории
+- **Avatar**: hard crop 200×200, визуальный crop в модалке (drag + zoom + wheel), object-position слайдеры, `object-fit: cover` для 1:1 маппинга с фронтендом
+- **CSS**: переменные из `:root` → `.wpdsac-chat`, устранена каскадная утечка
+- **Quick actions**: кнопки не скрываются после клика, контекстные QA-кнопки от AI (`[[WPDSAC_QA|Label|message|Text]]`)
+- **ProviderManager**: откачен к рабочей версии 0.5.61, добавлен try-catch с debug-выводом в консоль
+- **Переводы**: русские `.po/.mo` для lead-сообщений и greetings pool
+- **500 fix**: `resolve()` → `get_api_key()` в OpenAIEmbeddingsProvider (корень всех проблем)
+
+### Обнаруженная проблема деплоя
+
+CSS/JS файлы (`chat.css`, `chat.js`) возвращают 404 на сервере — папка `assets/build/` отсутствует в деплое. Без CSS чат-бот рендерится голым HTML в футере. Решение: залить `assets/build/` через FTP или переустановить плагин из ZIP.
+
+### Следующие шаги
+
+1. Решить проблему деплоя build-файлов
+2. Проверить, исчезли ли «сломанные стили» после загрузки CSS
+3. Дальнейшие доработки по запросу
