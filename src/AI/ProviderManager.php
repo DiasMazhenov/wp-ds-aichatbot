@@ -74,145 +74,100 @@ final class ProviderManager {
 			return $reply;
 		}
 
-		try {
-			$visitor_name = sanitize_text_field( (string) $request->get_param( 'visitor_name' ) );
-			Settings::set_runtime_variables( array( 'username' => $visitor_name ) );
-			$navigation_targets = $request->get_param( 'navigation_targets' );
+		$visitor_name = sanitize_text_field( (string) $request->get_param( 'visitor_name' ) );
+		Settings::set_runtime_variables( array( 'username' => $visitor_name ) );
+		$navigation_targets = $request->get_param( 'navigation_targets' );
 
-			$suffix = '';
+		$suffix = '';
 
-			$now    = time();
-			$hour   = (int) gmdate( 'G', $now );
-			$dow    = gmdate( 'l', $now );
-			$suffix = sprintf(
-				"CONTEXT:\n- Current server time: %s (%s, %s)\n- Time of day: %s\n",
-				gmdate( 'H:i T', $now ),
-				gmdate( 'j F Y', $now ),
-				$dow,
-				$hour < 6 ? 'night' : ( $hour < 12 ? 'morning' : ( $hour < 18 ? 'afternoon' : 'evening' ) )
-			);
+		$now    = time();
+		$hour   = (int) gmdate( 'G', $now );
+		$dow    = gmdate( 'l', $now );
+		$suffix = sprintf(
+			"CONTEXT:\n- Current server time: %s (%s, %s)\n- Time of day: %s\n",
+			gmdate( 'H:i T', $now ),
+			gmdate( 'j F Y', $now ),
+			$dow,
+			$hour < 6 ? 'night' : ( $hour < 12 ? 'morning' : ( $hour < 18 ? 'afternoon' : 'evening' ) )
+		);
 
-			$suffix .= "\nGREETING RULES:\n- Match the visitor's time-of-day greeting (Доброе утро → Доброе утро! / Добрый вечер → Добрый вечер!) with appropriate enthusiasm.\n- If the visitor writes a plain greeting (привет, здравствуйте), respond with a time-appropriate greeting: Доброе утро (before 12:00), Добрый день (12:00-18:00), Добрый вечер (18:00-00:00), Доброй ночи (00:00-06:00).\n- After the greeting, immediately ask a contextual question or offer help. Do not just repeat the greeting.\n- CRITICAL: NEVER introduce yourself or repeat a greeting phrase you already used in this conversation. If the conversation history already contains your greeting, do NOT greet again — skip straight to the contextual follow-up.";
-
-			$suffix .= "\n\nCONTEXT QUICK ACTIONS:\n- After EVERY reply, suggest 2 context-relevant quick action buttons that help the visitor move forward.\n- Format: [[WPDSAC_QA|Button Label|message|Text to send]] for a message button, or [[WPDSAC_QA|Button Label|url|https://...]] for a link.\n- Examples: [[WPDSAC_QA|Цены|message|Сколько это стоит?]], [[WPDSAC_QA|Доставка|message|Расскажите про доставку]], [[WPDSAC_QA|О компании|message|Расскажите о компании]], [[WPDSAC_QA|Скидки|message|Есть ли скидки?]], [[WPDSAC_QA|Отзывы|message|Покажите отзывы]]\n- Read the conversation context. If the visitor asks about prices — offer a «Цены» or «Прайс» button. If about delivery — offer «Доставка». If the visitor is unsure — offer helpful exploration buttons.\n- The label must be short (1-3 words). The message must be a complete question or request the visitor would naturally ask.\n- Place BOTH markers on a new line at the END of your reply.\n- Never use markers for greetings or generic phrases.";
-
-			if ( is_array( $navigation_targets ) && array() !== $navigation_targets ) {
-				$nav_policy = $this->navigation_policy( $navigation_targets );
-				if ( '' !== $nav_policy ) {
-					if ( '' !== $suffix ) {
-						$suffix .= "\n\n";
-					}
-					$suffix .= $nav_policy;
-				}
-			}
-
-			if ( $this->leads instanceof LeadRepository && $this->leads->exists_for_session( $session_id ) ) {
+		if ( is_array( $navigation_targets ) && array() !== $navigation_targets ) {
+			$nav_policy = $this->navigation_policy( $navigation_targets );
+			if ( '' !== $nav_policy ) {
 				if ( '' !== $suffix ) {
 					$suffix .= "\n\n";
 				}
-				$suffix .= 'LEAD STATUS (trusted server data): The visitor already submitted their contact details in this chat session. Do not offer the contact form again or ask for contact information. Reassure the visitor that their request has been received and is being processed.';
+				$suffix .= $nav_policy;
 			}
+		}
 
+		if ( $this->leads instanceof LeadRepository && $this->leads->exists_for_session( $session_id ) ) {
 			if ( '' !== $suffix ) {
-				Settings::set_runtime_instruction_suffix( $suffix );
+				$suffix .= "\n\n";
 			}
+			$suffix .= 'LEAD STATUS (trusted server data): The visitor already submitted their contact details in this chat session. Do not offer the contact form again or ask for contact information. Reassure the visitor that their request has been received and is being processed.';
+		}
 
-			try {
-				$options       = Settings::get();
-				$guarded_reply = $this->guard->inspect( $message, $options, $session_id );
+		if ( '' !== $suffix ) {
+			Settings::set_runtime_instruction_suffix( $suffix );
+		}
 
-				if ( is_string( $guarded_reply ) ) {
-					return $guarded_reply;
-				}
+		$options       = Settings::get();
+		$guarded_reply = $this->guard->inspect( $message, $options, $session_id );
 
-				$provider_id = (string) apply_filters( 'wpdsac_ai_provider_id', $options['ai_provider'], $request );
-				$providers   = apply_filters( 'wpdsac_ai_providers', $this->providers );
-				$providers   = is_array( $providers ) ? $providers : $this->providers;
-				$provider    = $providers[ $provider_id ] ?? null;
+		if ( is_string( $guarded_reply ) ) {
+			return $guarded_reply;
+		}
 
-				/**
-				 * Filter the provider used for a chat request.
-				 *
-				 * @param ProviderInterface|null $provider    Selected provider.
-				 * @param \WP_REST_Request       $request     Current REST request.
-				 * @param string                 $provider_id Selected provider ID.
-				 */
-				$provider = apply_filters( 'wpdsac_ai_provider', $provider, $request, $provider_id );
+		$provider_id = (string) apply_filters( 'wpdsac_ai_provider_id', $options['ai_provider'], $request );
+		$providers   = apply_filters( 'wpdsac_ai_providers', $this->providers );
+		$providers   = is_array( $providers ) ? $providers : $this->providers;
+		$provider    = $providers[ $provider_id ] ?? null;
 
-				if ( ! $provider instanceof ProviderInterface ) {
-					return new \WP_Error(
-						'wpdsac_invalid_provider',
-						__( 'The configured AI provider is invalid.', 'wp-ds-aichatbot' ),
-						array( 'status' => 503 )
-					);
-				}
+		$provider = apply_filters( 'wpdsac_ai_provider', $provider, $request, $provider_id );
 
-				$provider_message = apply_filters( 'wpdsac_ai_message', $message, $session_id, $request, $provider_id );
-				$provider_message = is_string( $provider_message ) && '' !== trim( $provider_message )
-				? $provider_message
-				: $message;
-				$history          = $request->get_param( 'history' );
-				$provider_message = $this->with_conversation_history( is_array( $history ) ? $history : array(), $provider_message );
-
-				if ( '' !== $visitor_name ) {
-					$provider_message = sprintf(
-						"Visitor name (untrusted profile data): %s\n\nVisitor message:\n%s",
-						$visitor_name,
-						$provider_message
-					);
-				}
-
-				$generated_reply = $provider->generate( $provider_message, $session_id );
-
-				if ( is_string( $generated_reply ) && $this->leads instanceof LeadRepository && $this->leads->exists_for_session( $session_id ) ) {
-					$generated_reply = preg_replace(
-						'/\[\[WPDSAC_ACTION\|lead_form\|[^]]*\]\]/',
-						'',
-						$generated_reply
-					);
-					$generated_reply = preg_replace(
-						'/\[\[WPDSAC_NAV\|[^|]*#wpdsac-contact-form[^|]*\|[^]]*\]\]/',
-						'',
-						$generated_reply
-					);
-					$generated_reply = trim( preg_replace( '/\n{3,}/', "\n\n", $generated_reply ) );
-				}
-
-				return is_string( $generated_reply )
-				? $this->remove_repeated_greeting( $generated_reply, is_array( $history ) ? $history : array() )
-				: $generated_reply;
-			} catch ( \Throwable $e ) {
-				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-					error_log( '[WP DS AI Chatbot] Provider error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() );
-				}
-				return new \WP_Error(
-					'wpdsac_provider_error',
-					__( 'The AI service is temporarily unavailable. Please try again in a moment.', 'wp-ds-aichatbot' ),
-					array(
-						'status' => 502,
-						'debug'  => ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? $e->getMessage() : '',
-					)
-				);
-			} finally {
-				Settings::clear_runtime_variables();
-			}
-		// phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
-		} catch ( \Throwable $e ) {
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-				error_log( '[WP DS AI Chatbot] Uncaught error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() );
-			}
-			Settings::clear_runtime_variables();
+		if ( ! $provider instanceof ProviderInterface ) {
 			return new \WP_Error(
-				'wpdsac_provider_error',
-				__( 'The AI service is temporarily unavailable. Please try again in a moment.', 'wp-ds-aichatbot' ),
-				array(
-					'status' => 502,
-					'debug'  => ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? $e->getMessage() : '',
-				)
+				'wpdsac_invalid_provider',
+				__( 'The configured AI provider is invalid.', 'wp-ds-aichatbot' ),
+				array( 'status' => 503 )
 			);
 		}
+
+		$provider_message = apply_filters( 'wpdsac_ai_message', $message, $session_id, $request, $provider_id );
+		$provider_message = is_string( $provider_message ) && '' !== trim( $provider_message )
+			? $provider_message
+			: $message;
+		$history          = $request->get_param( 'history' );
+		$provider_message = $this->with_conversation_history( is_array( $history ) ? $history : array(), $provider_message );
+
+		if ( '' !== $visitor_name ) {
+			$provider_message = sprintf(
+				"Visitor name (untrusted profile data): %s\n\nVisitor message:\n%s",
+				$visitor_name,
+				$provider_message
+			);
+		}
+
+		$generated_reply = $provider->generate( $provider_message, $session_id );
+
+		if ( is_string( $generated_reply ) && $this->leads instanceof LeadRepository && $this->leads->exists_for_session( $session_id ) ) {
+			$generated_reply = preg_replace(
+				'/\[\[WPDSAC_ACTION\|lead_form\|[^]]*\]\]/',
+				'',
+				$generated_reply
+			);
+			$generated_reply = preg_replace(
+				'/\[\[WPDSAC_NAV\|[^|]*#wpdsac-contact-form[^|]*\|[^]]*\]\]/',
+				'',
+				$generated_reply
+			);
+			$generated_reply = trim( preg_replace( '/\n{3,}/', "\n\n", $generated_reply ) );
+		}
+
+		return is_string( $generated_reply )
+			? $this->remove_repeated_greeting( $generated_reply, is_array( $history ) ? $history : array() )
+			: $generated_reply;
 	}
 
 	/**
