@@ -1358,6 +1358,13 @@
 
 		status.textContent = strings.connecting || '';
 
+		const typing = document.createElement('div');
+		typing.className = 'wpdsac-chat__message-row wpdsac-chat__message-row--bot wpdsac-chat__typing';
+		typing.innerHTML = '<span class="wpdsac-chat__typing-dot"></span><span class="wpdsac-chat__typing-dot"></span><span class="wpdsac-chat__typing-dot"></span>';
+		const messages = chat.querySelector('.wpdsac-chat__messages');
+		messages.appendChild(typing);
+		scrollToLatest(chat);
+
 		try {
 			ensureConversationFresh(chat);
 			const session = await getSessionToken();
@@ -1371,6 +1378,7 @@
 				});
 
 			appendMessage(chat, message, 'user');
+			typing.remove();
 			const replyAnimation = appendMessage(chat, response.reply, 'bot', true);
 			persistConversationHistory(chat);
 			await replyAnimation;
@@ -1405,6 +1413,7 @@
 				}, 600);
 			}
 		} catch (error) {
+			typing.remove();
 			if (error.status === 401) {
 				window.sessionStorage.removeItem(sessionStorageKey);
 			}

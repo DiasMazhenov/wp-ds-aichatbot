@@ -192,7 +192,6 @@ final class Appearance {
 			'--wpdsac-input-font-size'     => $values['input_font_size'] . 'px',
 			'--wpdsac-button-size'         => $values['button_font_size'] . 'px',
 			'--wpdsac-panel-padding'       => $values['panel_padding'] . 'px',
-			'--wpdsac-messages-height'     => $values['messages_height'] . 'px',
 			'--wpdsac-quick-font-size'     => $values['quick_action_font_size'] . 'px',
 			'--wpdsac-quick-padding-x'     => $values['quick_action_padding_x'] . 'px',
 			'--wpdsac-quick-padding-y'     => $values['quick_action_padding_y'] . 'px',
@@ -233,7 +232,6 @@ final class Appearance {
 				$values['composer_bg_color'],
 				min( 100, max( 0, (int) $values['composer_bg_opacity'] ) ) / 100
 			),
-			'--wpdsac-composer-blur'       => '',
 			'--wpdsac-composer-radius'     => $values['composer_radius'] . 'px',
 			'--wpdsac-composer-padding'    => $values['composer_padding'] . 'px',
 			'--wpdsac-composer-gap'        => $values['composer_gap'] . 'px',

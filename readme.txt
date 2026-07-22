@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.100
+Stable tag: 0.5.101
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,12 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.101 =
+
+* Typing indicator (3 animated dots) while waiting for AI response.
+* Removed dead CSS variables: composer-blur, messages-height.
+* Cleaned unused code from Appearance inline_style.
 
 = 0.5.100 =
 
