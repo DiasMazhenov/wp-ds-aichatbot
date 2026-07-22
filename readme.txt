@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.92
+Stable tag: 0.5.93
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,13 +34,19 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 
 == Changelog ==
 
+= 0.5.93 =
+
+* Glass-morphism panel: semi-transparent white background with backdrop-filter blur, adjustable opacity/blur/border via settings.
+* Messages area: permanently transparent background, hidden scrollbar.
+* Composer: light semi-transparent background, optional separator line above.
+* New panel settings: glass blur (0-40 px), background opacity (0-100%), border opacity (0-100%).
+* New composer setting: separator line toggle.
+
 = 0.5.92 =
 
-* Restructured DOM: composer panel moved outside conversation, messages area is now truly transparent/glass.
-* New Message window settings section: background mode (solid/glass/transparent), blur, saturation, radius, border, inner glare, outer shadow, padding.
-* Bottom panel simplified to background, opacity, radius, padding, and gap only.
-* Panel background is permanently transparent so site content is visible behind the chat window.
-* Messages use glass-morphism effect with backdrop-filter blur and saturation via CSS custom properties.
+* Restructured DOM: composer panel moved outside conversation.
+* New Message window settings section: background mode, blur, saturation, radius, border, glare, shadow, padding.
+* Bottom panel simplified to background, opacity, radius, padding, and gap.
 
 = 0.5.91 =
 
