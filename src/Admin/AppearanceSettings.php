@@ -346,7 +346,7 @@ final class AppearanceSettings {
 								></div>
 							</div>
 
-							<form class="wpdsac-chat__form" data-wpdsac-form>
+							<div class="wpdsac-chat__form" data-wpdsac-form>
 							<label class="screen-reader-text" for="wpdsac-preview-input">
 								<?php esc_html_e( 'Message', 'wp-ds-aichatbot' ); ?>
 							</label>
@@ -361,7 +361,7 @@ final class AppearanceSettings {
 							<button type="submit" disabled aria-label="<?php esc_attr_e( 'Send message', 'wp-ds-aichatbot' ); ?>">
 								<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2 .01 7Z"/></svg>
 							</button>
-							</form>
+							</div>
 						</div>
 					</div>
 				</section>
