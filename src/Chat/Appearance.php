@@ -74,21 +74,25 @@ final class Appearance {
 			'global_position'           => 'bottom_right',
 			'global_offset_x'           => 24,
 			'global_offset_y'           => 24,
-			'composer_bg_color'         => '#ffffff',
-			'composer_bg_opacity'       => 90,
-			'composer_blur'             => 14,
-			'composer_radius'           => 20,
-			'composer_padding'          => 0,
-			'composer_gap'              => 10,
-			'composer_border_color'     => '#ffffff',
-			'composer_border_opacity'   => 72,
-			'composer_border_width'     => 1,
-			'composer_shadow'           => 18,
-			'composer_spacing'          => 12,
-			'composer_scrollable'       => false,
-			'messages_transparent'      => false,
-			'messages_bg_color'         => '#e0e0ef',
-			'messages_bg_opacity'       => 30,
+			'messages_bg_mode'             => 'glass',
+			'messages_bg_color'           => '#ffffff',
+			'messages_bg_opacity'         => 12,
+			'messages_blur'               => 14,
+			'messages_saturation'         => 125,
+			'messages_radius'             => 24,
+			'messages_border_color'       => '#ffffff',
+			'messages_border_opacity'     => 45,
+			'messages_border_width'       => 1,
+			'messages_glare'              => 40,
+			'messages_shadow'             => 12,
+			'messages_padding'            => 20,
+			'messages_composer_spacing'   => 12,
+			'composer_bg_color'           => '#ffffff',
+			'composer_bg_opacity'         => 90,
+			'composer_radius'             => 20,
+			'composer_padding'            => 0,
+			'composer_gap'                => 10,
+			'composer_scrollable'         => false,
 		);
 	}
 
@@ -123,8 +127,12 @@ final class Appearance {
 			: $defaults['font_family'];
 		$output['show_toggle_icon']          = ! empty( $input['show_toggle_icon'] );
 		$output['message_animation_enabled'] = ! empty( $input['message_animation_enabled'] );
-		$output['composer_scrollable']       = ! empty( $input['composer_scrollable'] );
-		$output['messages_transparent']      = ! empty( $input['messages_transparent'] );
+		$output['composer_scrollable']  = ! empty( $input['composer_scrollable'] );
+
+		$bg_mode = sanitize_key( $input['messages_bg_mode'] ?? '' );
+		$output['messages_bg_mode'] = in_array( $bg_mode, array( 'solid', 'glass', 'transparent' ), true )
+			? $bg_mode
+			: $defaults['messages_bg_mode'];
 
 		$launcher_animation           = sanitize_key( $input['launcher_animation'] ?? '' );
 		$output['launcher_animation'] = in_array( $launcher_animation, self::launcher_animations(), true )
@@ -194,27 +202,27 @@ final class Appearance {
 			'--wpdsac-font-family'           => self::font_families()[ $values['font_family'] ],
 			'--wpdsac-offset-x'              => $values['global_offset_x'] . 'px',
 			'--wpdsac-offset-y'              => $values['global_offset_y'] . 'px',
+			'--wpdsac-msg-bg'                => self::messages_bg_value( $values ),
+			'--wpdsac-msg-blur'              => $values['messages_blur'] . 'px',
+			'--wpdsac-msg-saturation'        => $values['messages_saturation'] . '%',
+			'--wpdsac-msg-radius'            => $values['messages_radius'] . 'px',
+			'--wpdsac-msg-border-color'      => self::rgba(
+				$values['messages_border_color'],
+				min( 100, max( 0, (int) $values['messages_border_opacity'] ) ) / 100
+			),
+			'--wpdsac-msg-border-width'      => $values['messages_border_width'] . 'px',
+			'--wpdsac-msg-glare'             => self::glare( (int) $values['messages_glare'] ),
+			'--wpdsac-msg-shadow'            => self::shadow( (int) $values['messages_shadow'] ),
+			'--wpdsac-msg-padding'           => $values['messages_padding'] . 'px',
+			'--wpdsac-msg-composer-gap'      => $values['messages_composer_spacing'] . 'px',
 			'--wpdsac-composer-bg'           => self::rgba(
 				$values['composer_bg_color'],
 				min( 100, max( 0, (int) $values['composer_bg_opacity'] ) ) / 100
 			),
-			'--wpdsac-composer-blur'         => $values['composer_blur'] . 'px',
+			'--wpdsac-composer-blur'         => '',
 			'--wpdsac-composer-radius'       => $values['composer_radius'] . 'px',
 			'--wpdsac-composer-padding'      => $values['composer_padding'] . 'px',
 			'--wpdsac-composer-gap'          => $values['composer_gap'] . 'px',
-			'--wpdsac-composer-mt'           => $values['composer_spacing'] . 'px',
-			'--wpdsac-composer-border-color' => self::rgba(
-				$values['composer_border_color'],
-				min( 100, max( 0, (int) $values['composer_border_opacity'] ) ) / 100
-			),
-			'--wpdsac-composer-border-width' => $values['composer_border_width'] . 'px',
-			'--wpdsac-composer-shadow'       => self::shadow( (int) $values['composer_shadow'] ),
-			'--wpdsac-msg-bg'                => $values['messages_transparent']
-				? 'transparent'
-				: self::rgba(
-					$values['messages_bg_color'],
-					min( 100, max( 0, (int) $values['messages_bg_opacity'] ) ) / 100
-				),
 		);
 		$style      = '';
 
@@ -267,8 +275,8 @@ final class Appearance {
 			'launcher_gradient_2',
 			'launcher_gradient_3',
 			'composer_bg_color',
-			'composer_border_color',
 			'messages_bg_color',
+			'messages_border_color',
 		);
 	}
 
@@ -419,15 +427,60 @@ final class Appearance {
 				'max'  => 120,
 				'unit' => 'px',
 			),
-			'composer_bg_opacity'     => array(
+			'messages_blur'               => array(
+				'min'  => 0,
+				'max'  => 40,
+				'unit' => 'px',
+			),
+			'messages_saturation'         => array(
+				'min'  => 50,
+				'max'  => 200,
+				'unit' => '%',
+			),
+			'messages_radius'             => array(
+				'min'  => 0,
+				'max'  => 40,
+				'unit' => 'px',
+			),
+			'messages_bg_opacity'         => array(
 				'min'  => 0,
 				'max'  => 100,
 				'unit' => '%',
 			),
-			'composer_blur'           => array(
+			'messages_border_opacity'     => array(
+				'min'  => 0,
+				'max'  => 100,
+				'unit' => '%',
+			),
+			'messages_border_width'       => array(
+				'min'  => 0,
+				'max'  => 4,
+				'unit' => 'px',
+			),
+			'messages_glare'              => array(
+				'min'  => 0,
+				'max'  => 100,
+				'unit' => '%',
+			),
+			'messages_shadow'             => array(
+				'min'  => 0,
+				'max'  => 100,
+				'unit' => '%',
+			),
+			'messages_padding'            => array(
+				'min'  => 0,
+				'max'  => 40,
+				'unit' => 'px',
+			),
+			'messages_composer_spacing'   => array(
 				'min'  => 0,
 				'max'  => 30,
 				'unit' => 'px',
+			),
+			'composer_bg_opacity'     => array(
+				'min'  => 0,
+				'max'  => 100,
+				'unit' => '%',
 			),
 			'composer_radius'         => array(
 				'min'  => 0,
@@ -443,31 +496,6 @@ final class Appearance {
 				'min'  => 0,
 				'max'  => 24,
 				'unit' => 'px',
-			),
-			'composer_border_opacity' => array(
-				'min'  => 0,
-				'max'  => 100,
-				'unit' => '%',
-			),
-			'composer_border_width'   => array(
-				'min'  => 0,
-				'max'  => 4,
-				'unit' => 'px',
-			),
-			'composer_shadow'         => array(
-				'min'  => 0,
-				'max'  => 100,
-				'unit' => '%',
-			),
-			'composer_spacing'        => array(
-				'min'  => 0,
-				'max'  => 30,
-				'unit' => 'px',
-			),
-			'messages_bg_opacity'     => array(
-				'min'  => 0,
-				'max'  => 100,
-				'unit' => '%',
 			),
 		);
 	}
@@ -525,5 +553,34 @@ final class Appearance {
 		$alpha = min( 0.4, max( 0, $intensity / 100 * 0.4 ) );
 
 		return "0 12px 30px rgb(15 23 42 / {$alpha})";
+	}
+
+	/**
+	 * Build the background value for the messages window.
+	 *
+	 * @param array<string, mixed> $values Sanitized values.
+	 * @return string
+	 */
+	private static function messages_bg_value( array $values ): string {
+		if ( 'transparent' === $values['messages_bg_mode'] ) {
+			return 'transparent';
+		}
+
+		return self::rgba(
+			$values['messages_bg_color'],
+			min( 100, max( 0, (int) $values['messages_bg_opacity'] ) ) / 100
+		);
+	}
+
+	/**
+	 * Build inset highlight from intensity percentage.
+	 *
+	 * @param int $intensity 0-100.
+	 * @return string
+	 */
+	private static function glare( int $intensity ): string {
+		$alpha = min( 0.4, max( 0, $intensity / 100 * 0.4 ) );
+
+		return "inset 0 1px 0 rgb(255 255 255 / {$alpha})";
 	}
 }

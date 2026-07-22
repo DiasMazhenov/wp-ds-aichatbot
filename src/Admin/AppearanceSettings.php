@@ -33,8 +33,8 @@ final class AppearanceSettings {
 		add_settings_section( 'wpdsac_appearance_launcher', esc_html__( 'Collapsed launcher animation', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
 		add_settings_section( 'wpdsac_appearance_messages', esc_html__( 'Message animation', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
 		add_settings_section( 'wpdsac_appearance_controls', esc_html__( 'Controls and shapes', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
+		add_settings_section( 'wpdsac_appearance_messages_window', esc_html__( 'Message window', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
 		add_settings_section( 'wpdsac_appearance_composer', esc_html__( 'Bottom panel', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
-		add_settings_section( 'wpdsac_appearance_messages_bg', esc_html__( 'Message history background', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
 
 		$this->add_field( 'accent_color', __( 'Header and launcher', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_colors' );
 		$this->add_field( 'accent_text_color', __( 'Header text and icon', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_colors' );
@@ -91,22 +91,26 @@ final class AppearanceSettings {
 		$this->add_field( 'quick_action_gap', __( 'Quick button gap (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
 		$this->add_field( 'show_toggle_icon', __( 'Icon in expanded header', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_appearance_controls' );
 
+		$this->add_field( 'messages_bg_mode', __( 'Background mode', 'wp-ds-aichatbot' ), 'messages_bg_mode', 'wpdsac_appearance_messages_window' );
+		$this->add_field( 'messages_bg_color', __( 'Background color', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_messages_window' );
+		$this->add_field( 'messages_bg_opacity', __( 'Background opacity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages_window' );
+		$this->add_field( 'messages_blur', __( 'Glass blur (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages_window' );
+		$this->add_field( 'messages_saturation', __( 'Glass saturation (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages_window' );
+		$this->add_field( 'messages_radius', __( 'Window radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages_window' );
+		$this->add_field( 'messages_border_color', __( 'Border color', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_messages_window' );
+		$this->add_field( 'messages_border_opacity', __( 'Border opacity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages_window' );
+		$this->add_field( 'messages_border_width', __( 'Border thickness (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages_window' );
+		$this->add_field( 'messages_glare', __( 'Inner highlight intensity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages_window' );
+		$this->add_field( 'messages_shadow', __( 'Outer shadow intensity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages_window' );
+		$this->add_field( 'messages_padding', __( 'Inner padding (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages_window' );
+		$this->add_field( 'messages_composer_spacing', __( 'Space between window and bottom panel (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages_window' );
+
 		$this->add_field( 'composer_bg_color', __( 'Panel background', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_composer' );
 		$this->add_field( 'composer_bg_opacity', __( 'Panel background opacity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
-		$this->add_field( 'composer_blur', __( 'Background blur (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
 		$this->add_field( 'composer_radius', __( 'Corner radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
 		$this->add_field( 'composer_padding', __( 'Inner padding (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
 		$this->add_field( 'composer_gap', __( 'Gap between buttons and input (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
-		$this->add_field( 'composer_border_color', __( 'Border color', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_composer' );
-		$this->add_field( 'composer_border_opacity', __( 'Border opacity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
-		$this->add_field( 'composer_border_width', __( 'Border thickness (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
-		$this->add_field( 'composer_shadow', __( 'Shadow intensity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
-		$this->add_field( 'composer_spacing', __( 'Spacing from message history (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
 		$this->add_field( 'composer_scrollable', __( 'Horizontal scroll for quick buttons', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_appearance_composer' );
-
-		$this->add_field( 'messages_transparent', __( 'Transparent message history background', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_appearance_messages_bg' );
-		$this->add_field( 'messages_bg_color', __( 'History background color', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_messages_bg' );
-		$this->add_field( 'messages_bg_opacity', __( 'History background opacity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages_bg' );
 	}
 
 	/**
@@ -198,11 +202,15 @@ final class AppearanceSettings {
 			return;
 		}
 
+		if ( 'messages_bg_mode' === $args['type'] ) {
+			$this->render_messages_bg_mode_select( $name, (string) $options[ $key ] );
+			return;
+		}
+
 		if ( 'checkbox' === $args['type'] ) {
 			$descriptions = array(
-				'show_toggle_icon'     => __( 'Show the decorative icon beside the title when the chat is open.', 'wp-ds-aichatbot' ),
-				'composer_scrollable'  => __( 'Allow horizontal scrolling of quick buttons when they do not fit in one row.', 'wp-ds-aichatbot' ),
-				'messages_transparent' => __( 'Make the message history background fully transparent so the site content is visible behind it.', 'wp-ds-aichatbot' ),
+				'show_toggle_icon'    => __( 'Show the decorative icon beside the title when the chat is open.', 'wp-ds-aichatbot' ),
+				'composer_scrollable' => __( 'Allow horizontal scrolling of quick buttons when they do not fit in one row.', 'wp-ds-aichatbot' ),
 			);
 			$desc         = $descriptions[ $key ] ?? '';
 			printf(
@@ -296,23 +304,25 @@ final class AppearanceSettings {
 						<svg class="wpdsac-chat__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2.75c.47 4.88 4.37 8.78 9.25 9.25-4.88.47-8.78 4.37-9.25 9.25C11.53 16.37 7.63 12.47 2.75 12 7.63 11.53 11.53 7.63 12 2.75Z"/></svg>
 					</button>
 					<div class="wpdsac-chat__panel" data-wpdsac-preview-panel>
-						<div class="wpdsac-chat__messages">
-							<div class="wpdsac-chat__message-row wpdsac-chat__message-row--bot">
-								<span class="wpdsac-chat__avatar-frame" aria-hidden="true">
-									<img class="wpdsac-chat__avatar" src="<?php echo esc_url( $avatar_url ); ?>" width="32" height="32" alt="" data-wpdsac-admin-avatar style="<?php echo esc_attr( $obj_pos ); ?>">
-								</span>
-								<p class="wpdsac-chat__message wpdsac-chat__message--bot" data-wpdsac-preview-message data-wpdsac-preview-fallback="<?php echo esc_attr( $fallback_sample ); ?>">
-									<?php echo nl2br( esc_html( $sample ) ); ?>
-								</p>
-							</div>
-							<div class="wpdsac-chat__message-row wpdsac-chat__message-row--user">
-								<p class="wpdsac-chat__message wpdsac-chat__message--user">
-									<?php esc_html_e( 'Please tell me about the available options and pricing.', 'wp-ds-aichatbot' ); ?>
-								</p>
+						<div class="wpdsac-chat__conversation" data-wpdsac-conversation>
+							<div class="wpdsac-chat__messages">
+								<div class="wpdsac-chat__message-row wpdsac-chat__message-row--bot">
+									<span class="wpdsac-chat__avatar-frame" aria-hidden="true">
+										<img class="wpdsac-chat__avatar" src="<?php echo esc_url( $avatar_url ); ?>" width="32" height="32" alt="" data-wpdsac-admin-avatar style="<?php echo esc_attr( $obj_pos ); ?>">
+									</span>
+									<p class="wpdsac-chat__message wpdsac-chat__message--bot" data-wpdsac-preview-message data-wpdsac-preview-fallback="<?php echo esc_attr( $fallback_sample ); ?>">
+										<?php echo nl2br( esc_html( $sample ) ); ?>
+									</p>
+								</div>
+								<div class="wpdsac-chat__message-row wpdsac-chat__message-row--user">
+									<p class="wpdsac-chat__message wpdsac-chat__message--user">
+										<?php esc_html_e( 'Please tell me about the available options and pricing.', 'wp-ds-aichatbot' ); ?>
+									</p>
+								</div>
 							</div>
 						</div>
-						<div class="wpdsac-chat__composer">
-							<div class="wpdsac-chat__quick-actions">
+						<div class="wpdsac-chat__composer" data-wpdsac-composer>
+							<div class="wpdsac-chat__quick-actions" data-wpdsac-quick-actions>
 								<button type="button" class="wpdsac-chat__quick-action"><?php echo esc_html( (string) $options['quick_call_label'] ); ?></button>
 								<button type="button" class="wpdsac-chat__quick-action"><?php echo esc_html( (string) $options['quick_lead_label'] ); ?></button>
 							</div>
@@ -405,6 +415,29 @@ final class AppearanceSettings {
 	}
 
 	/**
+	 * Render messages background mode choices.
+	 *
+	 * @param string $name    Input name.
+	 * @param string $current Current mode.
+	 * @return void
+	 */
+	private function render_messages_bg_mode_select( string $name, string $current ): void {
+		$labels = array(
+			'transparent' => __( 'Transparent', 'wp-ds-aichatbot' ),
+			'glass'       => __( 'Glass', 'wp-ds-aichatbot' ),
+			'solid'       => __( 'Solid color', 'wp-ds-aichatbot' ),
+		);
+
+		printf( '<select name="%s" data-wpdsac-messages-bg-mode>', esc_attr( $name ) );
+
+		foreach ( $labels as $value => $label ) {
+			printf( '<option value="%1$s" %2$s>%3$s</option>', esc_attr( $value ), selected( $current, $value, false ), esc_html( $label ) );
+		}
+
+		echo '</select>';
+	}
+
+	/**
 	 * Render global position choices.
 	 *
 	 * @param string $name    Input name.
@@ -474,7 +507,12 @@ final class AppearanceSettings {
 			'message_radius'          => '--wpdsac-message-radius',
 			'input_radius'            => '--wpdsac-input-radius',
 			'panel_padding'           => '--wpdsac-panel-padding',
-			'messages_height'         => '--wpdsac-messages-height',
+			'messages_blur'           => '--wpdsac-msg-blur',
+			'messages_saturation'     => '--wpdsac-msg-saturation',
+			'messages_radius'         => '--wpdsac-msg-radius',
+			'messages_padding'        => '--wpdsac-msg-padding',
+			'messages_border_width'   => '--wpdsac-msg-border-width',
+			'messages_composer_spacing' => '--wpdsac-msg-composer-gap',
 			'quick_action_font_size'  => '--wpdsac-quick-font-size',
 			'quick_action_padding_x'  => '--wpdsac-quick-padding-x',
 			'quick_action_padding_y'  => '--wpdsac-quick-padding-y',
@@ -483,6 +521,7 @@ final class AppearanceSettings {
 			'launcher_size'           => '--wpdsac-launcher-size',
 			'launcher_anim_speed'     => '--wpdsac-launcher-speed',
 			'launcher_anim_intensity' => '--wpdsac-launcher-glow',
+			'messages_height'         => '--wpdsac-messages-height',
 			'shadow_opacity'          => '--wpdsac-shadow-opacity',
 			'global_offset_x'         => '--wpdsac-offset-x',
 			'global_offset_y'         => '--wpdsac-offset-y',

@@ -3,21 +3,21 @@
 	--wpdsac-panel-pr: 10px;
 	--wpdsac-panel-pl: 20px;
 	--wpdsac-panel-pt: 20px;
-	--wpdsac-msg-bg: #e0e0ef;
-	--wpdsac-msg-opacity: 100;
-	--wpdsac-msg-br: 10px;
-	--wpdsac-msg-pt: 20px;
-	--wpdsac-msg-pb: 20px;
-	--wpdsac-msg-px: 3px;
+	--wpdsac-msg-bg: rgb(255 255 255 / 12%);
+	--wpdsac-msg-blur: 14px;
+	--wpdsac-msg-saturation: 125%;
+	--wpdsac-msg-radius: 24px;
+	--wpdsac-msg-border-color: rgb(255 255 255 / 45%);
+	--wpdsac-msg-border-width: 1px;
+	--wpdsac-msg-glare: inset 0 1px 0 rgb(255 255 255 / 40%);
+	--wpdsac-msg-shadow: 0 12px 30px rgb(15 23 42 / 12%);
+	--wpdsac-msg-padding: 20px;
+	--wpdsac-msg-composer-gap: 12px;
 	--wpdsac-composer-bg: rgb(255 255 255 / 90%);
 	--wpdsac-composer-radius: 20px;
-	--wpdsac-composer-padding: 12px;
+	--wpdsac-composer-padding: 0;
 	--wpdsac-composer-gap: 10px;
-	--wpdsac-composer-mt: 12px;
-	--wpdsac-composer-blur: 14px;
-	--wpdsac-composer-border-color: rgb(255 255 255 / 72%);
-	--wpdsac-composer-border-width: 1px;
-	--wpdsac-composer-shadow: 0 12px 30px rgb(15 23 42 / 18%);
+	--wpdsac-composer-blur: ;
 	--wpdsac-accent: #2563eb;
 	--wpdsac-accent-text: #fff;
 	--wpdsac-surface: #ffffff;
@@ -288,25 +288,27 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 }
 
 .wpdsac-chat .wpdsac-chat__panel {
+	display: flex;
+	flex-direction: column;
 	box-sizing: border-box;
 	width: 100%;
 	min-width: 0;
+	min-height: 0;
 	height: min(var(--wpdsac-height), calc(100dvh - 120px));
-	min-height: min(360px, calc(100dvh - 120px));
 	margin-top: var(--wpdsac-panel-mt);
 	padding: var(--wpdsac-panel-pt) var(--wpdsac-panel-pr) var(--wpdsac-panel-padding) var(--wpdsac-panel-pl);
 	border: 1px solid var(--wpdsac-border);
 	border-radius: var(--wpdsac-radius);
-	background: var(--wpdsac-surface);
+	background: transparent;
 	box-shadow: 0 18px 50px rgb(23 32 51 / var(--wpdsac-shadow-opacity));
 	overflow: hidden;
 }
 
 .wpdsac-chat .wpdsac-chat__conversation {
-	display: flex;
-	flex-direction: column;
-	height: 100%;
+	flex: 1 1 auto;
 	min-height: 0;
+	overflow: hidden;
+	background: transparent;
 }
 
 .wpdsac-chat:not(.is-expanded) .wpdsac-chat__panel {
@@ -486,13 +488,17 @@ body.wpdsac-modal-open {
 .wpdsac-chat .wpdsac-chat__messages {
 	display: flex;
 	flex-direction: column;
-	flex: 1 1 auto;
 	gap: 10px;
+	height: 100%;
 	min-width: 0;
 	min-height: 0;
-	padding: var(--wpdsac-msg-pt) var(--wpdsac-msg-px) var(--wpdsac-msg-pb);
+	padding: var(--wpdsac-msg-padding);
 	background: var(--wpdsac-msg-bg);
-	border-radius: var(--wpdsac-msg-br);
+	border: var(--wpdsac-msg-border-width) solid var(--wpdsac-msg-border-color);
+	border-radius: var(--wpdsac-msg-radius);
+	box-shadow: var(--wpdsac-msg-glare), var(--wpdsac-msg-shadow);
+	backdrop-filter: blur(var(--wpdsac-msg-blur)) saturate(var(--wpdsac-msg-saturation));
+	-webkit-backdrop-filter: blur(var(--wpdsac-msg-blur)) saturate(var(--wpdsac-msg-saturation));
 	overflow-y: auto;
 	overscroll-behavior: contain;
 	scrollbar-width: thin;
@@ -502,14 +508,10 @@ body.wpdsac-modal-open {
 	flex: 0 0 auto;
 	display: grid;
 	gap: var(--wpdsac-composer-gap);
-	margin-top: var(--wpdsac-composer-mt);
+	margin-top: var(--wpdsac-msg-composer-gap);
 	padding: var(--wpdsac-composer-padding);
-	border: var(--wpdsac-composer-border-width) solid var(--wpdsac-composer-border-color);
 	border-radius: var(--wpdsac-composer-radius);
 	background: var(--wpdsac-composer-bg);
-	box-shadow: var(--wpdsac-composer-shadow);
-	backdrop-filter: blur(var(--wpdsac-composer-blur));
-	-webkit-backdrop-filter: blur(var(--wpdsac-composer-blur));
 }
 
 .wpdsac-chat .wpdsac-chat__message--user {

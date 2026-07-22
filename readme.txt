@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.91
+Stable tag: 0.5.92
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,14 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.92 =
+
+* Restructured DOM: composer panel moved outside conversation, messages area is now truly transparent/glass.
+* New Message window settings section: background mode (solid/glass/transparent), blur, saturation, radius, border, inner glare, outer shadow, padding.
+* Bottom panel simplified to background, opacity, radius, padding, and gap only.
+* Panel background is permanently transparent so site content is visible behind the chat window.
+* Messages use glass-morphism effect with backdrop-filter blur and saturation via CSS custom properties.
 
 = 0.5.91 =
 

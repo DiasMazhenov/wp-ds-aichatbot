@@ -826,13 +826,7 @@
   const updateComposer = () => {
     const bgColor = getValue('composer_bg_color') || '#ffffff';
     const bgOpacity = Number(getValue('composer_bg_opacity')) || 90;
-    const borderColor = getValue('composer_border_color') || '#ffffff';
-    const borderOpacity = Number(getValue('composer_border_opacity')) || 72;
-    const shadowIntensity = Math.min(100, Math.max(0, Number(getValue('composer_shadow')) || 18));
-
     preview.style.setProperty('--wpdsac-composer-bg', toRgba(bgColor, bgOpacity));
-    preview.style.setProperty('--wpdsac-composer-border-color', toRgba(borderColor, borderOpacity));
-    preview.style.setProperty('--wpdsac-composer-shadow', `0 12px 30px rgb(15 23 42 / ${(shadowIntensity / 100 * 0.4).toFixed(3)})`);
 
     const scrollable = getValue('composer_scrollable');
     const quickActions = preview.querySelector('[data-wpdsac-quick-actions]');
@@ -845,29 +839,37 @@
     }
   };
 
-  const updateMessagesBg = () => {
-    const transparent = getValue('messages_transparent');
-    const bgColor = getValue('messages_bg_color') || '#e0e0ef';
-    const bgOpacity = Number(getValue('messages_bg_opacity')) || 30;
+  const updateMessagesWindow = () => {
+    const mode = getValue('messages_bg_mode') || 'glass';
+    const bgColor = getValue('messages_bg_color') || '#ffffff';
+    const bgOpacity = Number(getValue('messages_bg_opacity')) || 12;
+    const borderColor = getValue('messages_border_color') || '#ffffff';
+    const borderOpacity = Number(getValue('messages_border_opacity')) || 45;
+    const glareIntensity = Math.min(100, Math.max(0, Number(getValue('messages_glare')) || 40));
+    const shadowIntensity = Math.min(100, Math.max(0, Number(getValue('messages_shadow')) || 12));
 
-    preview.style.setProperty('--wpdsac-msg-bg', transparent ? 'transparent' : toRgba(bgColor, bgOpacity));
+    const bg = mode === 'transparent' ? 'transparent' : toRgba(bgColor, bgOpacity);
+    preview.style.setProperty('--wpdsac-msg-bg', bg);
+    preview.style.setProperty('--wpdsac-msg-border-color', toRgba(borderColor, borderOpacity));
+    preview.style.setProperty('--wpdsac-msg-glare', `inset 0 1px 0 rgb(255 255 255 / ${(glareIntensity / 100 * 0.4).toFixed(3)})`);
+    preview.style.setProperty('--wpdsac-msg-shadow', `0 12px 30px rgb(15 23 42 / ${(shadowIntensity / 100 * 0.4).toFixed(3)})`);
   };
 
   [
-    'composer_bg_color', 'composer_bg_opacity',
-    'composer_border_color', 'composer_border_opacity',
-    'composer_shadow', 'composer_scrollable',
-    'messages_transparent', 'messages_bg_color', 'messages_bg_opacity',
+    'composer_bg_color', 'composer_bg_opacity', 'composer_scrollable',
+    'messages_bg_mode', 'messages_bg_color', 'messages_bg_opacity',
+    'messages_border_color', 'messages_border_opacity',
+    'messages_glare', 'messages_shadow',
   ].forEach((name) => {
     const el = document.querySelector(`[name="wpdsac_settings[${name}]"]`);
     if (!el) return;
     el.addEventListener('input', () => {
       if (name.startsWith('composer_')) updateComposer();
-      if (name.startsWith('messages_')) updateMessagesBg();
+      if (name.startsWith('messages_')) updateMessagesWindow();
     });
     el.addEventListener('change', () => {
       if (name.startsWith('composer_')) updateComposer();
-      if (name.startsWith('messages_')) updateMessagesBg();
+      if (name.startsWith('messages_')) updateMessagesWindow();
     });
   });
 })();
