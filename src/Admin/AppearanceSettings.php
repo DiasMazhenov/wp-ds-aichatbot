@@ -327,14 +327,19 @@ final class AppearanceSettings {
 							</div>
 						</div>
 						<div class="wpdsac-chat__composer" data-wpdsac-composer>
-							<div class="wpdsac-chat__quick-actions" data-wpdsac-quick-actions>
-								<button type="button" class="wpdsac-chat__quick-action"><?php echo esc_html( (string) $options['quick_call_label'] ); ?></button>
-								<button type="button" class="wpdsac-chat__quick-action"><?php echo esc_html( (string) $options['quick_lead_label'] ); ?></button>
+							<div class="wpdsac-chat__actions" data-wpdsac-actions>
+								<div class="wpdsac-chat__quick-actions" aria-label="<?php esc_attr_e( 'Quick actions', 'wp-ds-aichatbot' ); ?>" data-wpdsac-quick-actions>
+									<button type="button" class="wpdsac-chat__quick-action"><?php echo esc_html( (string) $options['quick_call_label'] ); ?></button>
+									<button type="button" class="wpdsac-chat__quick-action"><?php echo esc_html( (string) $options['quick_lead_label'] ); ?></button>
+								</div>
 							</div>
-							<div class="wpdsac-chat__form">
+							<form class="wpdsac-chat__form" data-wpdsac-form>
+								<label class="screen-reader-text"><?php esc_html_e( 'Message', 'wp-ds-aichatbot' ); ?></label>
 								<input type="text" placeholder="<?php echo esc_attr( (string) $options['message_placeholder'] ); ?>" disabled>
-								<button type="button" disabled><?php esc_html_e( 'Send', 'wp-ds-aichatbot' ); ?></button>
-							</div>
+								<button type="submit" disabled aria-label="<?php esc_attr_e( 'Send message', 'wp-ds-aichatbot' ); ?>">
+									<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2 .01 7Z"/></svg>
+								</button>
+							</form>
 						</div>
 					</div>
 				</section>
