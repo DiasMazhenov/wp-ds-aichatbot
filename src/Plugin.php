@@ -134,7 +134,9 @@ final class Plugin {
 		$chat_api->register_hooks();
 		$session_api->register_hooks();
 		( new LeadController( $tokens, $rate_limiter, $leads, $lead_notifier ) )->register_hooks();
-		( new ReengageController( $tokens, new ReengageService( $leads ), $qa_parser, $request_lock, $rate_limiter ) )->register_hooks();
+		$reengage_service = new ReengageService( $leads );
+		( new ReengageController( $tokens, $reengage_service, $qa_parser, $request_lock, $rate_limiter ) )->register_hooks();
+		$reengage_service->register_hooks();
 		$providers->register_hooks();
 		$post_indexer->register_hooks();
 		$pdf_indexer->register_hooks();

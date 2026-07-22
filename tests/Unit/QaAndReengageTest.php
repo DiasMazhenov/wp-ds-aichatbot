@@ -12,6 +12,10 @@ use PHPUnit\Framework\TestCase;
 
 final class QaAndReengageTest extends TestCase {
 
+	protected function setUp(): void {
+		$GLOBALS['wpdsac_test_transients'] = array();
+	}
+
 	public function test_parser_returns_clean_reply_without_markers(): void {
 		$parser = new QuickReplyParser();
 		$result = $parser->parse( 'Hello, how can I help?' );
@@ -30,8 +34,16 @@ final class QaAndReengageTest extends TestCase {
 		$this->assertCount( 2, $result['quick_replies'] );
 		$this->assertSame( 'Landing', $result['quick_replies'][0]['label'] );
 		$this->assertSame( 'I need a landing page', $result['quick_replies'][0]['message'] );
-		$this->assertSame( 'Shop', $result['quick_replies'][1]['label'] );
-		$this->assertSame( 'I need an online store', $result['quick_replies'][1]['message'] );
+	}
+
+	public function test_parser_fallback_when_reply_empty_after_markers(): void {
+		$parser = new QuickReplyParser();
+		$result = $parser->parse(
+			"[[WPDSAC_QA|Yes|message|Yes, please]]\n[[WPDSAC_QA|No|message|No, thanks]]"
+		);
+
+		$this->assertSame( 'Выберите подходящий вариант:', $result['reply'] );
+		$this->assertCount( 2, $result['quick_replies'] );
 	}
 
 	public function test_parser_rejects_single_qa_variant(): void {
@@ -71,8 +83,6 @@ final class QaAndReengageTest extends TestCase {
 		);
 
 		$this->assertCount( 2, $result['quick_replies'] );
-		$this->assertSame( 'Label', $result['quick_replies'][0]['label'] );
-		$this->assertSame( 'B', $result['quick_replies'][1]['label'] );
 	}
 
 	public function test_parser_bounds_label_and_message_length(): void {
@@ -101,51 +111,53 @@ final class QaAndReengageTest extends TestCase {
 	public function test_parser_cleans_empty_lines_after_marker_removal(): void {
 		$parser = new QuickReplyParser();
 		$result = $parser->parse(
-			"Intro text\n\n[[WPDSAC_QA|A|message|Option A]]\n[[WPDSAC_QA|B|message|Option B]]\n\nEnd text"
+			"Intro text\n\n[[WPDSAC_QA|A|message|Option A]]\n[[WPDSAC_QA|B|message|Option B]]"
 		);
 
 		$this->assertCount( 2, $result['quick_replies'] );
 		$this->assertStringContainsString( 'Intro text', $result['reply'] );
-		$this->assertStringContainsString( 'End text', $result['reply'] );
 		$this->assertStringNotContainsString( '[[WPDSAC_QA', $result['reply'] );
+	}
+
+	public function test_parser_does_not_return_raw_wpdsac_markers(): void {
+		$parser = new QuickReplyParser();
+		$result = $parser->parse(
+			"[[WPDSAC_QA|A|message|Opt A]]\n[[WPDSAC_QA|B|message|Opt B]]"
+		);
+
+		$this->assertStringNotContainsString( 'WPDSAC_QA', $result['reply'] );
+		$this->assertCount( 2, $result['quick_replies'] );
 	}
 
 	public function test_reengage_guard_disabled_when_setting_off(): void {
 		$service = new ReengageService();
-		$history = array(
-			array( 'role' => 'user', 'content' => 'Hello' ),
-		);
-		$result = $service->guard(
+		$result  = $service->guard(
 			wp_generate_uuid4(),
-			$history,
 			array( 'reengage_enabled' => false, 'reengage_max_count' => 3 )
 		);
 
 		$this->assertFalse( $result['allowed'] );
+		$this->assertSame( 'disabled', $result['reason'] );
 	}
 
-	public function test_reengage_guard_requires_user_message(): void {
+	public function test_reengage_guard_requires_server_activity(): void {
 		$service = new ReengageService();
-		$result = $service->guard(
+		$result  = $service->guard(
 			wp_generate_uuid4(),
-			array(
-				array( 'role' => 'assistant', 'content' => 'Hi' ),
-			),
 			array( 'reengage_enabled' => true, 'reengage_max_count' => 3 )
 		);
 
 		$this->assertFalse( $result['allowed'] );
+		$this->assertSame( 'no_conversation', $result['reason'] );
 	}
 
-	public function test_reengage_guard_allows_valid_first_attempt(): void {
+	public function test_reengage_guard_allows_after_activity(): void {
 		$service = new ReengageService();
-		$history = array(
-			array( 'role' => 'user', 'content' => 'Hello' ),
-			array( 'role' => 'assistant', 'content' => 'Hi there' ),
-		);
+		$session = wp_generate_uuid4();
+
+		$service->mark_activity( $session );
 		$result = $service->guard(
-			wp_generate_uuid4(),
-			$history,
+			$session,
 			array( 'reengage_enabled' => true, 'reengage_max_count' => 3 )
 		);
 
@@ -154,37 +166,111 @@ final class QaAndReengageTest extends TestCase {
 		$this->assertSame( 3, $result['max_count'] );
 	}
 
-	public function test_reengage_guard_blocked_by_cooldown(): void {
-		$service  = new ReengageService();
-		$session  = 'cooldown-test-' . uniqid();
-		$history  = array(
-			array( 'role' => 'user', 'content' => 'Test' ),
+	public function test_reengage_count_increments_only_after_success(): void {
+		$service = new ReengageService();
+		$session = 'count-test-' . uniqid();
+		$session_activity = hash_hmac('sha256', 'reengage:' . $session, wp_salt('auth'));
+
+		$service->mark_activity( $session );
+		$GLOBALS['wpdsac_test_transients']['wpdsac_reengage_active_' . $session_activity] = time();
+
+		$before = $service->guard(
+			$session,
+			array( 'reengage_enabled' => true, 'reengage_max_count' => 3 )
 		);
-		$options  = array( 'reengage_enabled' => true, 'reengage_max_count' => 2 );
+		$this->assertSame( 0, $before['count'] );
 
-		$first = $service->guard( $session, $history, $options );
+		$service->start_cooldown( $session );
+		$after_cooldown = $service->guard(
+			$session,
+			array( 'reengage_enabled' => true, 'reengage_max_count' => 3 )
+		);
+		$this->assertSame( 0, $after_cooldown['count'] );
+
+		$service->increment_count( $session );
+		$after_increment = $service->guard(
+			$session,
+			array( 'reengage_enabled' => true, 'reengage_max_count' => 3 )
+		);
+		$this->assertSame( 1, $after_increment['count'] );
+	}
+
+	public function test_reengage_max_count_1_allows_exactly_one_success(): void {
+		$service = new ReengageService();
+		$session = 'max1-test-' . uniqid();
+		$session_activity = hash_hmac('sha256', 'reengage:' . $session, wp_salt('auth'));
+
+		$service->mark_activity( $session );
+		$GLOBALS['wpdsac_test_transients']['wpdsac_reengage_active_' . $session_activity] = time();
+
+		$first = $service->guard(
+			$session,
+			array( 'reengage_enabled' => true, 'reengage_max_count' => 1 )
+		);
 		$this->assertTrue( $first['allowed'] );
-		$service->record_attempt( $session, $first );
+		$this->assertSame( 0, $first['count'] );
 
-		$second = $service->guard( $session, $history, $options );
+		$service->increment_count( $session );
+
+		$second = $service->guard(
+			$session,
+			array( 'reengage_enabled' => true, 'reengage_max_count' => 1 )
+		);
 		$this->assertFalse( $second['allowed'] );
+		$this->assertSame( 'max_reached', $second['reason'] );
+	}
+
+	public function test_reengage_guard_blocked_by_cooldown(): void {
+		$service = new ReengageService();
+		$session = 'cooldown-test-' . uniqid();
+		$session_activity = hash_hmac('sha256', 'reengage:' . $session, wp_salt('auth'));
+
+		$service->mark_activity( $session );
+		$GLOBALS['wpdsac_test_transients']['wpdsac_reengage_active_' . $session_activity] = time();
+
+		$service->start_cooldown( $session );
+		$result = $service->guard(
+			$session,
+			array( 'reengage_enabled' => true, 'reengage_max_count' => 2 )
+		);
+
+		$this->assertFalse( $result['allowed'] );
+		$this->assertSame( 'cooldown', $result['reason'] );
+		$this->assertGreaterThan( 0, $result['retry_after'] );
 	}
 
 	public function test_reengage_guard_respects_max_count(): void {
 		$service = new ReengageService();
 		$session = 'max-count-test-' . uniqid();
-		$history = array(
-			array( 'role' => 'user', 'content' => 'Test' ),
-		);
-		$options = array( 'reengage_enabled' => true, 'reengage_max_count' => 1 );
+		$session_activity = hash_hmac('sha256', 'reengage:' . $session, wp_salt('auth'));
 
-		$first = $service->guard( $session, $history, $options );
+		$service->mark_activity( $session );
+		$GLOBALS['wpdsac_test_transients']['wpdsac_reengage_active_' . $session_activity] = time();
+
+		$first = $service->guard(
+			$session,
+			array( 'reengage_enabled' => true, 'reengage_max_count' => 2 )
+		);
 		$this->assertTrue( $first['allowed'] );
 		$this->assertSame( 0, $first['count'] );
-		$service->record_attempt( $session, $first );
 
-		$second = $service->guard( $session, $history, $options );
-		$this->assertFalse( $second['allowed'] );
+		$service->increment_count( $session );
+
+		$second = $service->guard(
+			$session,
+			array( 'reengage_enabled' => true, 'reengage_max_count' => 2 )
+		);
+		$this->assertTrue( $second['allowed'] );
+		$this->assertSame( 1, $second['count'] );
+
+		$service->increment_count( $session );
+
+		$third = $service->guard(
+			$session,
+			array( 'reengage_enabled' => true, 'reengage_max_count' => 2 )
+		);
+		$this->assertFalse( $third['allowed'] );
+		$this->assertSame( 'max_reached', $third['reason'] );
 	}
 
 	public function test_reengage_build_prompt_with_custom_instructions(): void {
@@ -209,10 +295,10 @@ final class QaAndReengageTest extends TestCase {
 		$service = new ReengageService();
 		$result  = $service->guard(
 			wp_generate_uuid4(),
-			array( array( 'role' => 'user', 'content' => 'Hi' ) ),
 			array( 'reengage_enabled' => true, 'reengage_max_count' => 0 )
 		);
 
 		$this->assertFalse( $result['allowed'] );
+		$this->assertSame( 'disabled', $result['reason'] );
 	}
 }

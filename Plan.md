@@ -156,9 +156,17 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.85`: переработана архитектура re-engage и QA-вариантов.
+Версия `0.5.87`: исправлен счётчик re-engage, server-side activity flag, машинно-читаемое состояние.
 
-### Выполнено в 0.5.85
+### Выполнено в 0.5.87
+
+- [x] **Re-engage count**: увеличивается ровно один раз после успешного непустого ответа; cooldown ставится до запроса; ошибка AI не увеличивает count.
+- [x] **Activity flag**: `wpdsac_chat_exchange` → `mark_activity()` — re-engage не запускается до первого реального обмена; browser history не является доказательством.
+- [x] **Reengage REST state**: `{reply, quick_replies, reengage: {allowed, reason, count, max_count, retry_after}}`; безопасные коды `disabled`/`no_conversation`/`lead_exists`/`cooldown`/`max_reached`/`provider_error`.
+- [x] **JS**: не запускает таймер на загрузке; toggle не отменяет re-engage; `handleReengageState()` обрабатывает серверные коды; закрытый чат сохраняет `quick_replies` в sessionStorage для показа при открытии.
+- [x] **QuickReplyParser**: fallback «Выберите подходящий вариант:» при пустом reply после удаления маркеров.
+- [x] **CSS**: `--wpdsac-panel-bg` → `--wpdsac-surface`; усиленный selector audit (bare tag, global, Elementor, universal selectors запрещены).
+- [x] **ProviderManager**: QUICK REPLY VARIANTS policy для re-engage запроса.
 
 - [x] **AI/QuickReplyParser**: серверный парсер `[[WPDSAC_QA|Label|message|Text]]`, извлекает маркеры из ответа AI, возвращает `{reply, quick_replies}`; валидация 2–5 вариантов, лимиты label/message, игнорирование HTML/URL-действий.
 - [x] **AI/ReengageService**: серверные проверки (enabled, user messages, lead exists, cooldown transient, max count transient), HMAC-ключ от session UUID, `reengage_instructions` из настроек.

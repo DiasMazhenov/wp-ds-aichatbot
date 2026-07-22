@@ -59,7 +59,7 @@ final class QuickReplyParser {
 		$clean_reply = trim( preg_replace( '/\n{3,}/', "\n\n", (string) $clean_reply ) );
 
 		if ( '' === $clean_reply ) {
-			$clean_reply = $reply;
+			$clean_reply = 'Выберите подходящий вариант:';
 		}
 
 		return array(

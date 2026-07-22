@@ -122,6 +122,11 @@ assert.doesNotMatch(
   /^\s*(?:\.wpdsac-chat__|(?:img|svg)\.wpdsac-chat__)/m,
   'Every chatbot component selector must be scoped by the chatbot root.',
 );
+assert.doesNotMatch(chatStyles, /^\s*(?::root|html|body|header|main|footer|section)\b/m, 'Global element selectors are forbidden.');
+assert.doesNotMatch(chatStyles, /^\s*(?:button|input|textarea|img|svg)\b/m, 'Bare tag selectors are forbidden.');
+assert.doesNotMatch(chatStyles, /^\s*\*\s*[{,]/m, 'Universal selector is forbidden.');
+assert.doesNotMatch(chatStyles, /\.elementor-/m, 'Elementor- scoped selectors are forbidden.');
+assert.match(chatStyles, /body\.wpdsac-modal-open/, 'Only body.wpdsac-modal-open is allowed as a body exception.');
 assert.doesNotMatch(chatStyles, /\.wpdsac-navigation-highlight/);
 assert.match(chatStyles, /\[data-wpdsac-navigation-highlight\]/);
 assert.match(chatScript, /data-wpdsac-navigation-highlight/);

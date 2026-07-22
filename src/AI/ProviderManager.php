@@ -250,6 +250,8 @@ final class ProviderManager {
 				$provider_message .= "\n\nYou are \"$chatbot_name\". Be concise and helpful.";
 			}
 
+			$provider_message .= "\n\nQUICK REPLY VARIANTS:\n- When you ask a question that has obvious short answers, append 2–5 quick reply buttons.\n- Format: [[WPDSAC_QA|Button Label|message|Message text to send when clicked]].\n- Example: [[WPDSAC_QA|Red|message|I prefer red]], [[WPDSAC_QA|Blue|message|I like blue]]\n- Only use this for multiple-choice questions. Do NOT add buttons for open-ended questions where the visitor must type a unique answer.\n- Label: 1–3 words. Message: a complete sentence the visitor would naturally say.\n- Place the markers at the END of your reply, one per line.\n- Never include HTML, URLs, or JavaScript in marker values.";
+
 			$generated_reply = $provider->generate( $provider_message, $session_id );
 
 			if ( is_string( $generated_reply ) ) {

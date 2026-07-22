@@ -19,6 +19,8 @@ final class ReengageService {
 
 	private const TRANSIENT_PREFIX = 'wpdsac_reengage_';
 	private const COOLDOWN_MIN     = 30;
+	private const ACTIVITY_TTL     = 2 * HOUR_IN_SECONDS;
+	private const COUNT_TTL        = 3 * HOUR_IN_SECONDS;
 
 	/**
 	 * Lead persistence.
@@ -40,30 +42,29 @@ final class ReengageService {
 	 * Run all server-side guard checks before sending a re-engage prompt.
 	 *
 	 * @param string                    $session_id Verified session UUID.
-	 * @param array<int, mixed>         $history    Bounded browser-provided history.
 	 * @param array<string, mixed>|null $options Plugin settings.
-	 * @return array{allowed: bool, reason: string, count: int, max_count: int}
+	 * @return array{allowed: bool, reason: string, count: int, max_count: int, retry_after: int}
 	 */
-	public function guard( string $session_id, array $history, ?array $options = null ): array {
+	public function guard( string $session_id, ?array $options = null ): array {
 		if ( null === $options ) {
 			$options = Settings::get();
 		}
 
 		if ( empty( $options['reengage_enabled'] ) ) {
-			return $this->deny( 'Re-engagement is disabled.' );
+			return $this->deny( 'disabled', 0, 0, 0 );
 		}
 
 		$max_count = min( 5, max( 0, absint( $options['reengage_max_count'] ?? 1 ) ) );
 		if ( 0 === $max_count ) {
-			return $this->deny( 'Re-engagement max count is zero.' );
+			return $this->deny( 'disabled', 0, 0, 0 );
 		}
 
-		if ( ! $this->has_user_message( $history ) ) {
-			return $this->deny( 'No real user message found in history.' );
+		if ( ! $this->has_activity( $session_id ) ) {
+			return $this->deny( 'no_conversation', 0, $max_count, 0 );
 		}
 
 		if ( $this->leads instanceof LeadRepository && $this->leads->exists_for_session( $session_id ) ) {
-			return $this->deny( 'Lead already exists for this session.' );
+			return $this->deny( 'lead_exists', 0, $max_count, 0 );
 		}
 
 		$session_hash = $this->session_hash( $session_id );
@@ -71,42 +72,33 @@ final class ReengageService {
 		$cooldown     = get_transient( self::TRANSIENT_PREFIX . 'cooldown_' . $session_hash );
 
 		if ( false !== $cooldown ) {
-			return $this->deny( 'Re-engage cooldown active.' );
+			$elapsed = time() - (int) $cooldown;
+			$remain  = max( 0, self::COOLDOWN_MIN - $elapsed );
+
+			return $this->deny( 'cooldown', $count, $max_count, $remain );
 		}
 
 		if ( $count >= $max_count ) {
-			return $this->deny( 'Re-engage max count reached.' );
+			return $this->deny( 'max_reached', $count, $max_count, 0 );
 		}
 
 		return array(
-			'allowed'   => true,
-			'reason'    => 'ok',
-			'count'     => $count,
-			'max_count' => $max_count,
+			'allowed'     => true,
+			'reason'      => 'ok',
+			'count'       => $count,
+			'max_count'   => $max_count,
+			'retry_after' => 0,
 		);
 	}
 
 	/**
-	 * Record a re-engage attempt (start cooldown, bump counter).
+	 * Set cooldown BEFORE the AI call to prevent parallel re-engage requests.
 	 *
-	 * @param string                                           $session_id Verified session UUID.
-	 * @param array{allowed: bool, count: int, max_count: int} $guard_result Guard result.
+	 * @param string $session_id Verified session UUID.
 	 * @return void
 	 */
-	public function record_attempt( string $session_id, array $guard_result ): void {
-		if ( ! $guard_result['allowed'] ) {
-			return;
-		}
-
+	public function start_cooldown( string $session_id ): void {
 		$session_hash = $this->session_hash( $session_id );
-		$expiration   = 3 * HOUR_IN_SECONDS;
-
-		set_transient(
-			self::TRANSIENT_PREFIX . 'count_' . $session_hash,
-			$guard_result['count'] + 1,
-			$expiration
-		);
-
 		set_transient(
 			self::TRANSIENT_PREFIX . 'cooldown_' . $session_hash,
 			time(),
@@ -115,7 +107,7 @@ final class ReengageService {
 	}
 
 	/**
-	 * Increment the count after a successful non-empty reply.
+	 * Increment count only after a successful non-empty reply is confirmed.
 	 *
 	 * @param string $session_id Verified session UUID.
 	 * @return void
@@ -126,8 +118,44 @@ final class ReengageService {
 		set_transient(
 			self::TRANSIENT_PREFIX . 'count_' . $session_hash,
 			$current + 1,
-			3 * HOUR_IN_SECONDS
+			self::COUNT_TTL
 		);
+	}
+
+	/**
+	 * Mark that a real conversation exchange (user message → AI reply) happened.
+	 *
+	 * @param string $session_id Verified session UUID.
+	 * @return void
+	 */
+	public function mark_activity( string $session_id ): void {
+		$session_hash = $this->session_hash( $session_id );
+		set_transient(
+			self::TRANSIENT_PREFIX . 'active_' . $session_hash,
+			time(),
+			self::ACTIVITY_TTL
+		);
+	}
+
+	/**
+	 * Listen for successful chat exchanges to enable re-engage.
+	 *
+	 * @return void
+	 */
+	public function register_hooks(): void {
+		add_action( 'wpdsac_chat_exchange', array( $this, 'mark_activity' ), 10, 1 );
+	}
+
+	/**
+	 * Check if the session had at least one real chat exchange.
+	 *
+	 * @param string $session_id Verified session UUID.
+	 * @return bool
+	 */
+	private function has_activity( string $session_id ): bool {
+		$session_hash = $this->session_hash( $session_id );
+
+		return false !== get_transient( self::TRANSIENT_PREFIX . 'active_' . $session_hash );
 	}
 
 	/**
@@ -166,33 +194,22 @@ final class ReengageService {
 	}
 
 	/**
-	 * Check if history contains at least one real visitor message.
-	 *
-	 * @param array<int, mixed> $history Validated history array.
-	 * @return bool
-	 */
-	private function has_user_message( array $history ): bool {
-		foreach ( $history as $entry ) {
-			if ( is_array( $entry ) && 'user' === ( $entry['role'] ?? '' ) && is_string( $entry['content'] ?? null ) && '' !== trim( $entry['content'] ) ) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	/**
-	 * Build a consistent denial response.
+	 * Build a consistent denial response with safe public codes.
 	 *
-	 * @param string $reason Diagnostic reason (never exposed to visitors).
-	 * @return array{allowed: bool, reason: string, count: int, max_count: int}
+	 * @param string $reason     Machine-readable reason code.
+	 * @param int    $count      Current re-engage count.
+	 * @param int    $max_count  Maximum re-engage count.
+	 * @param int    $retry_after Seconds until next retry (cooldown).
+	 * @return array{allowed: bool, reason: string, count: int, max_count: int, retry_after: int}
 	 */
-	private function deny( string $reason ): array {
+	private function deny( string $reason, int $count, int $max_count, int $retry_after ): array {
 		return array(
-			'allowed'   => false,
-			'reason'    => $reason,
-			'count'     => 0,
-			'max_count' => 0,
+			'allowed'     => false,
+			'reason'      => $reason,
+			'count'       => $count,
+			'max_count'   => $max_count,
+			'retry_after' => $retry_after,
 		);
 	}
 }

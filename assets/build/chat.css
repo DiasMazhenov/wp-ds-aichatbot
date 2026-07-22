@@ -594,7 +594,7 @@ body.wpdsac-modal-open {
 }
 
 .wpdsac-chat .wpdsac-chat__context-action {
-	background: color-mix(in srgb, var(--wpdsac-accent) 15%, var(--wpdsac-panel-bg));
+	background: color-mix(in srgb, var(--wpdsac-accent) 15%, var(--wpdsac-surface));
 	border-color: var(--wpdsac-accent);
 }
 
@@ -609,7 +609,7 @@ body.wpdsac-modal-open {
 
 .wpdsac-chat .wpdsac-chat__context-action:hover,
 .wpdsac-chat .wpdsac-chat__context-action:focus-visible {
-	background: color-mix(in srgb, var(--wpdsac-accent) 30%, var(--wpdsac-panel-bg));
+	background: color-mix(in srgb, var(--wpdsac-accent) 30%, var(--wpdsac-surface));
 }
 
 .wpdsac-chat .wpdsac-chat__form {

@@ -235,20 +235,36 @@ final class ReengageController {
 	}
 
 	/**
+	 * Build a safe reengage state structure from guard result.
+	 *
+	 * @param array $guard Guard result.
+	 * @return array
+	 */
+	private function reengage_state( array $guard ): array {
+		return array(
+			'allowed'     => (bool) ( $guard['allowed'] ?? false ),
+			'reason'      => $guard['reason'] ?? 'disabled',
+			'count'       => (int) ( $guard['count'] ?? 0 ),
+			'max_count'   => (int) ( $guard['max_count'] ?? 0 ),
+			'retry_after' => (int) ( $guard['retry_after'] ?? 0 ),
+		);
+	}
+
+	/**
 	 * Dispatch re-engage follow-up through the AI provider.
 	 *
 	 * @param \WP_REST_Request $request REST request.
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function respond( \WP_REST_Request $request ) {
-		$history = (array) $request->get_param( 'history' );
-		$guard   = $this->reengage->guard( $this->session_id, $history );
+		$guard = $this->reengage->guard( $this->session_id );
 
 		if ( ! $guard['allowed'] ) {
 			return new \WP_REST_Response(
 				array(
 					'reply'         => '',
 					'quick_replies' => array(),
+					'reengage'      => $this->reengage_state( $guard ),
 				),
 				200
 			);
@@ -280,6 +296,7 @@ final class ReengageController {
 					array(
 						'reply'         => '',
 						'quick_replies' => array(),
+						'reengage'      => $this->reengage_state( $guard ),
 					),
 					200
 				);
@@ -292,13 +309,15 @@ final class ReengageController {
 					array(
 						'reply'         => '',
 						'quick_replies' => array(),
+						'reengage'      => $this->reengage_state( $guard ),
 					),
 					200
 				);
 			}
 
-			$this->reengage->record_attempt( $this->session_id, $guard );
+			$this->reengage->start_cooldown( $this->session_id );
 
+			$history      = (array) $request->get_param( 'history' );
 			$prompt       = $this->reengage->build_prompt( $history );
 			$visitor_name = trim( sanitize_text_field( (string) $request->get_param( 'visitor_name' ) ) );
 
@@ -321,10 +340,12 @@ final class ReengageController {
 			$reply = apply_filters( 'wpdsac_reengage_exchange', null, $prompt, $this->session_id, $request_data );
 
 			if ( is_wp_error( $reply ) || ( ! is_string( $reply ) && null !== $reply ) ) {
+				$guard['reason'] = 'provider_error';
 				return new \WP_REST_Response(
 					array(
 						'reply'         => '',
 						'quick_replies' => array(),
+						'reengage'      => $this->reengage_state( $guard ),
 					),
 					200
 				);
@@ -335,6 +356,7 @@ final class ReengageController {
 					array(
 						'reply'         => '',
 						'quick_replies' => array(),
+						'reengage'      => $this->reengage_state( $guard ),
 					),
 					200
 				);
@@ -344,6 +366,7 @@ final class ReengageController {
 
 			if ( '' !== trim( $parsed['reply'] ) ) {
 				$this->reengage->increment_count( $this->session_id );
+				$guard['count'] = $guard['count'] + 1;
 			}
 
 			/**
@@ -360,6 +383,7 @@ final class ReengageController {
 				array(
 					'reply'         => sanitize_textarea_field( $parsed['reply'] ),
 					'quick_replies' => $parsed['quick_replies'],
+					'reengage'      => $this->reengage_state( $guard ),
 				),
 				200
 			);

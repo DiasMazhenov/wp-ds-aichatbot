@@ -802,8 +802,6 @@
 		if (!state) return;
 		if (state.count >= max) return;
 		if (reengageInFlight.get(chat)) return;
-		const leadBtn = chat.querySelector('[data-wpdsac-quick-action="lead"]');
-		if (leadBtn && leadBtn.hidden) return;
 
 		reengageInFlight.set(chat, true);
 
@@ -829,6 +827,7 @@
 
 			const followUp = response.reply || '';
 			const quickReplies = response.quick_replies || [];
+			const reengage = response.reengage || {};
 
 			const currentlyExpanded = chat.querySelector('.wpdsac-chat__toggle')?.getAttribute('aria-expanded') === 'true';
 
@@ -849,24 +848,57 @@
 						const preview = assistantPreviewText(followUp);
 						intro.textContent = preview.slice(0, 120);
 					}
+					if (Array.isArray(quickReplies) && quickReplies.length >= 2) {
+						try {
+							window.sessionStorage.setItem('wpdsacReengageQuickReplies', JSON.stringify(quickReplies));
+						} catch (e) {}
+					}
 				} else if (intro) {
 					intro.textContent = previousIntroText || '';
 				}
 			}
 
-			if (followUp) {
-				saveReengageState(chat, 0, state.count + 1);
+			if (followUp && reengage.count !== undefined) {
+				saveReengageState(chat, 0, reengage.count);
+			}
+			if (reengage && reengage.reason) {
+				handleReengageState(chat, reengage);
 			}
 		} catch (error) {
 			if (intro && !wasExpanded) {
 				intro.textContent = previousIntroText || '';
 			}
+			handleReengageState(chat, {reason: 'provider_error'});
 		} finally {
 			reengageInFlight.set(chat, false);
 			const updated = getReengageState(chat);
 			if (updated && updated.count < max) {
 				scheduleReengage(chat);
 			}
+		}
+	};
+
+	const handleReengageState = (chat, reengage) => {
+		if (!reengage) return;
+		const max = Math.max(0, Math.min(5, Number.parseInt(chat.dataset.wpdsacReengageMax || '1', 10)));
+		const reason = reengage.reason || '';
+		const fatalReasons = ['disabled', 'no_conversation', 'lead_exists', 'max_reached', 'provider_error'];
+
+		if (fatalReasons.includes(reason)) {
+			cancelReengage(chat);
+			return;
+		}
+
+		if (reason === 'cooldown' && reengage.retry_after > 0) {
+			cancelReengage(chat);
+			const dueAt = Date.now() + reengage.retry_after * 1000;
+			const count = reengage.count || 0;
+			if (count < max) {
+				saveReengageState(chat, dueAt, count);
+				const timer = window.setTimeout(() => handleReengage(chat, max), reengage.retry_after * 1000);
+				reengageTimers.set(chat, timer);
+			}
+			return;
 		}
 	};
 
@@ -878,7 +910,6 @@
 		chat.classList.toggle('is-expanded', expanded);
 
 		if (expanded) {
-			cancelReengage(chat);
 			const intro = chat.querySelector('[data-wpdsac-intro-bubble]');
 			if (intro) {
 				intro.hidden = true;
@@ -886,6 +917,16 @@
 			revealConversation(chat, getVisitorName());
 			scrollToLatest(chat);
 			chat.querySelector('[data-wpdsac-form] input')?.focus();
+			try {
+				const stored = window.sessionStorage.getItem('wpdsacReengageQuickReplies');
+				if (stored) {
+					const quickReplies = JSON.parse(stored);
+					window.sessionStorage.removeItem('wpdsacReengageQuickReplies');
+					if (Array.isArray(quickReplies) && quickReplies.length >= 2) {
+						renderContextActions(chat, quickReplies);
+					}
+				}
+			} catch (e) {}
 		}
 	};
 
@@ -947,15 +988,6 @@
 		restoreConversationHistory(chat);
 		revealConversation(chat, getVisitorName());
 		scheduleIntroBubble(chat);
-		const state = getReengageState(chat);
-		if (state && state.dueAt && state.dueAt < Date.now()) {
-			const max = Math.max(0, Math.min(5, Number.parseInt(chat.dataset.wpdsacReengageMax || '1', 10)));
-			if (state.count < max) {
-				handleReengage(chat, max);
-			}
-		} else if (chat.dataset.wpdsacReengageEnabled === '1') {
-			scheduleReengage(chat);
-		}
 	});
 
 	document.addEventListener('click', (event) => {
@@ -1385,12 +1417,12 @@
 	document.addEventListener('visibilitychange', () => {
 		if (document.visibilityState === 'visible') {
 			document.querySelectorAll('[data-wpdsac-chat]').forEach((chat) => {
+				if (chat.dataset.wpdsacReengageEnabled !== '1') return;
 				const state = getReengageState(chat);
-				if (state && state.dueAt && state.dueAt < Date.now()) {
-					const max = Math.max(0, Math.min(5, Number.parseInt(chat.dataset.wpdsacReengageMax || '1', 10)));
-					if (state.count < max) {
-						handleReengage(chat, max);
-					}
+				if (!state) return;
+				const max = Math.max(0, Math.min(5, Number.parseInt(chat.dataset.wpdsacReengageMax || '1', 10)));
+				if (state.dueAt && state.dueAt < Date.now() && state.count < max) {
+					handleReengage(chat, max);
 				}
 			});
 		}
