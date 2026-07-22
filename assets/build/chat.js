@@ -602,7 +602,35 @@
 		return history;
 	};
 
+	const ADMIN_PATH_PATTERN = /^\/(?:wp-admin(?:\/|$)|wp-login\.php|wp-cron\.php|xmlrpc\.php|wp-json(?:\/|$))/i;
+	const ADMIN_QUERY_PATTERN = /(?:^|[?&])(?:action|_wpnonce|_wp_http_referer|page|plugin|noheader)=/i;
+	const ADMIN_DOM_ANCESTORS = [
+		'#wpadminbar', '#adminmenu', '#adminmenuwrap', '#wpwrap',
+		'#wpcontent', '#wpfooter', '.wp-toolbar', '[role="toolbar"]',
+		'#wp-auth-check-wrap', '#wp-admin-bar-root-default',
+	];
+
+	const isPublicUrl = (href) => {
+		try {
+			const parsed = new URL(href);
+			return !(ADMIN_PATH_PATTERN.test(parsed.pathname) || ADMIN_QUERY_PATTERN.test(parsed.search));
+		} catch (e) {
+			return false;
+		}
+	};
+
 	const collectNavigationTargets = () => {
+		if (document.body.classList.contains('wp-admin')) {
+			const leadAction = document.querySelector('[data-wpdsac-open-lead]');
+			const targets = [];
+			if (leadAction) {
+				const leadUrl = new URL(window.location.href);
+				leadUrl.hash = leadNavigationHash;
+				targets.push({label: (leadAction.textContent || '').trim().slice(0, 120), url: leadUrl.href});
+			}
+			return targets;
+		}
+
 		const targets = [];
 		const seen = new Set();
 		const addTarget = (label, urlValue) => {
@@ -611,10 +639,13 @@
 			if (!url || !label || seen.has(url.href) || targets.length >= 40) {
 				return;
 			}
-
+			if (!isPublicUrl(url.href)) {
+				return;
+			}
 			seen.add(url.href);
 			targets.push({label, url: url.href});
 		};
+
 		const leadAction = document.querySelector('[data-wpdsac-open-lead]');
 		if (leadAction) {
 			const leadUrl = new URL(window.location.href);
@@ -626,7 +657,6 @@
 			if (element.closest('[data-wpdsac-chat]') || !element.id) {
 				return;
 			}
-
 			const heading = element.matches('h1,h2,h3,h4,h5,h6') ? element : element.querySelector('h1,h2,h3,h4,h5,h6');
 			const label = element.getAttribute('aria-label') || heading?.textContent || '';
 			const url = new URL(window.location.href);
@@ -634,11 +664,21 @@
 			addTarget(label, url.href);
 		});
 
-		document.querySelectorAll('a[href]').forEach((link) => {
-			if (link.closest('[data-wpdsac-chat]')) {
-				return;
-			}
-			addTarget(link.textContent, link.href);
+		const publicSelectors = [
+			'main a[href]', 'article a[href]',
+			'body > header a[href]', 'body > footer a[href]',
+			'nav:not(#wpadminbar *) a[href]',
+			'.elementor a[href]',
+		];
+
+		publicSelectors.forEach((selector) => {
+			document.querySelectorAll(selector).forEach((link) => {
+				if (link.closest('[data-wpdsac-chat]')) return;
+				for (const ancestor of ADMIN_DOM_ANCESTORS) {
+					if (link.closest(ancestor)) return;
+				}
+				addTarget(link.textContent, link.href);
+			});
 		});
 
 		return targets;

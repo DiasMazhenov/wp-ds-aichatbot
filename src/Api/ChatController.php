@@ -9,6 +9,7 @@ namespace DiasMazhenov\WPDsAiChatbot\Api;
 
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 use DiasMazhenov\WPDsAiChatbot\AI\QuickReplyParser;
+use DiasMazhenov\WPDsAiChatbot\Security\UrlDenylist;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -302,6 +303,10 @@ final class ChatController {
 			$port   = absint( wp_parse_url( $url, PHP_URL_PORT ) );
 
 			if ( '' === $label || '' === $url || '' === $home_host || $home_scheme !== $scheme || $home_host !== $host || $home_port !== $port ) {
+				continue;
+			}
+
+			if ( UrlDenylist::is_blocked( $url ) ) {
 				continue;
 			}
 

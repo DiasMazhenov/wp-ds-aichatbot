@@ -51,6 +51,7 @@
 - **0.5.103**: chat.js реструктурирован с 12 секционными заголовками. Visual regression ассерты в CI: проверка blur панели, прозрачности сообщений, скроллбара, typing indicator.
 - **0.5.104**: Фон композера убран полностью — из CSS, inline_style, настроек админки, defaults, color_keys, number_constraints.
 - **0.5.105**: Ссылка «Настройки» в plugin row actions. Author URI: https://mazhenov.kz/.
+- **0.5.106**: **Критическое исправление безопасности**: утечка административных ссылок через AI-навигацию. Причина: `document.querySelectorAll('a[href]')` собирал ссылки из admin bar, `/wp-admin/`, служебных areas. Исправление: client-side — ссылки только из публичных областей DOM + isPublicUrl() фильтр; server-side — `UrlDenylist` с decode/dot-segment/backslash/case защитой в ChatController и ProviderManager; PromptGuard — правила anti-leak о недоступности админки, БД, плагинов. 13 новых unit-тестов, 9 integration-ассертов.
 
 ## Обязательная инструкция агенту перед каждым push
 

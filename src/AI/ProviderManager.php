@@ -10,6 +10,7 @@ namespace DiasMazhenov\WPDsAiChatbot\AI;
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 use DiasMazhenov\WPDsAiChatbot\Chat\GreetingResolver;
 use DiasMazhenov\WPDsAiChatbot\Data\LeadRepository;
+use DiasMazhenov\WPDsAiChatbot\Security\UrlDenylist;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -296,6 +297,10 @@ final class ProviderManager {
 
 			if ( 'wpdsac-contact-form' === wp_parse_url( $target['url'], PHP_URL_FRAGMENT ) ) {
 				$lead_label = $target['label'];
+				continue;
+			}
+
+			if ( UrlDenylist::is_blocked( $target['url'] ) ) {
 				continue;
 			}
 

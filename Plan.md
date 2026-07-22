@@ -198,6 +198,13 @@ wp-ds-aichatbot/
 #### 6. Visual regression tests
 - [ ] Playwright скриншоты в CI, блокировка регресса.
 
+### Выполнено в 0.5.106
+
+- [x] **Критическое исправление**: утечка админ-ссылок через `document.querySelectorAll('a[href]')`.
+- [x] Client: `isPublicUrl()`, только публичные селекторы DOM, запрет admin bar.
+- [x] Server: `UrlDenylist` (decode, dot-segments, backslash, case), интеграция в ChatController + ProviderManager.
+- [x] PromptGuard: правила anti-leak (нет доступа к админке, БД, плагинам).
+
 ### Выполнено в 0.5.105
 
 - [x] Ссылка «Настройки» в plugin row actions.

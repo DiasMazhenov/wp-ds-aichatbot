@@ -178,6 +178,18 @@ assert.match(providerManagerPhp, /WPDSAC_ACTION\|lead_form/);
 assert.match(chatControllerPhp, /sanitize_navigation_targets/);
 assert.match(providerManagerPhp, /SITE ACTION POLICY/);
 assert.match(quickActionsPhp, /MAX_ACTIONS\s*=\s*8/);
+
+// Navigation security: admin URLs must be blocked everywhere.
+assert.match(chatScript, /isPublicUrl/, 'Frontend must filter admin URLs before collecting targets.');
+assert.doesNotMatch(chatScript, /document\.querySelectorAll\('a\[href\]'\)/, 'Must not blindly collect all document links.');
+assert.match(chatControllerPhp, /UrlDenylist::is_blocked/, 'ChatController must use UrlDenylist.');
+assert.match(providerManagerPhp, /UrlDenylist::is_blocked/, 'ProviderManager must re-filter with UrlDenylist.');
+assert.match(promptGuardPhp, /no access to WordPress admin/, 'PromptGuard must deny admin access.');
+
+// SITE ACTION POLICY must never contain admin paths (regression check).
+assert.doesNotMatch(chatControllerPhp, /\/wp-admin/);
+assert.doesNotMatch(providerManagerPhp, /\/wp-admin/);
+assert.doesNotMatch(providerManagerPhp, /wp-login\.php/);
 assert.match(chatbotTemplate, /role="dialog"/);
 assert.match(chatbotTemplate, /aria-modal="true"/);
 assert.match(chatStyles, /--wpdsac-height/);
