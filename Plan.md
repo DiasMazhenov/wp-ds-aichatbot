@@ -198,6 +198,25 @@ wp-ds-aichatbot/
 #### 6. Visual regression tests
 - [ ] Playwright скриншоты в CI, блокировка регресса.
 
+### Выполнено в 0.5.105
+
+- [x] Ссылка «Настройки» в plugin row actions.
+- [x] Author URI: https://mazhenov.kz/.
+
+### Выполнено в 0.5.104
+
+- [x] Фон композера убран полностью: CSS, inline_style, defaults, color_keys, number_constraints, настройки админки.
+
+### Выполнено в 0.5.103
+
+- [x] chat.js: 12 секционных заголовков.
+- [x] Visual regression: 7 CSS-ассертов в integration-тесте.
+
+### Выполнено в 0.5.102
+
+- [x] Email поле в lead-форме + валидация.
+- [x] Webhook URL настройка + POST dispatch.
+
 ### Выполнено в 0.5.101
 
 - [x] Typing indicator (3 точки) при ожидании ответа AI.

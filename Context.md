@@ -46,8 +46,11 @@
 - **0.5.98**: Preview DOM полностью совпадает с шаблоном: bot message `<div>`, SVG-аватар fallback, `context-actions`, все атрибуты.
 - **0.5.99**: Preview `<form>` заменён на `<div>` — исправлена кнопка «Сохранить настройки» (вложенные формы).
 - **0.5.100**: Preview stage фон чёрный (#000). Фон композера снова настраиваем через Bottom panel.
-- **0.5.101**: Typing indicator (3 точки) при ожидании ответа AI. Удалены мёртвые CSS-переменные. В Plan.md добавлены 6 направлений: SSE-стриминг, модульность JS, email/webhook лидов, accessibility, кеширование inline_style, visual regression tests.
-- **0.5.95**: Исправлен баг: `messages_bg_mode` по умолчанию `solid` вместо `transparent`, чтобы цвет фона сообщений из настроек применялся.
+- **0.5.101**: Typing indicator (3 точки) при ожидании ответа AI. Удалены мёртвые CSS-переменные. В Plan.md добавлены 6 направлений.
+- **0.5.102**: Email поле в lead-форме (опциональное, с валидацией). Webhook URL настройка — POST с данными лида.
+- **0.5.103**: chat.js реструктурирован с 12 секционными заголовками. Visual regression ассерты в CI: проверка blur панели, прозрачности сообщений, скроллбара, typing indicator.
+- **0.5.104**: Фон композера убран полностью — из CSS, inline_style, настроек админки, defaults, color_keys, number_constraints.
+- **0.5.105**: Ссылка «Настройки» в plugin row actions. Author URI: https://mazhenov.kz/.
 
 ## Обязательная инструкция агенту перед каждым push
 
