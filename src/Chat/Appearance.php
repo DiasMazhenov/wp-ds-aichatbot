@@ -74,7 +74,7 @@ final class Appearance {
 			'global_position'           => 'bottom_right',
 			'global_offset_x'           => 24,
 			'global_offset_y'           => 24,
-			'messages_bg_mode'             => 'transparent',
+			'messages_bg_mode'          => 'transparent',
 			'messages_bg_color'         => '#ffffff',
 			'messages_bg_opacity'       => 12,
 			'messages_blur'             => 14,
