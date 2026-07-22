@@ -46,6 +46,7 @@ const postIndexerPhp = await readFile(join(projectRoot, 'src/Knowledge/PostIndex
 const leadNotifierPhp = await readFile(join(projectRoot, 'src/Data/LeadNotifier.php'), 'utf8');
 const chatbotTemplate = await readFile(join(projectRoot, 'templates/chatbot.php'), 'utf8');
 const pluginPhp = await readFile(join(projectRoot, 'wp-ds-aichatbot.php'), 'utf8');
+const bootstrapPhp = await readFile(join(projectRoot, 'src/Plugin.php'), 'utf8');
 const embeddingsFactoryPhp = await readFile(join(projectRoot, 'src/AI/EmbeddingsProviderFactory.php'), 'utf8');
 const migratorPhp = await readFile(join(projectRoot, 'src/Lifecycle/Migrator.php'), 'utf8');
 const pluginVersion = pluginPhp.match(/define\(\s*'WPDSAC_VERSION',\s*'([^']+)'\s*\)/)?.[1];
@@ -231,9 +232,9 @@ assert.match(providerManagerPhp, /Re-engage prompt/);
 assert.match(chatControllerPhp, /quick_replies/);
 
 // Verify Plugin.php wires ReengageController.
-assert.match(pluginPhp, /ReengageController/);
-assert.match(pluginPhp, /ReengageService/);
-assert.match(pluginPhp, /QuickReplyParser/);
+assert.match(bootstrapPhp, /ReengageController/);
+assert.match(bootstrapPhp, /ReengageService/);
+assert.match(bootstrapPhp, /QuickReplyParser/);
 
 const playground = await runCLI({
   command: 'server',
