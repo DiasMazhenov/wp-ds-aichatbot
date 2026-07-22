@@ -825,7 +825,7 @@
 
   const updateComposer = () => {
     const bgColor = getValue('composer_bg_color') || '#ffffff';
-    const bgOpacity = Number(getValue('composer_bg_opacity')) || 10;
+    const bgOpacity = Number(getValue('composer_bg_opacity')) || 0;
     preview.style.setProperty('--wpdsac-composer-bg', toRgba(bgColor, bgOpacity));
 
     const borderTop = getValue('composer_border_top');

@@ -4,11 +4,12 @@
 	--wpdsac-panel-pl: 20px;
 	--wpdsac-panel-pt: 20px;
 	--wpdsac-panel-bg: rgb(255 255 255 / 50%);
-	--wpdsac-panel-blur: 12px;
+	--wpdsac-panel-blur: 2px;
 	--wpdsac-panel-border-color: rgb(255 255 255 / 20%);
+	--wpdsac-msg-bg: rgb(17 24 39 / 63%);
 	--wpdsac-msg-padding: 20px;
 	--wpdsac-msg-composer-gap: 12px;
-	--wpdsac-composer-bg: rgb(255 255 255 / 10%);
+	--wpdsac-composer-bg: transparent;
 	--wpdsac-composer-border-top: 1px solid rgb(0 0 0 / 5%);
 	--wpdsac-composer-radius: 20px;
 	--wpdsac-composer-padding: 0;
@@ -491,7 +492,7 @@ body.wpdsac-modal-open {
 	min-width: 0;
 	min-height: 0;
 	padding: var(--wpdsac-msg-padding);
-	background: transparent;
+	background: var(--wpdsac-msg-bg);
 	border: 0;
 	border-radius: 0;
 	box-shadow: none;
@@ -671,6 +672,9 @@ body.wpdsac-modal-open {
 }
 
 .wpdsac-chat .wpdsac-chat__form button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	width: auto;
 	min-width: max-content;
 	min-height: 44px;
@@ -684,6 +688,11 @@ body.wpdsac-modal-open {
 	font-weight: 700;
 	line-height: 1.2;
 	white-space: nowrap;
+}
+
+.wpdsac-chat .wpdsac-chat__form button svg {
+	display: block;
+	flex-shrink: 0;
 }
 
 .wpdsac-chat .wpdsac-chat__form button:disabled {
