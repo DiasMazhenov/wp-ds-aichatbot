@@ -78,7 +78,7 @@ final class Appearance {
 			'composer_bg_opacity'       => 90,
 			'composer_blur'             => 14,
 			'composer_radius'           => 20,
-			'composer_padding'          => 12,
+			'composer_padding'          => 0,
 			'composer_gap'              => 10,
 			'composer_border_color'     => '#ffffff',
 			'composer_border_opacity'   => 72,
