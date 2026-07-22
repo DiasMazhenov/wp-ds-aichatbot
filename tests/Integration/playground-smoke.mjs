@@ -307,6 +307,15 @@ assert.match(chatScript, /hideAllQaButtons/, 'Form submit must hide all QA butto
 
 // QuickReplyParser uses gettext fallback.
 assert.match(parserPhp, /Choose an option/, 'QuickReplyParser must use gettext fallback, not hardcoded Russian.');
+
+// Visual regression: key CSS rules must exist.
+assert.match(chatStyles, /\.wpdsac-chat\s*\.wpdsac-chat__panel\s*\{[^}]*backdrop-filter\s*:\s*blur/, 'Panel must have glass blur.');
+assert.match(chatStyles, /\.wpdsac-chat\s*\.wpdsac-chat__messages\s*\{[^}]*background\s*:\s*(?:transparent|var\(--wpdsac-msg-bg\))/, 'Messages must have transparent or custom background.');
+assert.match(chatStyles, /\.wpdsac-chat\s*\.wpdsac-chat__messages\s*\{[^}]*scrollbar-width\s*:\s*none/, 'Messages must hide scrollbar.');
+assert.match(chatStyles, /\.wpdsac-chat\s*\.wpdsac-chat__typing/, 'Chat must have typing indicator styles.');
+assert.match(chatStyles, /\.wpdsac-chat\s*\.wpdsac-chat__conversation\s*\{[^}]*background\s*:\s*transparent/, 'Conversation must be transparent.');
+assert.match(chatScript, /typing\.remove/, 'Chat must clean up typing indicator.');
+assert.match(chatScript, /wpdsac-chat__typing-dot/, 'Chat must render typing dots.');
 assert.doesNotMatch(parserPhp, /Выберите подходящий вариант/, 'QuickReplyParser must not have hardcoded Russian fallback.');
 
 // ChatController must not import ReengageService.

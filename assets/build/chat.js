@@ -20,6 +20,8 @@
 	const reengageTimers = new WeakMap();
 	const reengageInFlight = new WeakMap();
 
+	// ── Audio ──────────────────────────────────────────
+
 	const ensureAudioContext = () => {
 		const AudioContext = window.AudioContext || window.webkitAudioContext;
 		if (!AudioContext) {
@@ -74,6 +76,8 @@
 		}
 	};
 
+	// ── Network ────────────────────────────────────────
+
 	const request = async (path, body = {}) => {
 		const headers = {
 			'Content-Type': 'application/json',
@@ -119,6 +123,8 @@
 
 		return token;
 	};
+
+	// ── Message Rendering ─────────────────────────────
 
 	const appendLinkedText = (container, message) => {
 		const parts = message.split(/(https?:\/\/[^\s]+)/g);
@@ -441,6 +447,8 @@
 			: Promise.resolve();
 	};
 
+	// ── Context Actions ─────────────────────────────────
+
 	const clearContextActions = (chat) => {
 		const contextContainer = chat.querySelector('[data-wpdsac-context-actions]');
 		if (contextContainer) {
@@ -523,6 +531,8 @@
 	const hideAllQaButtons = (chat) => {
 		clearContextActions(chat);
 	};
+
+	// ── Lead Extraction ────────────────────────────────
 
 	const getVisitorName = () => window.sessionStorage.getItem(visitorNameStorageKey) || '';
 	const formatVisitorTemplate = (template, name = '') => template
@@ -634,6 +644,8 @@
 		return targets;
 	};
 
+	// ── Conversation History ────────────────────────────
+
 	const getStoredConversation = () => {
 		const fallback = {startedAt: Date.now(), entries: [], expired: false};
 
@@ -710,6 +722,8 @@
 		appendMessage(chat, welcome, 'bot');
 	};
 
+	// ── Chat UI State ──────────────────────────────────
+
 	const revealConversation = (chat, name) => {
 		const conversation = chat.querySelector('[data-wpdsac-conversation]');
 		const leadName = chat.querySelector('[data-wpdsac-lead-form] [name="name"]');
@@ -775,6 +789,8 @@
 
 		window.setTimeout(() => showIntroBubble(chat), delay);
 	};
+
+	// ── Re-engage State Machine ────────────────────────
 
 	const getReengageState = (chat) => {
 		try {
@@ -967,6 +983,8 @@
 		}
 	};
 
+	// ── Modal Management ──────────────────────────────
+
 	const setExpanded = (chat, expanded) => {
 		const toggle = chat.querySelector('.wpdsac-chat__toggle');
 		const panel = chat.querySelector('.wpdsac-chat__panel');
@@ -1053,6 +1071,8 @@
 		revealConversation(chat, getVisitorName());
 		scheduleIntroBubble(chat);
 	});
+
+	// ── Event: Toggle Click ────────────────────────────
 
 	document.addEventListener('click', (event) => {
 		const toggle = event.target.closest('[data-wpdsac-chat] .wpdsac-chat__toggle, [data-wpdsac-intro-bubble]');
@@ -1212,6 +1232,8 @@
 			first.focus();
 		}
 	});
+
+	// ── Event: Chat Submit ──────────────────────────────
 
 	document.addEventListener('submit', async (event) => {
 		const form = event.target.closest('[data-wpdsac-form]');
@@ -1429,6 +1451,8 @@
 		}
 	});
 
+	// ── Event: Lead Form Submit ────────────────────────
+
 	document.addEventListener('submit', async (event) => {
 		const form = event.target.closest('[data-wpdsac-lead-form]');
 		if (!form) {
@@ -1504,6 +1528,8 @@
 		}
 	});
 
+	// ── Event: Input / Visibility ─────────────────────
+
 	document.addEventListener('input', (event) => {
 		const input = event.target.closest('[data-wpdsac-form] input, [data-wpdsac-lead-form] input, [data-wpdsac-lead-form] textarea');
 		if (input) {
@@ -1514,7 +1540,9 @@
 
 	document.addEventListener('visibilitychange', () => {
 		if (document.visibilityState === 'visible') {
-			document.querySelectorAll('[data-wpdsac-chat]').forEach((chat) => {
+	// ── Init ────────────────────────────────────────────
+
+	document.querySelectorAll('[data-wpdsac-chat]').forEach((chat) => {
 				if (chat.dataset.wpdsacReengageEnabled !== '1') return;
 				const state = getReengageState(chat);
 				if (!state) return;
