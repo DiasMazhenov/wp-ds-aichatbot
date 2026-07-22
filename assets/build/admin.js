@@ -840,7 +840,7 @@
   };
 
   const updateMessagesWindow = () => {
-    const mode = getValue('messages_bg_mode') || 'glass';
+    const mode = getValue('messages_bg_mode') || 'transparent';
     const bgColor = getValue('messages_bg_color') || '#ffffff';
     const bgOpacity = Number(getValue('messages_bg_opacity')) || 12;
     const borderColor = getValue('messages_border_color') || '#ffffff';

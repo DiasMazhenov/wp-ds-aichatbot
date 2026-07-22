@@ -3,14 +3,6 @@
 	--wpdsac-panel-pr: 10px;
 	--wpdsac-panel-pl: 20px;
 	--wpdsac-panel-pt: 20px;
-	--wpdsac-msg-bg: rgb(255 255 255 / 12%);
-	--wpdsac-msg-blur: 14px;
-	--wpdsac-msg-saturation: 125%;
-	--wpdsac-msg-radius: 24px;
-	--wpdsac-msg-border-color: rgb(255 255 255 / 45%);
-	--wpdsac-msg-border-width: 1px;
-	--wpdsac-msg-glare: inset 0 1px 0 rgb(255 255 255 / 40%);
-	--wpdsac-msg-shadow: 0 12px 30px rgb(15 23 42 / 12%);
 	--wpdsac-msg-padding: 20px;
 	--wpdsac-msg-composer-gap: 12px;
 	--wpdsac-composer-bg: rgb(255 255 255 / 90%);
@@ -299,7 +291,7 @@ body > .wpdsac-chat.wpdsac-position--bottom-left {
 	padding: var(--wpdsac-panel-pt) var(--wpdsac-panel-pr) var(--wpdsac-panel-padding) var(--wpdsac-panel-pl);
 	border: 1px solid var(--wpdsac-border);
 	border-radius: var(--wpdsac-radius);
-	background: transparent;
+	background: var(--wpdsac-surface);
 	box-shadow: 0 18px 50px rgb(23 32 51 / var(--wpdsac-shadow-opacity));
 	overflow: hidden;
 }
