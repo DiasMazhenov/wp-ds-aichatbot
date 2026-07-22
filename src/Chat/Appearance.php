@@ -77,7 +77,7 @@ final class Appearance {
 			'messages_bg_mode'          => 'solid',
 			'messages_blur'             => 14,
 			'messages_saturation'       => 125,
-			'messages_radius'           => 24,
+			'messages_radius'           => 10,
 			'messages_border_color'     => '#ffffff',
 			'messages_border_opacity'   => 45,
 			'messages_border_width'     => 1,
@@ -228,10 +228,6 @@ final class Appearance {
 			'--wpdsac-panel-border-color'  => self::rgba(
 				'#ffffff',
 				min( 100, max( 0, (int) $values['panel_border_opacity'] ) ) / 100
-			),
-			'--wpdsac-composer-bg'         => self::rgba(
-				$values['composer_bg_color'],
-				min( 100, max( 0, (int) $values['composer_bg_opacity'] ) ) / 100
 			),
 			'--wpdsac-composer-blur'       => '',
 			'--wpdsac-composer-radius'     => $values['composer_radius'] . 'px',

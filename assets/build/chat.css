@@ -6,10 +6,10 @@
 	--wpdsac-panel-bg: rgb(255 255 255 / 50%);
 	--wpdsac-panel-blur: 2px;
 	--wpdsac-panel-border-color: rgb(255 255 255 / 20%);
-	--wpdsac-msg-bg: rgb(17 24 39 / 63%);
+	--wpdsac-msg-bg: #11182763;
+	--wpdsac-msg-radius: 10px;
 	--wpdsac-msg-padding: 20px;
 	--wpdsac-msg-composer-gap: 12px;
-	--wpdsac-composer-bg: transparent;
 	--wpdsac-composer-border-top: 1px solid rgb(0 0 0 / 5%);
 	--wpdsac-composer-radius: 20px;
 	--wpdsac-composer-padding: 0;
@@ -494,7 +494,7 @@ body.wpdsac-modal-open {
 	padding: var(--wpdsac-msg-padding);
 	background: var(--wpdsac-msg-bg);
 	border: 0;
-	border-radius: 0;
+	border-radius: var(--wpdsac-msg-radius);
 	box-shadow: none;
 	overflow-y: auto;
 	overscroll-behavior: contain;
@@ -514,7 +514,7 @@ body.wpdsac-modal-open {
 	padding: var(--wpdsac-composer-padding);
 	border-top: var(--wpdsac-composer-border-top, 1px solid rgb(0 0 0 / 5%));
 	border-radius: var(--wpdsac-composer-radius);
-	background: var(--wpdsac-composer-bg);
+}
 }
 
 .wpdsac-chat .wpdsac-chat__message--user {
