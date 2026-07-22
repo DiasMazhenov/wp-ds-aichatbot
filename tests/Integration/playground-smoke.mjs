@@ -162,7 +162,7 @@ assert.ok(
   chatbotTemplate.indexOf('data-wpdsac-quick-actions') < chatbotTemplate.indexOf('data-wpdsac-form'),
   'Quick actions should be rendered before the message form.',
 );
-assert.doesNotMatch(chatbotTemplate, /name="email"/);
+assert.match(chatbotTemplate, /name="email"/);
 assert.doesNotMatch(chatScript, /hideQuickAction/);
 assert.match(chatScript, /openLeadForm/);
 assert.match(chatScript, /extractLeadDetails/);
