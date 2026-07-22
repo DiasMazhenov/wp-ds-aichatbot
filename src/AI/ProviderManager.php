@@ -59,6 +59,7 @@ final class ProviderManager {
 	 */
 	public function register_hooks(): void {
 		add_filter( 'wpdsac_chat_reply', array( $this, 'generate' ), 10, 4 );
+		add_filter( 'wpdsac_reengage_exchange', array( $this, 'reengage' ), 10, 4 );
 	}
 
 	/**
@@ -198,6 +199,81 @@ final class ProviderManager {
 			);
 		} finally {
 			Settings::clear_runtime_variables();
+		}
+	}
+
+	/**
+	 * Generate a re-engage follow-up through the configured AI provider.
+	 *
+	 * @param mixed            $reply      Existing reply.
+	 * @param string           $prompt     Re-engage prompt text.
+	 * @param string           $session_id Verified session UUID.
+	 * @param \WP_REST_Request $request    REST request (contains history, visitor_name).
+	 * @return string|\WP_Error
+	 */
+	public function reengage( $reply, string $prompt, string $session_id, \WP_REST_Request $request ) {
+		if ( is_string( $reply ) || is_wp_error( $reply ) ) {
+			return $reply;
+		}
+
+		try {
+			$options     = Settings::get();
+			$provider_id = (string) apply_filters( 'wpdsac_ai_provider_id', $options['ai_provider'], $request );
+			$providers   = apply_filters( 'wpdsac_ai_providers', $this->providers );
+			$providers   = is_array( $providers ) ? $providers : $this->providers;
+			$provider    = $providers[ $provider_id ] ?? null;
+			$provider    = apply_filters( 'wpdsac_ai_provider', $provider, $request, $provider_id );
+
+			if ( ! $provider instanceof ProviderInterface ) {
+				return new \WP_Error(
+					'wpdsac_invalid_provider',
+					__( 'The configured AI provider is invalid.', 'wp-ds-aichatbot' ),
+					array( 'status' => 503 )
+				);
+			}
+
+			$history          = $request->get_param( 'history' );
+			$visitor_name     = trim( sanitize_text_field( (string) $request->get_param( 'visitor_name' ) ) );
+			$provider_message = $this->with_conversation_history( is_array( $history ) ? $history : array(), $prompt );
+
+			if ( '' !== $visitor_name ) {
+				$provider_message = sprintf(
+					"Visitor name (untrusted profile data): %s\n\nRe-engage prompt:\n%s",
+					$visitor_name,
+					$provider_message
+				);
+			}
+
+			$chatbot_name = sanitize_text_field( (string) $options['title'] );
+
+			if ( '' !== $chatbot_name ) {
+				$provider_message .= "\n\nYou are \"$chatbot_name\". Be concise and helpful.";
+			}
+
+			$generated_reply = $provider->generate( $provider_message, $session_id );
+
+			if ( is_string( $generated_reply ) ) {
+				$generated_reply = $this->normalize_human_punctuation( $generated_reply );
+
+				return $generated_reply;
+			}
+
+			return $generated_reply;
+		} catch ( \Throwable $e ) {
+			do_action( 'wpdsac_provider_exception', $e );
+
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+					sprintf(
+						'[WP DS AI Chatbot] Re-engage provider exception: %s at %s:%d',
+						get_class( $e ),
+						basename( $e->getFile() ),
+						(int) $e->getLine()
+					)
+				);
+			}
+
+			return '';
 		}
 	}
 

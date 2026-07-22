@@ -555,7 +555,24 @@ body.wpdsac-modal-open {
 	margin-top: 0;
 }
 
-.wpdsac-chat .wpdsac-chat__quick-action {
+.wpdsac-chat .wpdsac-chat__context-actions {
+	display: flex;
+	flex-wrap: wrap;
+	flex: 0 0 auto;
+	gap: var(--wpdsac-quick-gap);
+	margin: 10px 0 8px;
+	padding: 1px;
+	max-height: 120px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.wpdsac-chat .wpdsac-chat__context-actions[hidden] {
+	display: none;
+}
+
+.wpdsac-chat .wpdsac-chat__quick-action,
+.wpdsac-chat .wpdsac-chat__context-action {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -572,15 +589,23 @@ body.wpdsac-modal-open {
 	transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
+.wpdsac-chat .wpdsac-chat__context-action {
+	background: color-mix(in srgb, var(--wpdsac-accent) 15%, var(--wpdsac-panel-bg));
+	border-color: var(--wpdsac-accent);
+}
+
 .wpdsac-chat .wpdsac-chat__quick-action:hover,
-.wpdsac-chat .wpdsac-chat__quick-action:focus-visible {
+.wpdsac-chat .wpdsac-chat__quick-action:focus-visible,
+.wpdsac-chat .wpdsac-chat__context-action:hover,
+.wpdsac-chat .wpdsac-chat__context-action:focus-visible {
 	border-color: var(--wpdsac-accent);
 	background: color-mix(in srgb, var(--wpdsac-quick-bg) 78%, var(--wpdsac-accent));
 	color: var(--wpdsac-quick-text);
 }
 
-.wpdsac-chat .wpdsac-chat__qa-action {
-	margin: 4px 6px 0 0;
+.wpdsac-chat .wpdsac-chat__context-action:hover,
+.wpdsac-chat .wpdsac-chat__context-action:focus-visible {
+	background: color-mix(in srgb, var(--wpdsac-accent) 30%, var(--wpdsac-panel-bg));
 }
 
 .wpdsac-chat .wpdsac-chat__form {

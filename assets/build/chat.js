@@ -6,6 +6,7 @@
 	const sessionStorageKey = 'wpdsacSessionToken';
 	const visitorNameStorageKey = 'wpdsacVisitorName';
 	const conversationHistoryStorageKey = 'wpdsacConversationHistory';
+	const reengageStorageKey = 'wpdsacReengage';
 	const leadNavigationHash = '#wpdsac-contact-form';
 	const conversationLifetime = 24 * 60 * 60 * 1000;
 	let audioContext = null;
@@ -16,7 +17,7 @@
 	const leadAutoTriggered = new WeakMap();
 	const leadState = new WeakMap();
 	const reengageTimers = new WeakMap();
-	const reengageCounts = new WeakMap();
+	const reengageInFlight = new WeakMap();
 
 	const ensureAudioContext = () => {
 		const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -311,7 +312,7 @@
 	};
 
 	const appendAssistantContent = (container, message) => {
-		const marker = /\[\[WPDSAC_(NAV|ACTION|QA)\|([^|\]]+)\|([^|\]]+)(?:\|([^\]]+))?\]\]/giu;
+		const marker = /\[\[WPDSAC_(NAV|ACTION)\|([^|\]]+)\|([^\]]+)\]\]/giu;
 		let offset = 0;
 		let match;
 
@@ -320,23 +321,11 @@
 			const markerType = match[1].toUpperCase();
 			const markerValue = match[2].trim();
 			const label = match[3].trim().slice(0, 120);
-			const extra = (match[4] || '').trim().slice(0, 500);
 			const url = markerType === 'NAV' ? safeNavigationUrl(markerValue) : null;
 			const isLeadAction = (markerType === 'ACTION' && markerValue === 'lead_form')
 				|| (url && url.hash === leadNavigationHash);
 
-			if (markerType === 'QA' && label && extra) {
-				const qaBtn = document.createElement('button');
-				qaBtn.type = 'button';
-				qaBtn.className = 'wpdsac-chat__quick-action wpdsac-chat__qa-action';
-				qaBtn.textContent = label;
-				if (markerValue === 'url') {
-					qaBtn.dataset.wpdsacQaUrl = extra;
-				} else {
-					qaBtn.dataset.wpdsacQaMessage = extra;
-				}
-				container.appendChild(qaBtn);
-			} else if (label && (url || isLeadAction)) {
+			if (label && (url || isLeadAction)) {
 				const action = document.createElement('button');
 				action.type = 'button';
 				action.className = 'wpdsac-chat__navigation-action';
@@ -411,9 +400,6 @@
 
 	const appendMessage = (chat, message, role, animate = false) => {
 		const messages = chat.querySelector('.wpdsac-chat__messages');
-		if (role === 'bot') {
-			messages.querySelectorAll('.wpdsac-chat__qa-action').forEach(function(b) { b.remove(); });
-		}
 		const row = document.createElement('div');
 		const isBot = role === 'bot';
 		const item = document.createElement(isBot ? 'div' : 'p');
@@ -456,27 +442,54 @@
 		row.appendChild(item);
 		messages.appendChild(row);
 		scrollToLatest(chat);
-		if (isBot && !animate) {
-			syncQuickActionsVisibility(chat);
-		}
 
 		return isBot && animate
 			? animateAssistantContent(chat, messages, item, message)
 			: Promise.resolve();
 	};
 
+	const clearContextActions = (chat) => {
+		const contextContainer = chat.querySelector('[data-wpdsac-context-actions]');
+		if (contextContainer) {
+			contextContainer.textContent = '';
+			contextContainer.hidden = true;
+		}
+		syncQuickActionsVisibility(chat);
+	};
+
+	const renderContextActions = (chat, quickReplies) => {
+		const contextContainer = chat.querySelector('[data-wpdsac-context-actions]');
+		if (!contextContainer || !Array.isArray(quickReplies) || quickReplies.length < 2) {
+			clearContextActions(chat);
+			return;
+		}
+
+		const container = chat.querySelector('[data-wpdsac-quick-actions]');
+		contextContainer.textContent = '';
+
+		quickReplies.forEach((qr) => {
+			if (!qr.label || !qr.message) return;
+			const btn = document.createElement('button');
+			btn.type = 'button';
+			btn.className = 'wpdsac-chat__quick-action wpdsac-chat__context-action';
+			btn.textContent = String(qr.label).slice(0, 80);
+			btn.dataset.wpdsacContextMessage = String(qr.message).slice(0, 500);
+			contextContainer.appendChild(btn);
+		});
+
+		contextContainer.hidden = false;
+		if (container) container.hidden = true;
+	};
+
 	const syncQuickActionsVisibility = (chat) => {
-		const qaContainer = chat.querySelector('[data-wpdsac-quick-actions]');
-		if (!qaContainer) return;
-		const hasQaButtons = chat.querySelector('.wpdsac-chat__qa-action') !== null;
-		qaContainer.hidden = hasQaButtons;
+		const contextContainer = chat.querySelector('[data-wpdsac-context-actions]');
+		const container = chat.querySelector('[data-wpdsac-quick-actions]');
+		const hasContext = contextContainer && !contextContainer.hidden;
+		if (container) container.hidden = hasContext;
 	};
 
 	const hideAllQaButtons = (chat) => {
-		chat.querySelectorAll('.wpdsac-chat__qa-action').forEach(function(btn) {
-			btn.hidden = true;
-		});
-		syncQuickActionsVisibility(chat);
+		clearContextActions(chat);
 	};
 
 	const getVisitorName = () => window.sessionStorage.getItem(visitorNameStorageKey) || '';
@@ -732,8 +745,43 @@
 		window.setTimeout(() => showIntroBubble(chat), delay);
 	};
 
-	const hasUserMessages = (chat) => {
-		return chat.querySelectorAll('.wpdsac-chat__message--user').length > 0;
+	const getReengageState = (chat) => {
+		try {
+			const raw = window.sessionStorage.getItem(reengageStorageKey);
+			if (!raw) return null;
+			const state = JSON.parse(raw);
+			if (!state || !chat.dataset.wpdsacReengageEnabled) return null;
+			if (state.chatId !== chat.id) return null;
+			return state;
+		} catch (e) {
+			return null;
+		}
+	};
+
+	const saveReengageState = (chat, dueAt, count) => {
+		try {
+			window.sessionStorage.setItem(reengageStorageKey, JSON.stringify({
+				chatId: chat.id,
+				dueAt,
+				count: Math.max(0, Number(count) || 0),
+				lastActivity: Date.now(),
+			}));
+		} catch (e) {}
+	};
+
+	const resetReengageActivity = (chat) => {
+		cancelReengage(chat);
+		if (chat.dataset.wpdsacReengageEnabled !== '1') return;
+		const delay = Math.max(10, Math.min(1800, Number.parseInt(chat.dataset.wpdsacReengageDelay || '120', 10))) * 1000;
+		const max = Math.max(0, Math.min(5, Number.parseInt(chat.dataset.wpdsacReengageMax || '1', 10)));
+		if (!max) return;
+		const state = getReengageState(chat);
+		const count = state ? state.count : 0;
+		if (count >= max) return;
+		const dueAt = Date.now() + delay;
+		saveReengageState(chat, dueAt, count);
+		const timer = window.setTimeout(() => handleReengage(chat, max), delay);
+		reengageTimers.set(chat, timer);
 	};
 
 	const cancelReengage = (chat) => {
@@ -746,64 +794,79 @@
 
 	const scheduleReengage = (chat) => {
 		cancelReengage(chat);
-		if (chat.dataset.wpdsacReengageEnabled !== '1') return;
-		const delay = Math.max(10, Math.min(1800, Number.parseInt(chat.dataset.wpdsacReengageDelay || '120', 10))) * 1000;
-		const max = Math.max(0, Math.min(5, Number.parseInt(chat.dataset.wpdsacReengageMax || '1', 10)));
-		if (!max) return;
-
-		const timer = window.setTimeout(() => handleReengage(chat, max), delay);
-		reengageTimers.set(chat, timer);
+		resetReengageActivity(chat);
 	};
 
 	const handleReengage = async (chat, max) => {
-		const count = reengageCounts.get(chat) || 0;
-		if (count >= max) return;
-		if (!hasUserMessages(chat)) return;
+		const state = getReengageState(chat);
+		if (!state) return;
+		if (state.count >= max) return;
+		if (reengageInFlight.get(chat)) return;
 		const leadBtn = chat.querySelector('[data-wpdsac-quick-action="lead"]');
 		if (leadBtn && leadBtn.hidden) return;
 
-		reengageCounts.set(chat, count + 1);
-		cancelReengage(chat);
+		reengageInFlight.set(chat, true);
 
-		const isExpanded = chat.querySelector('.wpdsac-chat__toggle')?.getAttribute('aria-expanded') === 'true';
+		const wasExpanded = chat.querySelector('.wpdsac-chat__toggle')?.getAttribute('aria-expanded') === 'true';
+		const intro = chat.querySelector('[data-wpdsac-intro-bubble]');
+		let previousIntroText = '';
 
-		if (!isExpanded) {
-			const intro = chat.querySelector('[data-wpdsac-intro-bubble]');
-			if (intro) {
-				intro.textContent = '…';
-				intro.hidden = false;
-			}
+		if (!wasExpanded && intro) {
+			previousIntroText = intro.textContent || '';
+			intro.textContent = '\u2026';
+			intro.hidden = false;
 		}
 
 		try {
 			ensureConversationFresh(chat);
 			const session = await getSessionToken();
 			const history = getConversationHistory(chat);
-			const followUpMessage = '[SYSTEM: The visitor has been silent. Write one short, natural follow-up question (max 2 sentences) based on the conversation context. Do not greet, do not repeat what you said before, do not use LLM clichés. Be helpful and specific.]';
-
-			const response = await request('/chat', {
+			const response = await request('/reengage', {
 				session,
-				message: followUpMessage,
-				visitor_name: getVisitorName(),
 				history,
-				navigation_targets: collectNavigationTargets(),
+				visitor_name: getVisitorName(),
 			});
 
 			const followUp = response.reply || '';
+			const quickReplies = response.quick_replies || [];
 
-			if (isExpanded) {
-				appendMessage(chat, followUp, 'bot');
-				persistConversationHistory(chat);
-				playReplySound(chat.dataset.wpdsacReplySound || 'off');
-			} else {
-				const intro = chat.querySelector('[data-wpdsac-intro-bubble]');
-				if (intro && followUp) {
-					intro.textContent = followUp;
+			const currentlyExpanded = chat.querySelector('.wpdsac-chat__toggle')?.getAttribute('aria-expanded') === 'true';
+
+			if (currentlyExpanded) {
+				if (followUp) {
+					appendMessage(chat, followUp, 'bot');
+					persistConversationHistory(chat);
+					playReplySound(chat.dataset.wpdsacReplySound || 'off');
+					if (Array.isArray(quickReplies) && quickReplies.length >= 2) {
+						renderContextActions(chat, quickReplies);
+					}
 				}
-				playReplySound(chat.dataset.wpdsacReplySound || 'off');
+			} else {
+				if (followUp) {
+					appendMessage(chat, followUp, 'bot');
+					persistConversationHistory(chat);
+					if (intro) {
+						const preview = assistantPreviewText(followUp);
+						intro.textContent = preview.slice(0, 120);
+					}
+				} else if (intro) {
+					intro.textContent = previousIntroText || '';
+				}
+			}
+
+			if (followUp) {
+				saveReengageState(chat, 0, state.count + 1);
 			}
 		} catch (error) {
-			cancelReengage(chat);
+			if (intro && !wasExpanded) {
+				intro.textContent = previousIntroText || '';
+			}
+		} finally {
+			reengageInFlight.set(chat, false);
+			const updated = getReengageState(chat);
+			if (updated && updated.count < max) {
+				scheduleReengage(chat);
+			}
 		}
 	};
 
@@ -884,6 +947,15 @@
 		restoreConversationHistory(chat);
 		revealConversation(chat, getVisitorName());
 		scheduleIntroBubble(chat);
+		const state = getReengageState(chat);
+		if (state && state.dueAt && state.dueAt < Date.now()) {
+			const max = Math.max(0, Math.min(5, Number.parseInt(chat.dataset.wpdsacReengageMax || '1', 10)));
+			if (state.count < max) {
+				handleReengage(chat, max);
+			}
+		} else if (chat.dataset.wpdsacReengageEnabled === '1') {
+			scheduleReengage(chat);
+		}
 	});
 
 	document.addEventListener('click', (event) => {
@@ -919,15 +991,16 @@
 			return;
 		}
 
-		cancelReengage(action.closest('[data-wpdsac-chat]'));
+		const chat = action.closest('[data-wpdsac-chat]');
+		cancelReengage(chat);
+		clearContextActions(chat);
 
 		if (action.matches('[data-wpdsac-open-lead]')) {
-			openLeadForm(action.closest('[data-wpdsac-chat]'));
+			openLeadForm(chat);
 			return;
 		}
 
 		if (action.dataset.wpdsacQuickMessage) {
-			const chat = action.closest('[data-wpdsac-chat]');
 			const form = chat.querySelector('[data-wpdsac-form]');
 			form.querySelector('input').value = action.dataset.wpdsacQuickMessage;
 			form.requestSubmit();
@@ -994,25 +1067,21 @@
 	});
 
 	document.addEventListener('click', (event) => {
-		const action = event.target.closest('[data-wpdsac-qa-message], [data-wpdsac-qa-url]');
+		const action = event.target.closest('[data-wpdsac-context-message]');
 		if (!action) {
 			return;
 		}
 
 		const chat = action.closest('[data-wpdsac-chat]');
-		cancelReengage(chat);
-		hideAllQaButtons(chat);
-		const form = chat?.querySelector('[data-wpdsac-form]');
-
-		if (action.dataset.wpdsacQaMessage && form) {
-			form.querySelector('input').value = action.dataset.wpdsacQaMessage;
-			form.requestSubmit();
-			return;
-		}
-
-		const url = safeNavigationUrl(action.dataset.wpdsacQaUrl || '');
-		if (url) {
-			window.open(url.href, '_blank', 'noopener');
+		const message = action.dataset.wpdsacContextMessage || '';
+		if (chat && message) {
+			const form = chat.querySelector('[data-wpdsac-form]');
+			cancelReengage(chat);
+			clearContextActions(chat);
+			if (form) {
+				form.querySelector('input').value = message;
+				form.requestSubmit();
+			}
 		}
 	});
 
@@ -1202,7 +1271,11 @@
 			const replyAnimation = appendMessage(chat, response.reply, 'bot', true);
 			persistConversationHistory(chat);
 			await replyAnimation;
-			syncQuickActionsVisibility(chat);
+			if (Array.isArray(response.quick_replies) && response.quick_replies.length >= 2) {
+				renderContextActions(chat, response.quick_replies);
+			} else {
+				clearContextActions(chat);
+			}
 			playReplySound(chat.dataset.wpdsacReplySound || 'off');
 			input.value = '';
 			status.textContent = '';
@@ -1227,6 +1300,7 @@
 				window.sessionStorage.removeItem(sessionStorageKey);
 			}
 			status.textContent = error.message || strings.error || '';
+			clearContextActions(chat);
 		} finally {
 			button.disabled = false;
 		}
@@ -1297,6 +1371,28 @@
 			status.textContent = error.message || strings.leadError || '';
 		} finally {
 			button.disabled = false;
+		}
+	});
+
+	document.addEventListener('input', (event) => {
+		const input = event.target.closest('[data-wpdsac-form] input, [data-wpdsac-lead-form] input, [data-wpdsac-lead-form] textarea');
+		if (input) {
+			const chat = input.closest('[data-wpdsac-chat]');
+			if (chat) resetReengageActivity(chat);
+		}
+	}, {passive: true});
+
+	document.addEventListener('visibilitychange', () => {
+		if (document.visibilityState === 'visible') {
+			document.querySelectorAll('[data-wpdsac-chat]').forEach((chat) => {
+				const state = getReengageState(chat);
+				if (state && state.dueAt && state.dueAt < Date.now()) {
+					const max = Math.max(0, Math.min(5, Number.parseInt(chat.dataset.wpdsacReengageMax || '1', 10)));
+					if (state.count < max) {
+						handleReengage(chat, max);
+					}
+				}
+			});
 		}
 	});
 })();

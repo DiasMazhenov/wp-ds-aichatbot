@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.83
+Stable tag: 0.5.84
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,13 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.84 =
+
+* Separate re-engagement endpoint (/reengage) with server-only guard checks (cooldown, max count, lead status, reengage_instructions).
+* Server-side QA marker parsing via QuickReplyParser; clean reply text with structured quick_replies array in REST response.
+* Contextual reply buttons rendered in a dedicated container above the input bar, not inside message bubbles.
+* SessionStorage-based re-engagement state with dueAt, count, lastActivity; activity-tracking to defer timers; visibility-change aware.
 
 = 0.5.82 =
 

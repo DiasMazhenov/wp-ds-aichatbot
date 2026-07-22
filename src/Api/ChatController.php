@@ -8,6 +8,7 @@
 namespace DiasMazhenov\WPDsAiChatbot\Api;
 
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
+use DiasMazhenov\WPDsAiChatbot\AI\QuickReplyParser;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -40,6 +41,13 @@ final class ChatController {
 	private $request_lock;
 
 	/**
+	 * Quick reply parser.
+	 *
+	 * @var QuickReplyParser
+	 */
+	private $parser;
+
+	/**
 	 * Verified session UUID for the current request.
 	 *
 	 * @var string
@@ -49,14 +57,16 @@ final class ChatController {
 	/**
 	 * Store REST endpoint dependencies.
 	 *
-	 * @param SessionToken $tokens       Session token service.
-	 * @param RateLimiter  $limiter      Atomic request limiter.
-	 * @param RequestLock  $request_lock In-flight request lock.
+	 * @param SessionToken     $tokens       Session token service.
+	 * @param RateLimiter      $limiter      Atomic request limiter.
+	 * @param RequestLock      $request_lock In-flight request lock.
+	 * @param QuickReplyParser $parser      Quick reply parser.
 	 */
-	public function __construct( SessionToken $tokens, RateLimiter $limiter, RequestLock $request_lock ) {
+	public function __construct( SessionToken $tokens, RateLimiter $limiter, RequestLock $request_lock, QuickReplyParser $parser ) {
 		$this->tokens       = $tokens;
 		$this->limiter      = $limiter;
 		$this->request_lock = $request_lock;
+		$this->parser       = $parser;
 	}
 
 	/**
@@ -372,9 +382,12 @@ final class ChatController {
 
 			do_action( 'wpdsac_chat_exchange', $this->session_id, $message, $reply, $request );
 
+			$parsed = $this->parser->parse( $reply );
+
 			$response = new \WP_REST_Response(
 				array(
-					'reply'           => sanitize_textarea_field( $reply ),
+					'reply'           => sanitize_textarea_field( $parsed['reply'] ),
+					'quick_replies'   => $parsed['quick_replies'],
 					'remaining'       => (int) $limit['remaining'],
 					'daily_remaining' => (int) $budget['remaining'],
 				),

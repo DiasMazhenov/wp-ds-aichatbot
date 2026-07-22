@@ -172,6 +172,68 @@ assert.match(promptGuardPhp, /never copy the choice notation literally/);
 assert.match(settingsPhp, /Chatbot name/);
 assert.match(providerManagerPhp, /guard->inspect/);
 assert.match(providerManagerPhp, /normalize_human_punctuation/);
+assert.match(chatbotTemplate, /data-wpdsac-context-actions/);
+assert.match(chatbotTemplate, /data-wpdsac-actions/);
+assert.ok(
+  chatbotTemplate.indexOf('data-wpdsac-context-actions') > chatbotTemplate.indexOf('data-wpdsac-messages'),
+  'Context actions container must be after messages, before the form.',
+);
+assert.ok(
+  chatbotTemplate.indexOf('data-wpdsac-context-actions') < chatbotTemplate.indexOf('data-wpdsac-form'),
+  'Context actions must be before the input form.',
+);
+assert.match(chatbotTemplate, /data-wpdsac-quick-actions/);
+assert.ok(
+  chatbotTemplate.indexOf('data-wpdsac-quick-actions') > chatbotTemplate.indexOf('data-wpdsac-messages'),
+  'Default quick actions must be after messages.',
+);
+assert.match(chatbotTemplate, /role="group"/);
+assert.match(chatbotTemplate, /Reply options/);
+assert.match(chatScript, /renderContextActions/);
+assert.match(chatScript, /clearContextActions/);
+assert.match(chatScript, /data-wpdsac-context-message/);
+assert.match(chatScript, /wpdsacContextMessage/);
+assert.match(chatScript, /quick_replies/);
+assert.match(chatScript, /\/reengage/);
+assert.match(chatScript, /wpdsacReengage/);
+assert.match(chatScript, /getReengageState/);
+assert.match(chatScript, /saveReengageState/);
+assert.match(chatScript, /resetReengageActivity/);
+assert.match(chatScript, /visibilitychange/);
+assert.match(chatScript, /previousIntroText/);
+assert.match(chatScript, /currentlyExpanded/);
+assert.match(chatScript, /reengageInFlight/);
+assert.doesNotMatch(chatScript, /\[SYSTEM:/);
+assert.match(chatStyles, /wpdsac-chat__context-actions/);
+assert.match(chatStyles, /wpdsac-chat__context-action/);
+assert.match(chatStyles, /wpdsac-chat__actions/);
+assert.match(chatStyles, /context-actions\[hidden\]/);
+
+// Verify QA marker parsing moved server-side.
+const parserPhp = await readFile(join(projectRoot, 'src/AI/QuickReplyParser.php'), 'utf8');
+assert.match(parserPhp, /QuickReplyParser/);
+assert.match(parserPhp, /\[\[WPDSAC_QA/);
+assert.match(parserPhp, /strip_all_tags/);
+
+const reengagePhp = await readFile(join(projectRoot, 'src/AI/ReengageService.php'), 'utf8');
+assert.match(reengagePhp, /ReengageService/);
+assert.match(reengagePhp, /wpdsac_reengage_/);
+
+const reengageControllerPhp = await readFile(join(projectRoot, 'src/Api/ReengageController.php'), 'utf8');
+assert.match(reengageControllerPhp, /ReengageController/);
+assert.match(reengageControllerPhp, /\/reengage/);
+
+// Verify ProviderManager has reengage hook.
+assert.match(providerManagerPhp, /wpdsac_reengage_exchange/);
+assert.match(providerManagerPhp, /Re-engage prompt/);
+
+// Verify ChatController returns quick_replies.
+assert.match(chatControllerPhp, /quick_replies/);
+
+// Verify Plugin.php wires ReengageController.
+assert.match(pluginPhp, /ReengageController/);
+assert.match(pluginPhp, /ReengageService/);
+assert.match(pluginPhp, /QuickReplyParser/);
 
 const playground = await runCLI({
   command: 'server',

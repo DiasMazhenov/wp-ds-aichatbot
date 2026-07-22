@@ -156,7 +156,19 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.83`: проактивное повторное вовлечение при бездействии и контекстные быстрые варианты ответа.
+Версия `0.5.84`: полностью переработана архитектура re-engage и QA-вариантов.
+
+### Выполнено в 0.5.84
+
+- [x] **AI/QuickReplyParser**: серверный парсер `[[WPDSAC_QA|Label|message|Text]]`, извлекает маркеры из ответа AI, возвращает `{reply, quick_replies}`; валидация 2–5 вариантов, лимиты label/message, игнорирование HTML/URL-действий.
+- [x] **AI/ReengageService**: серверные проверки (enabled, user messages, lead exists, cooldown transient, max count transient), HMAC-ключ от session UUID, `reengage_instructions` из настроек.
+- [x] **Api/ReengageController**: REST `POST /reengage`, проверяет nonce/session, вызывает `wpdsac_reengage_exchange` вместо `/chat`.
+- [x] **ProviderManager**: добавлен обработчик `wpdsac_reengage_exchange` — отдельный путь без QUICK REPLY VARIANTS suffix, без prompt guard, чистое системное сообщение.
+- [x] **ChatController**: ответ прогоняется через QuickReplyParser, `quick_replies` возвращаются в REST-ответе.
+- [x] **chat.js**: re-engage через sessionStorage (`dueAt`, `count`, `lastActivity`), сброс таймера при любом вводе/клике/форме, проверка `visibilitychange`, раздельный `/reengage` endpoint.
+- [x] Закрытый чат: ответ добавляется в историю + intro bubble с preview, при открытии нет дублирования, при ошибке восстанавливается предыдущий текст.
+- [x] **Контекстные кнопки**: `[data-wpdsac-context-actions]` контейнер над формой ввода, НЕ внутри сообщений. Обычные quick actions скрываются при наличии QA, восстанавливаются при клике/вводе. При ошибке API обычные кнопки обязательно восстанавливаются.
+- [x] **CSS**: `.wpdsac-chat__context-actions` и `.wpdsac-chat__context-action` строго под `.wpdsac-chat`, с акцентным фоном, hover, max-height с прокруткой.
 
 ### Выполнено в 0.5.83
 

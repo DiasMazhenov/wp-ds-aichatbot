@@ -8,12 +8,14 @@
 define( 'ABSPATH', __DIR__ . '/' );
 define( 'DAY_IN_SECONDS', 86400 );
 define( 'MINUTE_IN_SECONDS', 60 );
+define( 'HOUR_IN_SECONDS', 3600 );
 define( 'WPDSAC_PATH', dirname( __DIR__, 2 ) . '/' );
-define( 'WPDSAC_VERSION', '0.5.83' );
+define( 'WPDSAC_VERSION', '0.5.84' );
 define( 'WPDSAC_FILE', WPDSAC_PATH . 'wp-ds-aichatbot.php' );
 
 $GLOBALS['wpdsac_test_options'] = array();
 $GLOBALS['wpdsac_test_settings_errors'] = array();
+$GLOBALS['wpdsac_test_transients'] = array();
 
 final class WP_Error {
 
@@ -123,6 +125,22 @@ function wp_parse_url( string $url, int $component = -1 ) {
 
 function do_action( string $hook, ...$args ): void {
 	unset( $hook, $args );
+}
+
+function get_transient( string $transient ) {
+	return $GLOBALS['wpdsac_test_transients'][ $transient ] ?? false;
+}
+
+function set_transient( string $transient, $value, int $expiration = 0 ): bool {
+	$GLOBALS['wpdsac_test_transients'][ $transient ] = $value;
+
+	return true;
+}
+
+function current_time( string $type, $gmt = 0 ): int {
+	unset( $type, $gmt );
+
+	return (int) gmdate( 'G', time() );
 }
 
 require_once WPDSAC_PATH . 'src/Support/Autoloader.php';

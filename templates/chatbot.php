@@ -84,26 +84,35 @@ if ( ! $view['show_toggle_icon'] ) {
 				</div>
 			</div>
 
-			<div class="wpdsac-chat__quick-actions" aria-label="<?php esc_attr_e( 'Quick actions', 'wp-ds-aichatbot' ); ?>" data-wpdsac-quick-actions>
-				<?php if ( '' !== $view['call_url'] ) : ?>
-					<a href="<?php echo esc_url( $view['call_url'], array( 'http', 'https', 'tel', 'sms' ) ); ?>" class="wpdsac-chat__quick-action" data-wpdsac-quick-action="call">
-						<?php echo esc_html( $view['quick_call_label'] ); ?>
-					</a>
-				<?php endif; ?>
-				<button type="button" class="wpdsac-chat__quick-action" data-wpdsac-quick-action="lead" data-wpdsac-open-lead>
-					<?php echo esc_html( $view['quick_lead_label'] ); ?>
-				</button>
-				<?php foreach ( $view['custom_actions'] as $quick_action ) : ?>
-					<?php if ( 'url' === $quick_action['type'] ) : ?>
-						<a href="<?php echo esc_url( $quick_action['value'], array( 'http', 'https' ) ); ?>" class="wpdsac-chat__quick-action" data-wpdsac-quick-action="<?php echo esc_attr( $quick_action['id'] ); ?>">
-							<?php echo esc_html( $quick_action['label'] ); ?>
+			<div class="wpdsac-chat__actions" data-wpdsac-actions>
+				<div class="wpdsac-chat__quick-actions" aria-label="<?php esc_attr_e( 'Quick actions', 'wp-ds-aichatbot' ); ?>" data-wpdsac-quick-actions>
+					<?php if ( '' !== $view['call_url'] ) : ?>
+						<a href="<?php echo esc_url( $view['call_url'], array( 'http', 'https', 'tel', 'sms' ) ); ?>" class="wpdsac-chat__quick-action" data-wpdsac-quick-action="call">
+							<?php echo esc_html( $view['quick_call_label'] ); ?>
 						</a>
-					<?php else : ?>
-						<button type="button" class="wpdsac-chat__quick-action" data-wpdsac-quick-action="<?php echo esc_attr( $quick_action['id'] ); ?>" data-wpdsac-quick-message="<?php echo esc_attr( $quick_action['value'] ); ?>">
-							<?php echo esc_html( $quick_action['label'] ); ?>
-						</button>
 					<?php endif; ?>
-				<?php endforeach; ?>
+					<button type="button" class="wpdsac-chat__quick-action" data-wpdsac-quick-action="lead" data-wpdsac-open-lead>
+						<?php echo esc_html( $view['quick_lead_label'] ); ?>
+					</button>
+					<?php foreach ( $view['custom_actions'] as $quick_action ) : ?>
+						<?php if ( 'url' === $quick_action['type'] ) : ?>
+							<a href="<?php echo esc_url( $quick_action['value'], array( 'http', 'https' ) ); ?>" class="wpdsac-chat__quick-action" data-wpdsac-quick-action="<?php echo esc_attr( $quick_action['id'] ); ?>">
+								<?php echo esc_html( $quick_action['label'] ); ?>
+							</a>
+						<?php else : ?>
+							<button type="button" class="wpdsac-chat__quick-action" data-wpdsac-quick-action="<?php echo esc_attr( $quick_action['id'] ); ?>" data-wpdsac-quick-message="<?php echo esc_attr( $quick_action['value'] ); ?>">
+								<?php echo esc_html( $quick_action['label'] ); ?>
+							</button>
+						<?php endif; ?>
+					<?php endforeach; ?>
+				</div>
+				<div
+					class="wpdsac-chat__context-actions"
+					data-wpdsac-context-actions
+					role="group"
+					aria-label="<?php esc_attr_e( 'Reply options', 'wp-ds-aichatbot' ); ?>"
+					hidden
+				></div>
 			</div>
 
 			<form class="wpdsac-chat__form" data-wpdsac-form>
