@@ -1024,6 +1024,9 @@
 		if (details.phone) {
 			form.elements.phone.value = details.phone;
 		}
+		if (details.email && form.elements.email) {
+			form.elements.email.value = details.email;
+		}
 		if (details.request && !form.elements.request.value) {
 			form.elements.request.value = details.request;
 		}
@@ -1262,6 +1265,7 @@
 							session,
 							name,
 							phone,
+							email: '',
 							consent: true,
 							request: '',
 							transcript: getConversationHistory(chat).map((e) => `${e.role === 'assistant' ? 'Bot' : 'User'}: ${e.content}`).join('\n'),
@@ -1315,6 +1319,7 @@
 						session,
 						name: ls.name,
 						phone,
+						email: '',
 						consent: true,
 						request: '',
 						transcript: getConversationHistory(chat).map((e) => `${e.role === 'assistant' ? 'Bot' : 'User'}: ${e.content}`).join('\n'),
@@ -1443,6 +1448,7 @@
 		const status = lead.querySelector('[data-wpdsac-lead-status]');
 		const name = form.elements.name.value.trim();
 		const phone = form.elements.phone.value.trim();
+		const email = form.elements.email ? form.elements.email.value.trim() : '';
 		const leadRequest = form.elements.request.value.trim();
 		const consent = form.elements.consent.checked;
 		const website = form.elements.website.value.trim();
@@ -1466,6 +1472,7 @@
 				session,
 				name,
 				phone,
+				email,
 				request: leadRequest,
 				transcript,
 				consent,

@@ -113,6 +113,12 @@ final class LeadController {
 						'sanitize_callback' => 'sanitize_text_field',
 						'validate_callback' => array( $this, 'validate_phone' ),
 					),
+					'email'      => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_email',
+						'validate_callback' => array( $this, 'validate_email' ),
+					),
 					'request'    => array(
 						'type'              => 'string',
 						'default'           => '',
@@ -181,6 +187,20 @@ final class LeadController {
 	}
 
 	/**
+	 * Validate an optional email address.
+	 *
+	 * @param mixed $value Raw email.
+	 * @return bool
+	 */
+	public function validate_email( $value ): bool {
+		if ( '' === $value ) {
+			return true;
+		}
+
+		return is_string( $value ) && self::length( $value ) <= 100 && is_email( $value );
+	}
+
+	/**
 	 * Validate an optional request description.
 	 *
 	 * @param mixed $value Raw request text.
@@ -245,6 +265,7 @@ final class LeadController {
 
 		$name  = sanitize_text_field( (string) $request->get_param( 'name' ) );
 		$phone = sanitize_text_field( (string) $request->get_param( 'phone' ) );
+		$email = sanitize_email( (string) $request->get_param( 'email' ) );
 
 		if ( ! $this->validate_name( $name ) || ! $this->validate_phone( $phone ) ) {
 			return new \WP_Error(
@@ -274,7 +295,7 @@ final class LeadController {
 			$this->session_id,
 			get_current_user_id(),
 			$name,
-			'',
+			$email,
 			$phone,
 			(string) $request->get_param( 'request' ),
 			(string) $options['lead_consent_text'],
@@ -303,10 +324,31 @@ final class LeadController {
 			array(
 				'name'       => $name,
 				'phone'      => $phone,
+				'email'      => $email,
 				'request'    => (string) $request->get_param( 'request' ),
 				'transcript' => (string) $request->get_param( 'transcript' ),
 			)
 		);
+
+		$webhook_url = (string) $options['lead_webhook_url'];
+		if ( '' !== $webhook_url ) {
+			wp_safe_remote_post(
+				$webhook_url,
+				array(
+					'timeout'     => 10,
+					'redirection' => 0,
+					'headers'     => array( 'Content-Type' => 'application/json' ),
+					'body'        => wp_json_encode(
+						array(
+							'name'    => $name,
+							'phone'   => $phone,
+							'email'   => $email,
+							'request' => (string) $request->get_param( 'request' ),
+						)
+					),
+				)
+			);
+		}
 
 		$response = new \WP_REST_Response(
 			array(

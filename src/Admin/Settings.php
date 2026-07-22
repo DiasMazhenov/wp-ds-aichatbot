@@ -168,6 +168,7 @@ final class Settings {
 				'conversation_email_enabled'       => true,
 				'conversation_email_delay_minutes' => 5,
 				'lead_consent_text'                => __( 'I agree that my contact details may be stored and used to respond to my request.', 'wp-ds-aichatbot' ),
+				'lead_webhook_url'                 => '',
 				'lead_retention_days'              => 90,
 				'ai_provider'                      => 'openai',
 				'communication_style'              => 'concierge',
@@ -445,6 +446,7 @@ final class Settings {
 		$this->add_field( 'conversation_email_delay_minutes', __( 'Send after inactivity (minutes)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_leads' );
 		$this->add_field( 'lead_consent_text', __( 'Consent text', 'wp-ds-aichatbot' ), 'textarea', 'wpdsac_leads' );
 		$this->add_field( 'lead_retention_days', __( 'Lead retention (days)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_leads' );
+		$this->add_field( 'lead_webhook_url', __( 'Webhook URL', 'wp-ds-aichatbot' ), 'url', 'wpdsac_leads' );
 		$this->appearance->register_fields();
 		$this->add_field( 'ai_provider', __( 'Provider', 'wp-ds-aichatbot' ), 'provider_select', 'wpdsac_ai' );
 		$this->add_field( 'communication_style', __( 'Communication style', 'wp-ds-aichatbot' ), 'communication_style_select', 'wpdsac_ai' );
@@ -526,6 +528,7 @@ final class Settings {
 			'conversation_email_delay_minutes' => min( 60, max( 1, absint( $input['conversation_email_delay_minutes'] ?? 5 ) ) ),
 			'lead_consent_text'                => $lead_consent,
 			'lead_retention_days'              => min( 730, max( 1, absint( $input['lead_retention_days'] ?? 90 ) ) ),
+			'lead_webhook_url'                 => esc_url_raw( (string) ( $input['lead_webhook_url'] ?? '' ), array( 'http', 'https' ) ),
 			'ai_provider'                      => $provider,
 			'communication_style'              => sanitize_text_field( $input['communication_style'] ?? 'concierge' ),
 			'ai_instructions'                  => sanitize_textarea_field( $input['ai_instructions'] ?? '' ),

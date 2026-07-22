@@ -157,6 +157,10 @@ if ( ! $view['show_toggle_icon'] ) {
 					<input type="tel" name="phone" maxlength="50" autocomplete="tel" required>
 				</label>
 				<label>
+					<span><?php esc_html_e( 'Email', 'wp-ds-aichatbot' ); ?></span>
+					<input type="email" name="email" maxlength="100" autocomplete="email">
+				</label>
+				<label>
 					<span><?php esc_html_e( 'How can we help?', 'wp-ds-aichatbot' ); ?></span>
 					<textarea name="request" rows="3" maxlength="4000"></textarea>
 				</label>
