@@ -140,6 +140,10 @@ final class Settings {
 				'reply_sound'                      => 'soft',
 				'intro_trigger'                    => 'delay',
 				'intro_delay_seconds'              => 10,
+				'reengage_enabled'                 => false,
+				'reengage_delay'                   => 120,
+				'reengage_max_count'               => 1,
+				'reengage_instructions'            => '',
 				'bot_avatar_id'                    => 0,
 				'avatar_position_x'                => 50,
 				'avatar_position_y'                => 50,
@@ -412,6 +416,10 @@ final class Settings {
 		$this->add_field( 'reply_sound', __( 'Reply notification sound', 'wp-ds-aichatbot' ), 'sound_select' );
 		$this->add_field( 'intro_trigger', __( 'Intro bubble trigger', 'wp-ds-aichatbot' ), 'intro_trigger_select' );
 		$this->add_field( 'intro_delay_seconds', __( 'Intro bubble delay (seconds)', 'wp-ds-aichatbot' ), 'number' );
+		$this->add_field( 'reengage_enabled', __( 'Proactive re-engagement', 'wp-ds-aichatbot' ), 'checkbox' );
+		$this->add_field( 'reengage_delay', __( 'Re-engage after idle (seconds)', 'wp-ds-aichatbot' ), 'number' );
+		$this->add_field( 'reengage_max_count', __( 'Max re-engage messages', 'wp-ds-aichatbot' ), 'number' );
+		$this->add_field( 'reengage_instructions', __( 'Re-engage instructions', 'wp-ds-aichatbot' ), 'textarea' );
 		$this->add_field( 'bot_avatar_id', __( 'Chatbot avatar', 'wp-ds-aichatbot' ), 'media' );
 		$this->add_field( 'avatar_position_x', __( 'Avatar horizontal position', 'wp-ds-aichatbot' ), 'hidden' );
 		$this->add_field( 'avatar_position_y', __( 'Avatar vertical position', 'wp-ds-aichatbot' ), 'hidden' );
@@ -489,6 +497,10 @@ final class Settings {
 			'reply_sound'                      => $this->sanitize_reply_sound( $input['reply_sound'] ?? 'soft' ),
 			'intro_trigger'                    => $this->sanitize_intro_trigger( $input['intro_trigger'] ?? 'delay' ),
 			'intro_delay_seconds'              => min( 300, max( 0, absint( $input['intro_delay_seconds'] ?? 10 ) ) ),
+			'reengage_enabled'                 => ! empty( $input['reengage_enabled'] ),
+			'reengage_delay'                   => min( 1800, max( 10, absint( $input['reengage_delay'] ?? 120 ) ) ),
+			'reengage_max_count'               => min( 5, max( 0, absint( $input['reengage_max_count'] ?? 1 ) ) ),
+			'reengage_instructions'            => $this->limit_text( sanitize_textarea_field( $input['reengage_instructions'] ?? '' ), 500 ),
 			'bot_avatar_id'                    => absint( $input['bot_avatar_id'] ?? 0 ),
 			'avatar_position_x'                => min( 100, max( 0, absint( $input['avatar_position_x'] ?? 50 ) ) ),
 			'avatar_position_y'                => min( 100, max( 0, absint( $input['avatar_position_y'] ?? 50 ) ) ),
@@ -997,6 +1009,7 @@ final class Settings {
 				'deepseek_thinking'          => __( 'Enable deeper reasoning. This can increase response time and token usage.', 'wp-ds-aichatbot' ),
 				'prompt_guard_enabled'       => __( 'Block obvious instruction overrides, hidden-prompt requests, model probing, and configured off-topic requests before contacting the AI provider.', 'wp-ds-aichatbot' ),
 				'conversation_email_enabled' => __( 'Send one transcript after the visitor stops writing. If a contact request is submitted first, only the request email is sent.', 'wp-ds-aichatbot' ),
+				'reengage_enabled'           => __( 'If the visitor goes silent, the bot asks a contextual follow-up question. This is an in-browser message, not an email — configure the email notifier separately in the Privacy tab.', 'wp-ds-aichatbot' ),
 			);
 			$description  = $descriptions[ $key ] ?? '';
 
@@ -1039,6 +1052,13 @@ final class Settings {
 				printf(
 					'<p class="description">%s</p>',
 					esc_html__( 'One greeting per line. Use {time_greeting} for a natural greeting based on the site time. Common forms such as "Доброе/ый (утро, день, вечер, ночь)!" are also resolved automatically. Leave empty to use the welcome message above.', 'wp-ds-aichatbot' )
+				);
+			}
+
+			if ( 'reengage_instructions' === $key ) {
+				printf(
+					'<p class="description">%s</p>',
+					esc_html__( 'Optional. Extra guidance for the AI when generating follow-up messages. For example: "Ask about specific services the visitor viewed." Leave empty to use the main assistant instructions.', 'wp-ds-aichatbot' )
 				);
 			}
 			return;

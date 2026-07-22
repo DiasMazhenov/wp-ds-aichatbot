@@ -15,6 +15,8 @@
 	const userMessageCounters = new WeakMap();
 	const leadAutoTriggered = new WeakMap();
 	const leadState = new WeakMap();
+	const reengageTimers = new WeakMap();
+	const reengageCounts = new WeakMap();
 
 	const ensureAudioContext = () => {
 		const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -454,10 +456,27 @@
 		row.appendChild(item);
 		messages.appendChild(row);
 		scrollToLatest(chat);
+		if (isBot && !animate) {
+			syncQuickActionsVisibility(chat);
+		}
 
 		return isBot && animate
 			? animateAssistantContent(chat, messages, item, message)
 			: Promise.resolve();
+	};
+
+	const syncQuickActionsVisibility = (chat) => {
+		const qaContainer = chat.querySelector('[data-wpdsac-quick-actions]');
+		if (!qaContainer) return;
+		const hasQaButtons = chat.querySelector('.wpdsac-chat__qa-action') !== null;
+		qaContainer.hidden = hasQaButtons;
+	};
+
+	const hideAllQaButtons = (chat) => {
+		chat.querySelectorAll('.wpdsac-chat__qa-action').forEach(function(btn) {
+			btn.hidden = true;
+		});
+		syncQuickActionsVisibility(chat);
 	};
 
 	const getVisitorName = () => window.sessionStorage.getItem(visitorNameStorageKey) || '';
@@ -713,6 +732,81 @@
 		window.setTimeout(() => showIntroBubble(chat), delay);
 	};
 
+	const hasUserMessages = (chat) => {
+		return chat.querySelectorAll('.wpdsac-chat__message--user').length > 0;
+	};
+
+	const cancelReengage = (chat) => {
+		const timer = reengageTimers.get(chat);
+		if (timer) {
+			window.clearTimeout(timer);
+			reengageTimers.delete(chat);
+		}
+	};
+
+	const scheduleReengage = (chat) => {
+		cancelReengage(chat);
+		if (chat.dataset.wpdsacReengageEnabled !== '1') return;
+		const delay = Math.max(10, Math.min(1800, Number.parseInt(chat.dataset.wpdsacReengageDelay || '120', 10))) * 1000;
+		const max = Math.max(0, Math.min(5, Number.parseInt(chat.dataset.wpdsacReengageMax || '1', 10)));
+		if (!max) return;
+
+		const timer = window.setTimeout(() => handleReengage(chat, max), delay);
+		reengageTimers.set(chat, timer);
+	};
+
+	const handleReengage = async (chat, max) => {
+		const count = reengageCounts.get(chat) || 0;
+		if (count >= max) return;
+		if (!hasUserMessages(chat)) return;
+		const leadBtn = chat.querySelector('[data-wpdsac-quick-action="lead"]');
+		if (leadBtn && leadBtn.hidden) return;
+
+		reengageCounts.set(chat, count + 1);
+		cancelReengage(chat);
+
+		const isExpanded = chat.querySelector('.wpdsac-chat__toggle')?.getAttribute('aria-expanded') === 'true';
+
+		if (!isExpanded) {
+			const intro = chat.querySelector('[data-wpdsac-intro-bubble]');
+			if (intro) {
+				intro.textContent = '…';
+				intro.hidden = false;
+			}
+		}
+
+		try {
+			ensureConversationFresh(chat);
+			const session = await getSessionToken();
+			const history = getConversationHistory(chat);
+			const followUpMessage = '[SYSTEM: The visitor has been silent. Write one short, natural follow-up question (max 2 sentences) based on the conversation context. Do not greet, do not repeat what you said before, do not use LLM clichés. Be helpful and specific.]';
+
+			const response = await request('/chat', {
+				session,
+				message: followUpMessage,
+				visitor_name: getVisitorName(),
+				history,
+				navigation_targets: collectNavigationTargets(),
+			});
+
+			const followUp = response.reply || '';
+
+			if (isExpanded) {
+				appendMessage(chat, followUp, 'bot');
+				persistConversationHistory(chat);
+				playReplySound(chat.dataset.wpdsacReplySound || 'off');
+			} else {
+				const intro = chat.querySelector('[data-wpdsac-intro-bubble]');
+				if (intro && followUp) {
+					intro.textContent = followUp;
+				}
+				playReplySound(chat.dataset.wpdsacReplySound || 'off');
+			}
+		} catch (error) {
+			cancelReengage(chat);
+		}
+	};
+
 	const setExpanded = (chat, expanded) => {
 		const toggle = chat.querySelector('.wpdsac-chat__toggle');
 		const panel = chat.querySelector('.wpdsac-chat__panel');
@@ -721,6 +815,7 @@
 		chat.classList.toggle('is-expanded', expanded);
 
 		if (expanded) {
+			cancelReengage(chat);
 			const intro = chat.querySelector('[data-wpdsac-intro-bubble]');
 			if (intro) {
 				intro.hidden = true;
@@ -824,6 +919,8 @@
 			return;
 		}
 
+		cancelReengage(action.closest('[data-wpdsac-chat]'));
+
 		if (action.matches('[data-wpdsac-open-lead]')) {
 			openLeadForm(action.closest('[data-wpdsac-chat]'));
 			return;
@@ -903,6 +1000,8 @@
 		}
 
 		const chat = action.closest('[data-wpdsac-chat]');
+		cancelReengage(chat);
+		hideAllQaButtons(chat);
 		const form = chat?.querySelector('[data-wpdsac-form]');
 
 		if (action.dataset.wpdsacQaMessage && form) {
@@ -958,6 +1057,8 @@
 		event.preventDefault();
 
 		const chat = form.closest('[data-wpdsac-chat]');
+		cancelReengage(chat);
+		hideAllQaButtons(chat);
 		const input = form.querySelector('input');
 		const button = form.querySelector('button[type="submit"]');
 		const status = chat.querySelector('[data-wpdsac-status]');
@@ -1101,9 +1202,11 @@
 			const replyAnimation = appendMessage(chat, response.reply, 'bot', true);
 			persistConversationHistory(chat);
 			await replyAnimation;
+			syncQuickActionsVisibility(chat);
 			playReplySound(chat.dataset.wpdsacReplySound || 'off');
 			input.value = '';
 			status.textContent = '';
+			scheduleReengage(chat);
 
 			const count = (userMessageCounters.get(chat) || 0) + 1;
 			userMessageCounters.set(chat, count);

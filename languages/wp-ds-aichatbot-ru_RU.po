@@ -1102,4 +1102,22 @@ msgid "Chatbot:"
 msgstr "Чат-бот:"
 
 msgid "When conversation logging is enabled, chatbot messages are stored for the configured retention period. If email notifications for dialogs without a request are enabled, the latest bounded transcript is held temporarily for up to 24 hours and sent after the configured inactivity delay. Session identifiers are stored only as one-way hashes. Logs associated with authenticated WordPress users can be exported or erased using the WordPress privacy tools. Anonymous logs cannot be linked back to an email address."
-msgstr "Когда включено журналирование, сообщения чат-бота хранятся в течение заданного срока. Если включены email-уведомления о диалогах без заявки, последняя ограниченная история временно хранится до 24 часов и отправляется после заданной паузы. Идентификаторы сессий хранятся только как необратимые хэши. Журналы авторизованных пользователей WordPress можно экспортировать или удалить через инструменты конфиденциальности WordPress. Анонимные журналы нельзя связать с email-адресом."
+msgstr "Когда логирование включено, сообщения чат-бота хранятся в течение заданного срока. Если включены email-уведомления о диалогах без заявки, последняя усечённая стенограмма хранится временно до 24 часов и отправляется после заданной задержки бездействия. Идентификаторы сессии хранятся только как односторонние хеши. Логи авторизованных пользователей можно экспортировать или удалить через инструменты приватности WordPress. Анонимные логи нельзя связать с email."
+
+msgid "Proactive re-engagement"
+msgstr "Повторное вовлечение"
+
+msgid "If the visitor goes silent, the bot asks a contextual follow-up question. This is an in-browser message, not an email — configure the email notifier separately in the Privacy tab."
+msgstr "Если посетитель замолкает, бот задаёт контекстный уточняющий вопрос. Это сообщение в чате браузера, не email — email-уведомления настраиваются отдельно во вкладке Приватность."
+
+msgid "Re-engage after idle (seconds)"
+msgstr "Отправить после бездействия (сек)"
+
+msgid "Max re-engage messages"
+msgstr "Максимум сообщений за диалог"
+
+msgid "Re-engage instructions"
+msgstr "Инструкции для повторного вовлечения"
+
+msgid "Optional. Extra guidance for the AI when generating follow-up messages. For example: \"Ask about specific services the visitor viewed.\" Leave empty to use the main assistant instructions."
+msgstr "Дополнительные указания для AI при генерации follow-up сообщений. Например: «Спросите о конкретных услугах, которые посетитель просматривал». Оставьте пустым для использования основных инструкций ассистента."

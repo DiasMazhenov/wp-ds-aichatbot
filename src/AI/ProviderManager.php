@@ -85,6 +85,11 @@ final class ProviderManager {
 			$suffix = $this->navigation_policy( $navigation_targets );
 		}
 
+		if ( '' !== $suffix ) {
+			$suffix .= "\n\n";
+		}
+		$suffix .= "QUICK REPLY VARIANTS:\n- When you ask a question that has obvious short answers, append 2–5 quick reply buttons.\n- Format: [[WPDSAC_QA|Button Label|message|Message text to send when clicked]].\n- Example: [[WPDSAC_QA|Лендинг|message|Мне нужен лендинг]], [[WPDSAC_QA|Магазин|message|Нужен интернет-магазин]]\n- Only use this for multiple-choice questions. Do NOT add buttons for open-ended questions where the visitor must type a unique answer.\n- Label: 1–3 words. Message: a complete sentence the visitor would naturally say.\n- Place the markers at the END of your reply, one per line.\n- Never include HTML, URLs, or JavaScript in marker values.";
+
 		if ( $this->leads instanceof LeadRepository && $this->leads->exists_for_session( $session_id ) ) {
 			if ( '' !== $suffix ) {
 				$suffix .= "\n\n";

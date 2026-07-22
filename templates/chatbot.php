@@ -38,6 +38,9 @@ if ( ! $view['show_toggle_icon'] ) {
 	data-wpdsac-launcher-animation="<?php echo esc_attr( $view['launcher_animation'] ); ?>"
 	data-wpdsac-message-animation="<?php echo $view['message_animation'] ? '1' : '0'; ?>"
 	data-wpdsac-message-word-delay="<?php echo absint( $view['message_word_delay'] ); ?>"
+	data-wpdsac-reengage-enabled="<?php echo empty( $view['reengage_enabled'] ) ? '0' : '1'; ?>"
+	data-wpdsac-reengage-delay="<?php echo absint( $view['reengage_delay'] ?? 120 ); ?>"
+	data-wpdsac-reengage-max="<?php echo absint( $view['reengage_max'] ?? 1 ); ?>"
 >
 	<button type="button" class="wpdsac-chat__intro-bubble" data-wpdsac-intro-bubble hidden>
 		<?php echo esc_html( $view['welcome_message'] ); ?>
