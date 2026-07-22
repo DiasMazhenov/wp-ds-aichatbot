@@ -34,6 +34,11 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 
 == Changelog ==
 
+= 0.5.95 =
+
+* Fixed: messages background mode defaults to solid instead of transparent so the configured color applies.
+* Composer background removed, messages bg #11182763, panel blur 2px, centered send icon.
+
 = 0.5.94 =
 
 * Composer background removed (opacity defaults to 0).
