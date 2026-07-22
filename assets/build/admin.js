@@ -825,8 +825,11 @@
 
   const updateComposer = () => {
     const bgColor = getValue('composer_bg_color') || '#ffffff';
-    const bgOpacity = Number(getValue('composer_bg_opacity')) || 90;
+    const bgOpacity = Number(getValue('composer_bg_opacity')) || 10;
     preview.style.setProperty('--wpdsac-composer-bg', toRgba(bgColor, bgOpacity));
+
+    const borderTop = getValue('composer_border_top');
+    preview.style.setProperty('--wpdsac-composer-border-top', borderTop ? '1px solid rgb(0 0 0 / 5%)' : 'none');
 
     const scrollable = getValue('composer_scrollable');
     const quickActions = preview.querySelector('[data-wpdsac-quick-actions]');
@@ -837,6 +840,15 @@
         quickActions.removeAttribute('data-wpdsac-scrollable');
       }
     }
+  };
+
+  const updatePanel = () => {
+    const surfaceColor = getValue('surface_color') || '#ffffff';
+    const bgOpacity = Number(getValue('panel_bg_opacity')) || 50;
+    const borderOpacity = Number(getValue('panel_border_opacity')) || 20;
+
+    preview.style.setProperty('--wpdsac-panel-bg', toRgba(surfaceColor, bgOpacity));
+    preview.style.setProperty('--wpdsac-panel-border-color', toRgba('#ffffff', borderOpacity));
   };
 
   const updateMessagesWindow = () => {
@@ -856,20 +868,23 @@
   };
 
   [
-    'composer_bg_color', 'composer_bg_opacity', 'composer_scrollable',
+    'composer_bg_color', 'composer_bg_opacity', 'composer_scrollable', 'composer_border_top',
     'messages_bg_mode', 'messages_bg_color', 'messages_bg_opacity',
     'messages_border_color', 'messages_border_opacity',
     'messages_glare', 'messages_shadow',
+    'surface_color', 'panel_bg_opacity', 'panel_border_opacity',
   ].forEach((name) => {
     const el = document.querySelector(`[name="wpdsac_settings[${name}]"]`);
     if (!el) return;
     el.addEventListener('input', () => {
       if (name.startsWith('composer_')) updateComposer();
       if (name.startsWith('messages_')) updateMessagesWindow();
+      if (name === 'surface_color' || name.startsWith('panel_')) updatePanel();
     });
     el.addEventListener('change', () => {
       if (name.startsWith('composer_')) updateComposer();
       if (name.startsWith('messages_')) updateMessagesWindow();
+      if (name === 'surface_color' || name.startsWith('panel_')) updatePanel();
     });
   });
 })();

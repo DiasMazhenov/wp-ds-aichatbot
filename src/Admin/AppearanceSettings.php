@@ -80,6 +80,9 @@ final class AppearanceSettings {
 		$this->add_field( 'launcher_size', __( 'Collapsed circle size (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_launcher' );
 		$this->add_field( 'message_animation_enabled', __( 'Word-by-word replies', 'wp-ds-aichatbot' ), 'message_animation_checkbox', 'wpdsac_appearance_messages' );
 		$this->add_field( 'message_word_delay', __( 'Delay between words (ms)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages' );
+		$this->add_field( 'panel_blur', __( 'Panel glass blur (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages' );
+		$this->add_field( 'panel_bg_opacity', __( 'Panel background opacity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages' );
+		$this->add_field( 'panel_border_opacity', __( 'Panel border opacity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages' );
 		$this->add_field( 'chat_border_radius', __( 'Panel radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
 		$this->add_field( 'toggle_radius', __( 'Expanded header radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
 		$this->add_field( 'message_radius', __( 'Message radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
@@ -111,6 +114,7 @@ final class AppearanceSettings {
 		$this->add_field( 'composer_padding', __( 'Inner padding (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
 		$this->add_field( 'composer_gap', __( 'Gap between buttons and input (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
 		$this->add_field( 'composer_scrollable', __( 'Horizontal scroll for quick buttons', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_appearance_composer' );
+		$this->add_field( 'composer_border_top', __( 'Separator line above bottom panel', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_appearance_composer' );
 	}
 
 	/**
@@ -211,6 +215,7 @@ final class AppearanceSettings {
 			$descriptions = array(
 				'show_toggle_icon'    => __( 'Show the decorative icon beside the title when the chat is open.', 'wp-ds-aichatbot' ),
 				'composer_scrollable' => __( 'Allow horizontal scrolling of quick buttons when they do not fit in one row.', 'wp-ds-aichatbot' ),
+				'composer_border_top' => __( 'Show a thin separator line between the message area and the bottom input panel.', 'wp-ds-aichatbot' ),
 			);
 			$desc         = $descriptions[ $key ] ?? '';
 			printf(
@@ -507,11 +512,8 @@ final class AppearanceSettings {
 			'message_radius'            => '--wpdsac-message-radius',
 			'input_radius'              => '--wpdsac-input-radius',
 			'panel_padding'             => '--wpdsac-panel-padding',
-			'messages_blur'             => '--wpdsac-msg-blur',
-			'messages_saturation'       => '--wpdsac-msg-saturation',
-			'messages_radius'           => '--wpdsac-msg-radius',
+			'panel_blur'                => '--wpdsac-panel-blur',
 			'messages_padding'          => '--wpdsac-msg-padding',
-			'messages_border_width'     => '--wpdsac-msg-border-width',
 			'messages_composer_spacing' => '--wpdsac-msg-composer-gap',
 			'quick_action_font_size'    => '--wpdsac-quick-font-size',
 			'quick_action_padding_x'    => '--wpdsac-quick-padding-x',
