@@ -33,6 +33,8 @@ final class AppearanceSettings {
 		add_settings_section( 'wpdsac_appearance_launcher', esc_html__( 'Collapsed launcher animation', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
 		add_settings_section( 'wpdsac_appearance_messages', esc_html__( 'Message animation', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
 		add_settings_section( 'wpdsac_appearance_controls', esc_html__( 'Controls and shapes', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
+		add_settings_section( 'wpdsac_appearance_composer', esc_html__( 'Bottom panel', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
+		add_settings_section( 'wpdsac_appearance_messages_bg', esc_html__( 'Message history background', 'wp-ds-aichatbot' ), '__return_empty_string', 'wpdsac-settings' );
 
 		$this->add_field( 'accent_color', __( 'Header and launcher', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_colors' );
 		$this->add_field( 'accent_text_color', __( 'Header text and icon', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_colors' );
@@ -88,6 +90,23 @@ final class AppearanceSettings {
 		$this->add_field( 'quick_action_radius', __( 'Quick button radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
 		$this->add_field( 'quick_action_gap', __( 'Quick button gap (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_controls' );
 		$this->add_field( 'show_toggle_icon', __( 'Icon in expanded header', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_appearance_controls' );
+
+		$this->add_field( 'composer_bg_color', __( 'Panel background', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_composer' );
+		$this->add_field( 'composer_bg_opacity', __( 'Panel background opacity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
+		$this->add_field( 'composer_blur', __( 'Background blur (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
+		$this->add_field( 'composer_radius', __( 'Corner radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
+		$this->add_field( 'composer_padding', __( 'Inner padding (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
+		$this->add_field( 'composer_gap', __( 'Gap between buttons and input (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
+		$this->add_field( 'composer_border_color', __( 'Border color', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_composer' );
+		$this->add_field( 'composer_border_opacity', __( 'Border opacity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
+		$this->add_field( 'composer_border_width', __( 'Border thickness (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
+		$this->add_field( 'composer_shadow', __( 'Shadow intensity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
+		$this->add_field( 'composer_spacing', __( 'Spacing from message history (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
+		$this->add_field( 'composer_scrollable', __( 'Horizontal scroll for quick buttons', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_appearance_composer' );
+
+		$this->add_field( 'messages_transparent', __( 'Transparent message history background', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_appearance_messages_bg' );
+		$this->add_field( 'messages_bg_color', __( 'History background color', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_messages_bg' );
+		$this->add_field( 'messages_bg_opacity', __( 'History background opacity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages_bg' );
 	}
 
 	/**
@@ -180,11 +199,17 @@ final class AppearanceSettings {
 		}
 
 		if ( 'checkbox' === $args['type'] ) {
+			$descriptions = array(
+				'show_toggle_icon'     => __( 'Show the decorative icon beside the title when the chat is open.', 'wp-ds-aichatbot' ),
+				'composer_scrollable'  => __( 'Allow horizontal scrolling of quick buttons when they do not fit in one row.', 'wp-ds-aichatbot' ),
+				'messages_transparent' => __( 'Make the message history background fully transparent so the site content is visible behind it.', 'wp-ds-aichatbot' ),
+			);
+			$desc         = $descriptions[ $key ] ?? '';
 			printf(
-				'<label><input type="checkbox" name="%1$s" value="1" %2$s data-wpdsac-preview-icon> %3$s</label>',
+				'<label><input type="checkbox" name="%1$s" value="1" %2$s> %3$s</label>',
 				esc_attr( $name ),
 				checked( ! empty( $options[ $key ] ), true, false ),
-				esc_html__( 'Show the decorative icon beside the title when the chat is open.', 'wp-ds-aichatbot' )
+				esc_html( $desc )
 			);
 			return;
 		}
@@ -285,13 +310,15 @@ final class AppearanceSettings {
 								</p>
 							</div>
 						</div>
-						<div class="wpdsac-chat__quick-actions">
-							<button type="button" class="wpdsac-chat__quick-action"><?php echo esc_html( (string) $options['quick_call_label'] ); ?></button>
-							<button type="button" class="wpdsac-chat__quick-action"><?php echo esc_html( (string) $options['quick_lead_label'] ); ?></button>
-						</div>
-						<div class="wpdsac-chat__form">
-							<input type="text" placeholder="<?php echo esc_attr( (string) $options['message_placeholder'] ); ?>" disabled>
-							<button type="button" disabled><?php esc_html_e( 'Send', 'wp-ds-aichatbot' ); ?></button>
+						<div class="wpdsac-chat__composer">
+							<div class="wpdsac-chat__quick-actions">
+								<button type="button" class="wpdsac-chat__quick-action"><?php echo esc_html( (string) $options['quick_call_label'] ); ?></button>
+								<button type="button" class="wpdsac-chat__quick-action"><?php echo esc_html( (string) $options['quick_lead_label'] ); ?></button>
+							</div>
+							<div class="wpdsac-chat__form">
+								<input type="text" placeholder="<?php echo esc_attr( (string) $options['message_placeholder'] ); ?>" disabled>
+								<button type="button" disabled><?php esc_html_e( 'Send', 'wp-ds-aichatbot' ); ?></button>
+							</div>
 						</div>
 					</div>
 				</section>

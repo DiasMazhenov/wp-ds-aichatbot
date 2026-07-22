@@ -74,6 +74,21 @@ final class Appearance {
 			'global_position'           => 'bottom_right',
 			'global_offset_x'           => 24,
 			'global_offset_y'           => 24,
+			'composer_bg_color'         => '#ffffff',
+			'composer_bg_opacity'       => 90,
+			'composer_blur'             => 14,
+			'composer_radius'           => 20,
+			'composer_padding'          => 12,
+			'composer_gap'              => 10,
+			'composer_border_color'     => '#ffffff',
+			'composer_border_opacity'   => 72,
+			'composer_border_width'     => 1,
+			'composer_shadow'           => 18,
+			'composer_spacing'          => 12,
+			'composer_scrollable'       => false,
+			'messages_transparent'      => false,
+			'messages_bg_color'         => '#e0e0ef',
+			'messages_bg_opacity'       => 30,
 		);
 	}
 
@@ -108,6 +123,8 @@ final class Appearance {
 			: $defaults['font_family'];
 		$output['show_toggle_icon']          = ! empty( $input['show_toggle_icon'] );
 		$output['message_animation_enabled'] = ! empty( $input['message_animation_enabled'] );
+		$output['composer_scrollable']       = ! empty( $input['composer_scrollable'] );
+		$output['messages_transparent']      = ! empty( $input['messages_transparent'] );
 
 		$launcher_animation           = sanitize_key( $input['launcher_animation'] ?? '' );
 		$output['launcher_animation'] = in_array( $launcher_animation, self::launcher_animations(), true )
@@ -127,56 +144,77 @@ final class Appearance {
 		$values = self::sanitize( $settings );
 
 		$properties = array(
-			'--wpdsac-accent'           => $values['accent_color'],
-			'--wpdsac-accent-text'      => $values['accent_text_color'],
-			'--wpdsac-surface'          => $values['surface_color'],
-			'--wpdsac-text'             => $values['text_color'],
-			'--wpdsac-bot-message'      => $values['bot_message_color'],
-			'--wpdsac-bot-text'         => $values['bot_text_color'],
-			'--wpdsac-user-message'     => $values['user_message_color'],
-			'--wpdsac-user-text'        => $values['user_text_color'],
-			'--wpdsac-input'            => $values['input_color'],
-			'--wpdsac-input-text'       => $values['input_text_color'],
-			'--wpdsac-send'             => $values['send_button_color'],
-			'--wpdsac-send-text'        => $values['send_text_color'],
-			'--wpdsac-muted'            => $values['muted_text_color'],
-			'--wpdsac-border'           => $values['border_color'],
-			'--wpdsac-quick-bg'         => $values['quick_action_color'],
-			'--wpdsac-quick-text'       => $values['quick_action_text'],
-			'--wpdsac-quick-border'     => $values['quick_action_border'],
-			'--wpdsac-launcher-color-1' => $values['launcher_gradient_1'],
-			'--wpdsac-launcher-color-2' => $values['launcher_gradient_2'],
-			'--wpdsac-launcher-color-3' => $values['launcher_gradient_3'],
-			'--wpdsac-width'            => $values['chat_width'] . 'px',
-			'--wpdsac-height'           => $values['chat_height'] . 'px',
-			'--wpdsac-radius'           => $values['chat_border_radius'] . 'px',
-			'--wpdsac-toggle-radius'    => $values['toggle_radius'] . 'px',
-			'--wpdsac-message-radius'   => $values['message_radius'] . 'px',
-			'--wpdsac-input-radius'     => $values['input_radius'] . 'px',
-			'--wpdsac-font-size'        => $values['chat_font_size'] . 'px',
-			'--wpdsac-line-height'      => $values['chat_line_height'] . '%',
-			'--wpdsac-title-font-size'  => $values['title_font_size'] . 'px',
-			'--wpdsac-title-weight'     => (string) $values['title_font_weight'],
-			'--wpdsac-message-size'     => $values['message_font_size'] . 'px',
-			'--wpdsac-message-height'   => $values['message_line_height'] . '%',
-			'--wpdsac-input-font-size'  => $values['input_font_size'] . 'px',
-			'--wpdsac-button-size'      => $values['button_font_size'] . 'px',
-			'--wpdsac-panel-padding'    => $values['panel_padding'] . 'px',
-			'--wpdsac-messages-height'  => $values['messages_height'] . 'px',
-			'--wpdsac-quick-font-size'  => $values['quick_action_font_size'] . 'px',
-			'--wpdsac-quick-padding-x'  => $values['quick_action_padding_x'] . 'px',
-			'--wpdsac-quick-padding-y'  => $values['quick_action_padding_y'] . 'px',
-			'--wpdsac-quick-radius'     => $values['quick_action_radius'] . 'px',
-			'--wpdsac-quick-gap'        => $values['quick_action_gap'] . 'px',
-			'--wpdsac-launcher-size'    => $values['launcher_size'] . 'px',
-			'--wpdsac-launcher-speed'   => $values['launcher_anim_speed'] . 's',
-			'--wpdsac-launcher-glow'    => $values['launcher_anim_intensity'] . '%',
-			'--wpdsac-launcher-scale'   => (string) round( 1 + ( $values['launcher_anim_intensity'] / 1000 ), 3 ),
-			'--wpdsac-launcher-float'   => round( 2 + ( $values['launcher_anim_intensity'] / 20 ), 2 ) . 'px',
-			'--wpdsac-shadow-opacity'   => $values['shadow_opacity'] . '%',
-			'--wpdsac-font-family'      => self::font_families()[ $values['font_family'] ],
-			'--wpdsac-offset-x'         => $values['global_offset_x'] . 'px',
-			'--wpdsac-offset-y'         => $values['global_offset_y'] . 'px',
+			'--wpdsac-accent'                => $values['accent_color'],
+			'--wpdsac-accent-text'           => $values['accent_text_color'],
+			'--wpdsac-surface'               => $values['surface_color'],
+			'--wpdsac-text'                  => $values['text_color'],
+			'--wpdsac-bot-message'           => $values['bot_message_color'],
+			'--wpdsac-bot-text'              => $values['bot_text_color'],
+			'--wpdsac-user-message'          => $values['user_message_color'],
+			'--wpdsac-user-text'             => $values['user_text_color'],
+			'--wpdsac-input'                 => $values['input_color'],
+			'--wpdsac-input-text'            => $values['input_text_color'],
+			'--wpdsac-send'                  => $values['send_button_color'],
+			'--wpdsac-send-text'             => $values['send_text_color'],
+			'--wpdsac-muted'                 => $values['muted_text_color'],
+			'--wpdsac-border'                => $values['border_color'],
+			'--wpdsac-quick-bg'              => $values['quick_action_color'],
+			'--wpdsac-quick-text'            => $values['quick_action_text'],
+			'--wpdsac-quick-border'          => $values['quick_action_border'],
+			'--wpdsac-launcher-color-1'      => $values['launcher_gradient_1'],
+			'--wpdsac-launcher-color-2'      => $values['launcher_gradient_2'],
+			'--wpdsac-launcher-color-3'      => $values['launcher_gradient_3'],
+			'--wpdsac-width'                 => $values['chat_width'] . 'px',
+			'--wpdsac-height'                => $values['chat_height'] . 'px',
+			'--wpdsac-radius'                => $values['chat_border_radius'] . 'px',
+			'--wpdsac-toggle-radius'         => $values['toggle_radius'] . 'px',
+			'--wpdsac-message-radius'        => $values['message_radius'] . 'px',
+			'--wpdsac-input-radius'          => $values['input_radius'] . 'px',
+			'--wpdsac-font-size'             => $values['chat_font_size'] . 'px',
+			'--wpdsac-line-height'           => $values['chat_line_height'] . '%',
+			'--wpdsac-title-font-size'       => $values['title_font_size'] . 'px',
+			'--wpdsac-title-weight'          => (string) $values['title_font_weight'],
+			'--wpdsac-message-size'          => $values['message_font_size'] . 'px',
+			'--wpdsac-message-height'        => $values['message_line_height'] . '%',
+			'--wpdsac-input-font-size'       => $values['input_font_size'] . 'px',
+			'--wpdsac-button-size'           => $values['button_font_size'] . 'px',
+			'--wpdsac-panel-padding'         => $values['panel_padding'] . 'px',
+			'--wpdsac-messages-height'       => $values['messages_height'] . 'px',
+			'--wpdsac-quick-font-size'       => $values['quick_action_font_size'] . 'px',
+			'--wpdsac-quick-padding-x'       => $values['quick_action_padding_x'] . 'px',
+			'--wpdsac-quick-padding-y'       => $values['quick_action_padding_y'] . 'px',
+			'--wpdsac-quick-radius'          => $values['quick_action_radius'] . 'px',
+			'--wpdsac-quick-gap'             => $values['quick_action_gap'] . 'px',
+			'--wpdsac-launcher-size'         => $values['launcher_size'] . 'px',
+			'--wpdsac-launcher-speed'        => $values['launcher_anim_speed'] . 's',
+			'--wpdsac-launcher-glow'         => $values['launcher_anim_intensity'] . '%',
+			'--wpdsac-launcher-scale'        => (string) round( 1 + ( $values['launcher_anim_intensity'] / 1000 ), 3 ),
+			'--wpdsac-launcher-float'        => round( 2 + ( $values['launcher_anim_intensity'] / 20 ), 2 ) . 'px',
+			'--wpdsac-shadow-opacity'        => $values['shadow_opacity'] . '%',
+			'--wpdsac-font-family'           => self::font_families()[ $values['font_family'] ],
+			'--wpdsac-offset-x'              => $values['global_offset_x'] . 'px',
+			'--wpdsac-offset-y'              => $values['global_offset_y'] . 'px',
+			'--wpdsac-composer-bg'           => self::rgba(
+				$values['composer_bg_color'],
+				min( 100, max( 0, (int) $values['composer_bg_opacity'] ) ) / 100
+			),
+			'--wpdsac-composer-blur'         => $values['composer_blur'] . 'px',
+			'--wpdsac-composer-radius'       => $values['composer_radius'] . 'px',
+			'--wpdsac-composer-padding'      => $values['composer_padding'] . 'px',
+			'--wpdsac-composer-gap'          => $values['composer_gap'] . 'px',
+			'--wpdsac-composer-mt'           => $values['composer_spacing'] . 'px',
+			'--wpdsac-composer-border-color' => self::rgba(
+				$values['composer_border_color'],
+				min( 100, max( 0, (int) $values['composer_border_opacity'] ) ) / 100
+			),
+			'--wpdsac-composer-border-width' => $values['composer_border_width'] . 'px',
+			'--wpdsac-composer-shadow'       => self::shadow( (int) $values['composer_shadow'] ),
+			'--wpdsac-msg-bg'                => $values['messages_transparent']
+				? 'transparent'
+				: self::rgba(
+					$values['messages_bg_color'],
+					min( 100, max( 0, (int) $values['messages_bg_opacity'] ) ) / 100
+				),
 		);
 		$style      = '';
 
@@ -228,6 +266,9 @@ final class Appearance {
 			'launcher_gradient_1',
 			'launcher_gradient_2',
 			'launcher_gradient_3',
+			'composer_bg_color',
+			'composer_border_color',
+			'messages_bg_color',
 		);
 	}
 
@@ -378,6 +419,56 @@ final class Appearance {
 				'max'  => 120,
 				'unit' => 'px',
 			),
+			'composer_bg_opacity'     => array(
+				'min'  => 0,
+				'max'  => 100,
+				'unit' => '%',
+			),
+			'composer_blur'           => array(
+				'min'  => 0,
+				'max'  => 30,
+				'unit' => 'px',
+			),
+			'composer_radius'         => array(
+				'min'  => 0,
+				'max'  => 40,
+				'unit' => 'px',
+			),
+			'composer_padding'        => array(
+				'min'  => 4,
+				'max'  => 30,
+				'unit' => 'px',
+			),
+			'composer_gap'            => array(
+				'min'  => 0,
+				'max'  => 24,
+				'unit' => 'px',
+			),
+			'composer_border_opacity' => array(
+				'min'  => 0,
+				'max'  => 100,
+				'unit' => '%',
+			),
+			'composer_border_width'   => array(
+				'min'  => 0,
+				'max'  => 4,
+				'unit' => 'px',
+			),
+			'composer_shadow'         => array(
+				'min'  => 0,
+				'max'  => 100,
+				'unit' => '%',
+			),
+			'composer_spacing'        => array(
+				'min'  => 0,
+				'max'  => 30,
+				'unit' => 'px',
+			),
+			'messages_bg_opacity'     => array(
+				'min'  => 0,
+				'max'  => 100,
+				'unit' => '%',
+			),
 		);
 	}
 
@@ -402,5 +493,37 @@ final class Appearance {
 	 */
 	public static function launcher_animations(): array {
 		return array( 'none', 'gradient', 'glow', 'orbit', 'float' );
+	}
+
+	/**
+	 * Convert hex color to rgba with alpha.
+	 *
+	 * @param string $hex   Hex color.
+	 * @param float  $alpha Opacity 0-1.
+	 * @return string
+	 */
+	private static function rgba( string $hex, float $alpha ): string {
+		$alpha = min( 1, max( 0, $alpha ) );
+		if ( '' === $hex ) {
+			return 'transparent';
+		}
+		$hex = ltrim( $hex, '#' );
+		$r   = hexdec( substr( $hex, 0, 2 ) );
+		$g   = hexdec( substr( $hex, 2, 2 ) );
+		$b   = hexdec( substr( $hex, 4, 2 ) );
+
+		return "rgb({$r} {$g} {$b} / {$alpha})";
+	}
+
+	/**
+	 * Build box-shadow from intensity percentage.
+	 *
+	 * @param int $intensity 0-100.
+	 * @return string
+	 */
+	private static function shadow( int $intensity ): string {
+		$alpha = min( 0.4, max( 0, $intensity / 100 * 0.4 ) );
+
+		return "0 12px 30px rgb(15 23 42 / {$alpha})";
 	}
 }

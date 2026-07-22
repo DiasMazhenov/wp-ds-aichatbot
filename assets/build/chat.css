@@ -4,10 +4,20 @@
 	--wpdsac-panel-pl: 20px;
 	--wpdsac-panel-pt: 20px;
 	--wpdsac-msg-bg: #e0e0ef;
+	--wpdsac-msg-opacity: 100;
 	--wpdsac-msg-br: 10px;
 	--wpdsac-msg-pt: 20px;
 	--wpdsac-msg-pb: 20px;
 	--wpdsac-msg-px: 3px;
+	--wpdsac-composer-bg: rgb(255 255 255 / 90%);
+	--wpdsac-composer-radius: 20px;
+	--wpdsac-composer-padding: 12px;
+	--wpdsac-composer-gap: 10px;
+	--wpdsac-composer-mt: 12px;
+	--wpdsac-composer-blur: 14px;
+	--wpdsac-composer-border-color: rgb(255 255 255 / 72%);
+	--wpdsac-composer-border-width: 1px;
+	--wpdsac-composer-shadow: 0 12px 30px rgb(15 23 42 / 18%);
 	--wpdsac-accent: #2563eb;
 	--wpdsac-accent-text: #fff;
 	--wpdsac-surface: #ffffff;
@@ -488,6 +498,20 @@ body.wpdsac-modal-open {
 	scrollbar-width: thin;
 }
 
+.wpdsac-chat .wpdsac-chat__composer {
+	flex: 0 0 auto;
+	display: grid;
+	gap: var(--wpdsac-composer-gap);
+	margin-top: var(--wpdsac-composer-mt);
+	padding: var(--wpdsac-composer-padding);
+	border: var(--wpdsac-composer-border-width) solid var(--wpdsac-composer-border-color);
+	border-radius: var(--wpdsac-composer-radius);
+	background: var(--wpdsac-composer-bg);
+	box-shadow: var(--wpdsac-composer-shadow);
+	backdrop-filter: blur(var(--wpdsac-composer-blur));
+	-webkit-backdrop-filter: blur(var(--wpdsac-composer-blur));
+}
+
 .wpdsac-chat .wpdsac-chat__message--user {
 	max-width: 84%;
 	border-radius: var(--wpdsac-message-radius) var(--wpdsac-message-radius) calc(var(--wpdsac-message-radius) / 3) var(--wpdsac-message-radius);
@@ -547,12 +571,20 @@ body.wpdsac-modal-open {
 	flex-wrap: wrap;
 	flex: 0 0 auto;
 	gap: var(--wpdsac-quick-gap);
-	margin: 10px 0 8px;
 	padding: 1px;
 }
 
-.wpdsac-chat .wpdsac-chat__quick-actions + .wpdsac-chat__form {
-	margin-top: 0;
+.wpdsac-chat .wpdsac-chat__quick-actions[data-wpdsac-scrollable] {
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	overflow-y: hidden;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
+	padding-bottom: 2px;
+}
+
+.wpdsac-chat .wpdsac-chat__quick-actions[data-wpdsac-scrollable]::-webkit-scrollbar {
+	display: none;
 }
 
 .wpdsac-chat .wpdsac-chat__actions {
@@ -564,7 +596,6 @@ body.wpdsac-modal-open {
 	flex-wrap: wrap;
 	flex: 0 0 auto;
 	gap: var(--wpdsac-quick-gap);
-	margin: 10px 0 8px;
 	padding: 1px;
 	max-height: 120px;
 	overflow-y: auto;
@@ -619,7 +650,6 @@ body.wpdsac-modal-open {
 	width: 100%;
 	min-width: 0;
 	flex: 0 0 auto;
-	margin-top: 10px;
 }
 
 .wpdsac-chat .wpdsac-chat__form input {

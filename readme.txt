@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.90
+Stable tag: 0.5.91
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,6 +34,14 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 
 == Changelog ==
 
+= 0.5.91 =
+
+* New unified bottom composer panel wraps quick actions and input form together with glass-morphism styling.
+* Transparent message history background option with configurable color and opacity.
+* 15 new visual controls in a dedicated Bottom panel settings section: background, blur, radius, padding, gap, border, shadow, and spacing.
+* Quick buttons can now scroll horizontally when they do not fit in one row.
+* Live preview shows the composer with messages, avatar, and buttons; all new controls update instantly.
+*
 = 0.5.90 =
 
 * Re-engage state machine: handleReengageState returns explicit stop/retry/schedule_next/none; finally only clears in-flight flag.

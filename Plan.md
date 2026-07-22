@@ -156,23 +156,19 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.90`: исправлена re-engage state machine (явные stop/retry/schedule_next/none, terminal states, блокировка visibilitychange), REST-состояния (rate_limited/daily_limit/request_in_progress/empty_reply), cooldown (точный retry_after, один таймер), contextual quick replies (per-chat ключи, очистка), CSS-аудит (точный allowlist), локализация (gettext fallback), очистка импорта и PHPDoc.
+Версия `0.5.91`: добавлен унифицированный композер `.wpdsac-chat__composer` (быстрые кнопки + поле ввода), прозрачная история сообщений, 15 новых настроек нижней панели, горизонтальная прокрутка быстрых кнопок.
 
-### Выполнено в 0.5.90
+### Выполнено в 0.5.91
 
-- [x] Re-engage state machine: handleReengageState возвращает stop/retry/schedule_next/none; finally только снимает in-flight.
-- [x] Terminal states: clearReengageSchedule сохраняет terminalReason и блокирует visibilitychange.
-- [x] REST-состояния: rate_limited, daily_limit, request_in_progress, empty_reply как безопасные коды.
-- [x] Cooldown: точный retry_after, один активный таймер.
-- [x] Contextual quick replies: per-chat ключи, очистка при ручном вводе/клике/lead form/истечении TTL.
-- [x] CSS-аудит: точный allowlist вместо негативных doesNotMatch.
-- [x] QuickReplyParser: gettext fallback вместо жёсткого русского.
-- [x] ChatController: удалён неиспользуемый импорт ReengageService.
-- [x] ReengageService: исправлен двойной PHPDoc.
+- [x] DOM: быстрые кнопки и форма ввода обёрнуты в `.wpdsac-chat__composer`.
+- [x] CSS: композер — единая стеклянная панель с grid, blur, тенью; история — опционально прозрачная.
+- [x] 15 настроек: фон, opacity, blur, radius, padding, gap, border, shadow, spacing, scrollable кнопки, прозрачная история.
+- [x] Live preview: композер с кнопками и полем ввода, мгновенное обновление.
+- [x] Безопасность: sanitize_hex_color, числовые range, существующие defaults.
 
 ### Следующий обязательный этап
 
-- [ ] Мониторинг production-поведения после деплоя 0.5.90.
+- [ ] Production-деплой после прохождения всех CI.
 
 ### Выполнено в 0.5.87
 

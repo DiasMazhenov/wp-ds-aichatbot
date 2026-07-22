@@ -806,4 +806,68 @@
       });
     });
   });
+
+  const toRgba = (hex, alpha) => {
+    if (!hex || alpha <= 0) return 'transparent';
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const a = Math.min(1, Math.max(0, alpha / 100));
+    return `rgb(${r} ${g} ${b} / ${a})`;
+  };
+
+  const getValue = (name) => {
+    const el = document.querySelector(`[name="wpdsac_settings[${name}]"]`);
+    if (!el) return null;
+    if (el.type === 'checkbox') return el.checked;
+    return el.value;
+  };
+
+  const updateComposer = () => {
+    const bgColor = getValue('composer_bg_color') || '#ffffff';
+    const bgOpacity = Number(getValue('composer_bg_opacity')) || 90;
+    const borderColor = getValue('composer_border_color') || '#ffffff';
+    const borderOpacity = Number(getValue('composer_border_opacity')) || 72;
+    const shadowIntensity = Math.min(100, Math.max(0, Number(getValue('composer_shadow')) || 18));
+
+    preview.style.setProperty('--wpdsac-composer-bg', toRgba(bgColor, bgOpacity));
+    preview.style.setProperty('--wpdsac-composer-border-color', toRgba(borderColor, borderOpacity));
+    preview.style.setProperty('--wpdsac-composer-shadow', `0 12px 30px rgb(15 23 42 / ${(shadowIntensity / 100 * 0.4).toFixed(3)})`);
+
+    const scrollable = getValue('composer_scrollable');
+    const quickActions = preview.querySelector('[data-wpdsac-quick-actions]');
+    if (quickActions) {
+      if (scrollable) {
+        quickActions.setAttribute('data-wpdsac-scrollable', '');
+      } else {
+        quickActions.removeAttribute('data-wpdsac-scrollable');
+      }
+    }
+  };
+
+  const updateMessagesBg = () => {
+    const transparent = getValue('messages_transparent');
+    const bgColor = getValue('messages_bg_color') || '#e0e0ef';
+    const bgOpacity = Number(getValue('messages_bg_opacity')) || 30;
+
+    preview.style.setProperty('--wpdsac-msg-bg', transparent ? 'transparent' : toRgba(bgColor, bgOpacity));
+  };
+
+  [
+    'composer_bg_color', 'composer_bg_opacity',
+    'composer_border_color', 'composer_border_opacity',
+    'composer_shadow', 'composer_scrollable',
+    'messages_transparent', 'messages_bg_color', 'messages_bg_opacity',
+  ].forEach((name) => {
+    const el = document.querySelector(`[name="wpdsac_settings[${name}]"]`);
+    if (!el) return;
+    el.addEventListener('input', () => {
+      if (name.startsWith('composer_')) updateComposer();
+      if (name.startsWith('messages_')) updateMessagesBg();
+    });
+    el.addEventListener('change', () => {
+      if (name.startsWith('composer_')) updateComposer();
+      if (name.startsWith('messages_')) updateMessagesBg();
+    });
+  });
 })();
