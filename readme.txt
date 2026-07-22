@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.84
+Stable tag: 0.5.85
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,7 +34,7 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 
 == Changelog ==
 
-= 0.5.84 =
+= 0.5.85 =
 
 * Separate re-engagement endpoint (/reengage) with server-only guard checks (cooldown, max count, lead status, reengage_instructions).
 * Server-side QA marker parsing via QuickReplyParser; clean reply text with structured quick_replies array in REST response.

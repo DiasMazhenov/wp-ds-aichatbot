@@ -156,9 +156,9 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.84`: полностью переработана архитектура re-engage и QA-вариантов.
+Версия `0.5.85`: переработана архитектура re-engage и QA-вариантов.
 
-### Выполнено в 0.5.84
+### Выполнено в 0.5.85
 
 - [x] **AI/QuickReplyParser**: серверный парсер `[[WPDSAC_QA|Label|message|Text]]`, извлекает маркеры из ответа AI, возвращает `{reply, quick_replies}`; валидация 2–5 вариантов, лимиты label/message, игнорирование HTML/URL-действий.
 - [x] **AI/ReengageService**: серверные проверки (enabled, user messages, lead exists, cooldown transient, max count transient), HMAC-ключ от session UUID, `reengage_instructions` из настроек.

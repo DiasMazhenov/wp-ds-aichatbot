@@ -555,6 +555,10 @@ body.wpdsac-modal-open {
 	margin-top: 0;
 }
 
+.wpdsac-chat .wpdsac-chat__actions {
+	flex: 0 0 auto;
+}
+
 .wpdsac-chat .wpdsac-chat__context-actions {
 	display: flex;
 	flex-wrap: wrap;
