@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.99
+Stable tag: 0.5.100
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,12 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.100 =
+
+* Preview stage background changed to black (#000) for better glass-effect visibility.
+* Composer background is now configurable again (color and opacity) via Bottom panel settings.
+* Panel blur and opacity controls remain available in Message animation settings.
 
 = 0.5.99 =
 

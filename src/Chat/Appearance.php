@@ -229,6 +229,10 @@ final class Appearance {
 				'#ffffff',
 				min( 100, max( 0, (int) $values['panel_border_opacity'] ) ) / 100
 			),
+			'--wpdsac-composer-bg'         => self::rgba(
+				$values['composer_bg_color'],
+				min( 100, max( 0, (int) $values['composer_bg_opacity'] ) ) / 100
+			),
 			'--wpdsac-composer-blur'       => '',
 			'--wpdsac-composer-radius'     => $values['composer_radius'] . 'px',
 			'--wpdsac-composer-padding'    => $values['composer_padding'] . 'px',
