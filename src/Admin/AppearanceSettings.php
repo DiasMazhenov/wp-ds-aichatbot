@@ -208,7 +208,8 @@ final class AppearanceSettings {
 			printf(
 				'<label><input type="checkbox" name="%1$s" value="1" %2$s> %3$s</label>',
 				esc_attr( $name ),
-				checked( ! empty( $options[ $key ] ), true, false ),
+				checked( ! empty( $options[ $key ] ), true, false )
+					. ( 'show_toggle_icon' === $key ? ' data-wpdsac-preview-icon' : '' ),
 				esc_html( $desc )
 			);
 			return;
