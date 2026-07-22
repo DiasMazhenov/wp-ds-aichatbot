@@ -172,6 +172,46 @@ wp-ds-aichatbot/
 - [x] Композер: лёгкий фон `rgba(255,255,255, 10%)` + опциональная разделительная линия сверху.
 - [x] Новые настройки: panel_blur, panel_bg_opacity, panel_border_opacity, composer_border_top.
 
+### Следующие этапы
+
+#### 1. Стриминг ответов AI
+- [x] Typing indicator (анимированные точки) при ожидании ответа — 0.5.101.
+- [ ] Настоящий SSE-стриминг: WordPress AJAX с `text/event-stream`, raw curl для потоковых эндпоинтов провайдеров, фронтенд с `ReadableStream`.
+- [ ] Пословный рендеринг из стрима сразу при получении чанков.
+
+#### 2. Модульность chat.js
+- [ ] Разбить на модули: `session.js`, `reengage.js`, `lead.js`, `messages.js`.
+- [ ] Общий `chat-core.js` с `scrollToLatest`, `appendMessage`, `request()`.
+
+#### 3. Email/webhook для лидов
+- [ ] Поле email в lead-форме.
+- [ ] Webhook URL → POST при новом лиде.
+- [ ] CSV-экспорт лидов из админки.
+
+#### 4. Accessibility
+- [ ] Навигация с клавиатуры, focus trap, `role="log"`.
+- [ ] Анонсирование screen-reader'ом.
+
+#### 5. Кеширование inline_style
+- [ ] Transient для CSS, инвалидация при сохранении.
+
+#### 6. Visual regression tests
+- [ ] Playwright скриншоты в CI, блокировка регресса.
+
+### Выполнено в 0.5.101
+
+- [x] Typing indicator (3 точки) при ожидании ответа AI.
+- [x] Удалены мёртвые CSS-переменные.
+
+### Выполнено в 0.5.100
+
+- [x] Preview stage фон изменён на чёрный.
+- [x] Фон композера снова настраиваемый.
+
+### Выполнено в 0.5.99
+
+- [x] Preview: `<form>` заменён на `<div>` — исправлена кнопка сохранения настроек.
+
 ### Следующий обязательный этап
 
 - [ ] Production-деплой после прохождения всех CI.
