@@ -824,10 +824,6 @@
   };
 
   const updateComposer = () => {
-    const bgColor = getValue('composer_bg_color') || '#ffffff';
-    const bgOpacity = Number(getValue('composer_bg_opacity')) || 0;
-    preview.style.setProperty('--wpdsac-composer-bg', toRgba(bgColor, bgOpacity));
-
     const borderTop = getValue('composer_border_top');
     preview.style.setProperty('--wpdsac-composer-border-top', borderTop ? '1px solid rgb(0 0 0 / 5%)' : 'none');
 
@@ -868,7 +864,7 @@
   };
 
   [
-    'composer_bg_color', 'composer_bg_opacity', 'composer_scrollable', 'composer_border_top',
+    'composer_scrollable', 'composer_border_top',
     'messages_bg_mode', 'messages_bg_color', 'messages_bg_opacity',
     'messages_border_color', 'messages_border_opacity',
     'messages_glare', 'messages_shadow',

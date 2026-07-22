@@ -108,8 +108,6 @@ final class AppearanceSettings {
 		$this->add_field( 'messages_padding', __( 'Inner padding (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages_window' );
 		$this->add_field( 'messages_composer_spacing', __( 'Space between window and bottom panel (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_messages_window' );
 
-		$this->add_field( 'composer_bg_color', __( 'Panel background', 'wp-ds-aichatbot' ), 'color', 'wpdsac_appearance_composer' );
-		$this->add_field( 'composer_bg_opacity', __( 'Panel background opacity (%)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
 		$this->add_field( 'composer_radius', __( 'Corner radius (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
 		$this->add_field( 'composer_padding', __( 'Inner padding (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );
 		$this->add_field( 'composer_gap', __( 'Gap between buttons and input (px)', 'wp-ds-aichatbot' ), 'number', 'wpdsac_appearance_composer' );

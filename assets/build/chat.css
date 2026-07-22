@@ -551,7 +551,6 @@ body.wpdsac-modal-open {
 	padding: var(--wpdsac-composer-padding);
 	border-top: var(--wpdsac-composer-border-top, 1px solid rgb(0 0 0 / 5%));
 	border-radius: var(--wpdsac-composer-radius);
-	background: var(--wpdsac-composer-bg);
 }
 }
 

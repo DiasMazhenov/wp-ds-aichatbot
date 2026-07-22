@@ -85,8 +85,6 @@ final class Appearance {
 			'messages_shadow'           => 12,
 			'messages_padding'          => 20,
 			'messages_composer_spacing' => 12,
-			'composer_bg_color'         => '#ffffff',
-			'composer_bg_opacity'       => 0,
 			'composer_border_top'       => true,
 			'panel_blur'                => 2,
 			'panel_bg_opacity'          => 50,
@@ -228,10 +226,6 @@ final class Appearance {
 				'#ffffff',
 				min( 100, max( 0, (int) $values['panel_border_opacity'] ) ) / 100
 			),
-			'--wpdsac-composer-bg'         => self::rgba(
-				$values['composer_bg_color'],
-				min( 100, max( 0, (int) $values['composer_bg_opacity'] ) ) / 100
-			),
 			'--wpdsac-composer-radius'     => $values['composer_radius'] . 'px',
 			'--wpdsac-composer-padding'    => $values['composer_padding'] . 'px',
 			'--wpdsac-composer-gap'        => $values['composer_gap'] . 'px',
@@ -289,7 +283,6 @@ final class Appearance {
 			'launcher_gradient_1',
 			'launcher_gradient_2',
 			'launcher_gradient_3',
-			'composer_bg_color',
 			'messages_bg_color',
 			'messages_border_color',
 		);
@@ -491,11 +484,6 @@ final class Appearance {
 				'min'  => 0,
 				'max'  => 30,
 				'unit' => 'px',
-			),
-			'composer_bg_opacity'       => array(
-				'min'  => 0,
-				'max'  => 100,
-				'unit' => '%',
 			),
 			'composer_radius'           => array(
 				'min'  => 0,
