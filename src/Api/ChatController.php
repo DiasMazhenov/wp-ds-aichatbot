@@ -9,7 +9,6 @@ namespace DiasMazhenov\WPDsAiChatbot\Api;
 
 use DiasMazhenov\WPDsAiChatbot\Admin\Settings;
 use DiasMazhenov\WPDsAiChatbot\AI\QuickReplyParser;
-use DiasMazhenov\WPDsAiChatbot\AI\ReengageService;
 
 defined( 'ABSPATH' ) || exit;
 

@@ -42,7 +42,7 @@ final class QaAndReengageTest extends TestCase {
 			"[[WPDSAC_QA|Yes|message|Yes, please]]\n[[WPDSAC_QA|No|message|No, thanks]]"
 		);
 
-		$this->assertSame( 'Выберите подходящий вариант:', $result['reply'] );
+		$this->assertSame( 'Choose an option:', $result['reply'] );
 		$this->assertCount( 2, $result['quick_replies'] );
 	}
 

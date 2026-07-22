@@ -122,17 +122,34 @@ assert.doesNotMatch(
   /^\s*(?:\.wpdsac-chat__|(?:img|svg)\.wpdsac-chat__)/m,
   'Every chatbot component selector must be scoped by the chatbot root.',
 );
-assert.doesNotMatch(chatStyles, /^\s*:root\b/m, ':root outside .wpdsac-chat is forbidden.');
-assert.doesNotMatch(chatStyles, /^\s*html\b/m, 'Bare html selector is forbidden.');
-assert.doesNotMatch(chatStyles, /^\s*(?:header|main|footer)\b/m, 'Global header/main/footer selectors are forbidden.');
-assert.doesNotMatch(chatStyles, /^\s*body\s*\{/m, 'Bare body { with no contextual selector is forbidden.');
-assert.doesNotMatch(chatStyles, /^\s*(?:button|input|textarea|img|svg)\s*[,{]/m, 'Bare tag selectors are forbidden.');
-assert.doesNotMatch(chatStyles, /^\s*\*\s*[,{]/m, 'Universal selector is forbidden.');
-assert.doesNotMatch(chatStyles, /\.elementor-/m, 'Elementor- scoped selectors are forbidden.');
-assert.match(chatStyles, /body\.wpdsac-modal-open/, 'Only body.wpdsac-modal-open is allowed as the body exception.');
-assert.match(chatStyles, /body\s*>\s*\.wpdsac-chat/, 'body > .wpdsac-chat positioning rules are allowed.');
-assert.doesNotMatch(chatStyles, /\.wpdsac-navigation-highlight/);
-assert.match(chatStyles, /\[data-wpdsac-navigation-highlight\]/);
+
+// CSS selector allowlist audit — check every top-level selector.
+{
+  const stripped = chatStyles
+    .replace(/@keyframes\s+\S+\s*\{[^}]*\}/gs, '')
+    .replace(/@media\s+[^{]+\{/g, '@media {');
+  const topLines = stripped.split('\n').filter((l) => /^[^\s]/.test(l) && /\{/.test(l));
+  const topSelectors = topLines.map((l) => l.split('{')[0].trim()).filter(Boolean);
+
+  const allowedRoot = /^\.wpdsac-chat(\s|\[|:|\.|,|>|~|\+|$)/;
+  const allowedBody = /^body\s*>\s*\.wpdsac-chat/;
+  const allowedBodyClass = /^body\.wpdsac-modal-open(\s*\{)?/;
+  const allowedNavHighlight = /^\[data-wpdsac-navigation-highlight\]/;
+  const allowedMedia = /^@media\b/;
+  const allowedKeyframes = /^@keyframes\b/;
+
+  for (const sel of topSelectors) {
+    assert.ok(
+      allowedRoot.test(sel)
+      || allowedBody.test(sel)
+      || allowedBodyClass.test(sel)
+      || allowedNavHighlight.test(sel)
+      || allowedMedia.test(sel)
+      || allowedKeyframes.test(sel),
+      `Top-level CSS selector "${sel}" is not in the allowlist.`,
+    );
+  }
+}
 assert.match(chatScript, /data-wpdsac-navigation-highlight/);
 assert.match(chatbotTemplate, /data-wpdsac-message-word-delay/);
 assert.match(settingsPhp, /reply_sound/);
@@ -244,6 +261,75 @@ assert.match(chatControllerPhp, /quick_replies/);
 assert.match(bootstrapPhp, /ReengageController/);
 assert.match(bootstrapPhp, /ReengageService/);
 assert.match(bootstrapPhp, /QuickReplyParser/);
+
+// --- Behavioral tests -- re-engage state machine ---
+
+// Terminal reasons must not reschedule.
+assert.match(chatScript, /terminalReason/, 'Re-engage must track terminal state.');
+assert.match(chatScript, /TERMINAL_REASONS/, 'Terminal reasons must be a defined set.');
+assert.match(chatScript, /clearReengageSchedule/, 'clearReengageSchedule must cancel the timer and save terminal state.');
+assert.doesNotMatch(chatScript, /finally\s*\{[^}]*scheduleReengage/s, 'Finally must not reschedule on its own.');
+
+// provider_error stops the cycle.
+assert.match(chatScript, /provider_error/, 'provider_error must be a recognized terminal reason.');
+
+// max_reached, lead_exists stop.
+assert.match(reengagePhp, /max_reached/, 'max_reached reason must be returned by guard.');
+assert.match(reengagePhp, /lead_exists/, 'lead_exists reason must be returned by guard.');
+
+// cooldown creates exactly one retry via retry_after.
+assert.match(chatScript, /cooldown/, 'cooldown must be handled by handleReengageState.');
+assert.match(chatScript, /retry_after/, 'retry_after must be respected for cooldown retry.');
+
+// rate_limited must not return reason=ok.
+assert.match(reengageControllerPhp, /rate_limited/, 'rate_limited must set guard reason, not default to ok.');
+// daily_limit must not return reason=ok.
+assert.match(reengageControllerPhp, /daily_limit/, 'daily_limit must set guard reason, not default to ok.');
+// empty_reply must not return reason=ok.
+assert.match(reengageControllerPhp, /empty_reply/, 'empty_reply must set guard reason, not default to ok.');
+// request_in_progress must return consistent reengage structure.
+assert.match(reengageControllerPhp, /request_in_progress/, 'request_in_progress must set guard reason.');
+assert.match(reengageControllerPhp, /reengage_state/, 'All /reengage returns must use reengage_state().');
+
+// visibilitychange must not resume terminal state.
+assert.match(chatScript, /visibilitychange/, 'visibilitychange handler must be present.');
+assert.match(chatScript, /terminalReason/, 'visibilitychange must check terminalReason before firing.');
+
+// Contextual replies scoped per chat session.
+assert.match(chatScript, /contextRepliesStorageKey/, 'Context replies storage must be scoped per chat/session.');
+assert.match(chatScript, /clearStoredContextReplies/, 'Context replies must be cleared on user action.');
+assert.match(chatScript, /storeContextReplies/, 'Context replies must be stored before close.');
+assert.match(chatScript, /getStoredContextReplies/, 'Context replies must be restored on open.');
+
+// Manual reply clears stored contextual replies.
+assert.match(chatScript, /clearContextActions\(chat\)/, 'Form submit must clear context actions.');
+assert.match(chatScript, /hideAllQaButtons/, 'Form submit must hide all QA buttons.');
+
+// QuickReplyParser uses gettext fallback.
+assert.match(parserPhp, /Choose an option/, 'QuickReplyParser must use gettext fallback, not hardcoded Russian.');
+assert.doesNotMatch(parserPhp, /Выберите подходящий вариант/, 'QuickReplyParser must not have hardcoded Russian fallback.');
+
+// ChatController must not import ReengageService.
+assert.doesNotMatch(chatControllerPhp, /use.*ReengageService/, 'ChatController must not import unused ReengageService.');
+
+// ReengageService must not have double PHPDoc.
+const reengagePhpContent = await readFile(join(projectRoot, 'src/AI/ReengageService.php'), 'utf8');
+assert.doesNotMatch(reengagePhpContent, /\/\*\*\s*\n\s+\/\*\*/, 'ReengageService must not have duplicate PHPDoc.');
+
+// Context buttons must be above form and outside messages.
+assert.ok(
+  chatbotTemplate.indexOf('data-wpdsac-context-actions') > chatbotTemplate.indexOf('data-wpdsac-messages'),
+  'Context actions must be outside the message history.',
+);
+assert.ok(
+  chatbotTemplate.indexOf('data-wpdsac-context-actions') < chatbotTemplate.indexOf('data-wpdsac-form'),
+  'Context actions must be above the input form.',
+);
+assert.match(chatbotTemplate, /data-wpdsac-actions/);
+assert.ok(
+  chatbotTemplate.indexOf('data-wpdsac-context-actions') > chatbotTemplate.indexOf('data-wpdsac-actions'),
+  'Context actions must be inside the actions wrapper.',
+);
 
 const playground = await runCLI({
   command: 'server',

@@ -274,12 +274,16 @@ final class ReengageController {
 		$lock_token = $this->request_lock->acquire( $this->session_id, $lock_ttl );
 
 		if ( ! is_string( $lock_token ) ) {
+			$guard['reason']  = 'request_in_progress';
+			$guard['allowed'] = false;
+
 			return new \WP_REST_Response(
 				array(
-					'code'    => 'wpdsac_request_in_progress',
-					'message' => __( 'A request is already in progress.', 'wp-ds-aichatbot' ),
+					'reply'         => '',
+					'quick_replies' => array(),
+					'reengage'      => $this->reengage_state( $guard ),
 				),
-				409
+				200
 			);
 		}
 
@@ -292,6 +296,10 @@ final class ReengageController {
 			);
 
 			if ( ! $rate_limit['allowed'] ) {
+				$guard['reason']      = 'rate_limited';
+				$guard['allowed']     = false;
+				$guard['retry_after'] = (int) $rate_limit['retry_after'];
+
 				return new \WP_REST_Response(
 					array(
 						'reply'         => '',
@@ -305,6 +313,10 @@ final class ReengageController {
 			$budget = $this->limiter->consume_daily_budget( (int) $options['daily_request_limit'] );
 
 			if ( ! $budget['allowed'] ) {
+				$guard['reason']      = 'daily_limit';
+				$guard['allowed']     = false;
+				$guard['retry_after'] = (int) $budget['retry_after'];
+
 				return new \WP_REST_Response(
 					array(
 						'reply'         => '',
@@ -340,7 +352,9 @@ final class ReengageController {
 			$reply = apply_filters( 'wpdsac_reengage_exchange', null, $prompt, $this->session_id, $request_data );
 
 			if ( is_wp_error( $reply ) || ( ! is_string( $reply ) && null !== $reply ) ) {
-				$guard['reason'] = 'provider_error';
+				$guard['reason']  = 'provider_error';
+				$guard['allowed'] = false;
+
 				return new \WP_REST_Response(
 					array(
 						'reply'         => '',
@@ -352,6 +366,9 @@ final class ReengageController {
 			}
 
 			if ( null === $reply || '' === trim( (string) $reply ) ) {
+				$guard['reason']  = 'empty_reply';
+				$guard['allowed'] = false;
+
 				return new \WP_REST_Response(
 					array(
 						'reply'         => '',

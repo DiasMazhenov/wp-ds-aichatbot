@@ -156,20 +156,23 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.89`: OpenCode получает обязательные проектные правила через `AGENTS.md` и `opencode.json`. Следующий кодовый этап — исправление оставшихся ошибок re-engage state machine и строгого CSS allowlist.
+Версия `0.5.90`: исправлена re-engage state machine (явные stop/retry/schedule_next/none, terminal states, блокировка visibilitychange), REST-состояния (rate_limited/daily_limit/request_in_progress/empty_reply), cooldown (точный retry_after, один таймер), contextual quick replies (per-chat ключи, очистка), CSS-аудит (точный allowlist), локализация (gettext fallback), очистка импорта и PHPDoc.
 
-### Выполнено в 0.5.89
+### Выполнено в 0.5.90
 
-- [x] Добавлен корневой `AGENTS.md`, который OpenCode обнаруживает автоматически.
-- [x] Добавлен `opencode.json` с явным подключением проектных инструкций.
-- [x] Закреплены preflight, version/docs gate, диагностика первого CI failure, запрет ослаблять проверки, CSS allowlist и правильное расположение контекстных кнопок.
+- [x] Re-engage state machine: handleReengageState возвращает stop/retry/schedule_next/none; finally только снимает in-flight.
+- [x] Terminal states: clearReengageSchedule сохраняет terminalReason и блокирует visibilitychange.
+- [x] REST-состояния: rate_limited, daily_limit, request_in_progress, empty_reply как безопасные коды.
+- [x] Cooldown: точный retry_after, один активный таймер.
+- [x] Contextual quick replies: per-chat ключи, очистка при ручном вводе/клике/lead form/истечении TTL.
+- [x] CSS-аудит: точный allowlist вместо негативных doesNotMatch.
+- [x] QuickReplyParser: gettext fallback вместо жёсткого русского.
+- [x] ChatController: удалён неиспользуемый импорт ReengageService.
+- [x] ReengageService: исправлен двойной PHPDoc.
 
 ### Следующий обязательный этап
 
-- [ ] Исправить terminal-state re-engage, который сейчас повторно планируется в `finally`.
-- [ ] Возвращать отдельные безопасные состояния для rate limit, daily budget, request lock и пустого ответа провайдера.
-- [ ] Сделать CSS selector audit точным allowlist вместо широкого regex.
-- [ ] Привязать сохранённые re-engage quick replies к конкретному chat/session и очищать их при ручной активности.
+- [ ] Мониторинг production-поведения после деплоя 0.5.90.
 
 ### Выполнено в 0.5.87
 

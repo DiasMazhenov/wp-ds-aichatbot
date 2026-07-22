@@ -194,7 +194,6 @@ final class ReengageService {
 	}
 
 	/**
-	/**
 	 * Build a consistent denial response with safe public codes.
 	 *
 	 * @param string $reason     Machine-readable reason code.

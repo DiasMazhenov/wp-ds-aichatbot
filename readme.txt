@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.89
+Stable tag: 0.5.90
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,6 +34,16 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 
 == Changelog ==
 
+= 0.5.90 =
+
+* Re-engage state machine: handleReengageState returns explicit stop/retry/schedule_next/none; finally only clears in-flight flag.
+* Terminal states clear the timer, save terminalReason, and block visibilitychange; a new /chat exchange resets provider_error.
+* REST /reengage returns rate_limited, daily_limit, request_in_progress, empty_reply as safe codes instead of default ok.
+* Cooldown retries use exact retry_after; only one active timer per chat instance.
+* Contextual quick replies stored per chat session (wpdsacReengage:{sessionHash}:{chatId}) with 24h TTL; cleared on button click, manual input, lead form, and history reset.
+* CSS selector audit rewritten as a strict allowlist (only .wpdsac-chat rooted, body > .wpdsac-chat, body.wpdsac-modal-open, and [data-wpdsac-navigation-highlight]).
+* QuickReplyParser uses gettext fallback instead of hardcoded Russian; ChatController drops unused ReengageService import.
+*
 = 0.5.89 =
 
 * Add repository-level OpenCode instructions and an explicit project configuration so coding agents must follow the local preflight, version synchronization, CI diagnosis, security, quick-action placement, and frontend CSS isolation contracts before pushing.

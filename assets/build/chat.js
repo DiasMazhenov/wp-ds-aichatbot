@@ -9,6 +9,7 @@
 	const reengageStorageKey = 'wpdsacReengage';
 	const leadNavigationHash = '#wpdsac-contact-form';
 	const conversationLifetime = 24 * 60 * 60 * 1000;
+	const contextRepliesTtl = 24 * 60 * 60 * 1000;
 	let audioContext = null;
 	const modalReturnFocus = new WeakMap();
 	const leadModalByChat = new WeakMap();
@@ -157,7 +158,6 @@
 		while (i < lines.length) {
 			const line = lines[i];
 
-			// Code block (```...```)
 			if (line.startsWith('```')) {
 				const codeLines = [];
 				i++;
@@ -165,7 +165,7 @@
 					codeLines.push(lines[i]);
 					i++;
 				}
-				i++; // skip closing ```
+				i++;
 				const pre = document.createElement('pre');
 				pre.className = 'wpdsac-chat__code';
 				const code = document.createElement('code');
@@ -175,14 +175,12 @@
 				continue;
 			}
 
-			// Horizontal rule
 			if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
 				container.appendChild(document.createElement('hr'));
 				i++;
 				continue;
 			}
 
-			// Heading
 			const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
 			if (headingMatch) {
 				const level = headingMatch[1].length;
@@ -194,7 +192,6 @@
 				continue;
 			}
 
-			// Blockquote
 			if (line.startsWith('> ')) {
 				const bq = document.createElement('blockquote');
 				bq.className = 'wpdsac-chat__blockquote';
@@ -204,7 +201,6 @@
 				continue;
 			}
 
-			// Unordered list
 			const ulMatch = line.match(/^[\s]*[-*+]\s+(.*)/);
 			if (ulMatch) {
 				const ul = document.createElement('ul');
@@ -220,7 +216,6 @@
 				continue;
 			}
 
-			// Ordered list
 			const olMatch = line.match(/^[\s]*\d+\.\s+(.*)/);
 			if (olMatch) {
 				const ol = document.createElement('ol');
@@ -236,13 +231,11 @@
 				continue;
 			}
 
-			// Empty line
 			if (line.trim() === '') {
 				i++;
 				continue;
 			}
 
-			// Paragraph
 			const p = document.createElement('p');
 			p.className = 'wpdsac-chat__md-paragraph';
 			applyInlineMarkdown(p, line);
@@ -455,6 +448,45 @@
 			contextContainer.hidden = true;
 		}
 		syncQuickActionsVisibility(chat);
+		clearStoredContextReplies(chat);
+	};
+
+	const contextRepliesStorageKey = (chat) => {
+		const session = window.sessionStorage.getItem(sessionStorageKey) || '';
+		const hash = session.slice(-8) || '0';
+		return `wpdsacReengage:${hash}:${chat.id}`;
+	};
+
+	const clearStoredContextReplies = (chat) => {
+		try {
+			window.sessionStorage.removeItem(contextRepliesStorageKey(chat));
+		} catch (e) {}
+	};
+
+	const storeContextReplies = (chat, quickReplies) => {
+		try {
+			const entry = {
+				quickReplies,
+				storedAt: Date.now(),
+			};
+			window.sessionStorage.setItem(contextRepliesStorageKey(chat), JSON.stringify(entry));
+		} catch (e) {}
+	};
+
+	const getStoredContextReplies = (chat) => {
+		try {
+			const raw = window.sessionStorage.getItem(contextRepliesStorageKey(chat));
+			if (!raw) return null;
+			const entry = JSON.parse(raw);
+			if (!entry || !Array.isArray(entry.quickReplies) || !Number.isFinite(entry.storedAt)) return null;
+			if (Date.now() - entry.storedAt > contextRepliesTtl) {
+				window.sessionStorage.removeItem(contextRepliesStorageKey(chat));
+				return null;
+			}
+			return entry.quickReplies;
+		} catch (e) {
+			return null;
+		}
 	};
 
 	const renderContextActions = (chat, quickReplies) => {
@@ -638,7 +670,6 @@
 				})
 			);
 		} catch (error) {
-			// The current page conversation still works when browser storage is unavailable.
 		}
 	};
 
@@ -758,15 +789,35 @@
 		}
 	};
 
-	const saveReengageState = (chat, dueAt, count) => {
+	const saveReengageState = (chat, dueAt, count, terminalReason = '') => {
 		try {
 			window.sessionStorage.setItem(reengageStorageKey, JSON.stringify({
 				chatId: chat.id,
 				dueAt,
 				count: Math.max(0, Number(count) || 0),
 				lastActivity: Date.now(),
+				terminalReason,
 			}));
 		} catch (e) {}
+	};
+
+	const TERMINAL_REASONS = ['disabled', 'no_conversation', 'lead_exists', 'max_reached', 'provider_error', 'daily_limit'];
+
+	const clearReengageSchedule = (chat, reason = '') => {
+		const timer = reengageTimers.get(chat);
+		if (timer) {
+			window.clearTimeout(timer);
+			reengageTimers.delete(chat);
+		}
+		if (TERMINAL_REASONS.includes(reason)) {
+			const state = getReengageState(chat);
+			const count = state ? state.count : 0;
+			saveReengageState(chat, 0, count, reason);
+		} else {
+			try {
+				window.sessionStorage.removeItem(reengageStorageKey);
+			} catch (e) {}
+		}
 	};
 
 	const resetReengageActivity = (chat) => {
@@ -776,10 +827,11 @@
 		const max = Math.max(0, Math.min(5, Number.parseInt(chat.dataset.wpdsacReengageMax || '1', 10)));
 		if (!max) return;
 		const state = getReengageState(chat);
+		if (state && state.terminalReason) return;
 		const count = state ? state.count : 0;
 		if (count >= max) return;
 		const dueAt = Date.now() + delay;
-		saveReengageState(chat, dueAt, count);
+		saveReengageState(chat, dueAt, count, '');
 		const timer = window.setTimeout(() => handleReengage(chat, max), delay);
 		reengageTimers.set(chat, timer);
 	};
@@ -797,9 +849,52 @@
 		resetReengageActivity(chat);
 	};
 
+	const handleReengageState = (chat, reengage) => {
+		if (!reengage) return {action: 'none'};
+		const max = Math.max(0, Math.min(5, Number.parseInt(chat.dataset.wpdsacReengageMax || '1', 10)));
+		const reason = reengage.reason || '';
+		const count = reengage.count || 0;
+		const retryAfter = Number(reengage.retry_after) || 0;
+
+		if (reason === 'disabled' || reason === 'no_conversation' || reason === 'lead_exists' || reason === 'max_reached' || reason === 'provider_error' || reason === 'daily_limit') {
+			clearReengageSchedule(chat, reason);
+			return {action: 'stop', reason};
+		}
+
+		if (reason === 'rate_limited' || reason === 'cooldown' || reason === 'request_in_progress') {
+			cancelReengage(chat);
+			if (retryAfter > 0 && count < max) {
+				const dueAt = Date.now() + retryAfter * 1000;
+				saveReengageState(chat, dueAt, count, '');
+				const timer = window.setTimeout(() => handleReengage(chat, max), retryAfter * 1000);
+				reengageTimers.set(chat, timer);
+				return {action: 'retry', retry_after: retryAfter};
+			}
+			return {action: 'stop', reason};
+		}
+
+		if (reason === 'ok' && count < max) {
+			const delay = Math.max(10, Math.min(1800, Number.parseInt(chat.dataset.wpdsacReengageDelay || '120', 10))) * 1000;
+			const dueAt = Date.now() + delay;
+			saveReengageState(chat, dueAt, count, '');
+			cancelReengage(chat);
+			const timer = window.setTimeout(() => handleReengage(chat, max), delay);
+			reengageTimers.set(chat, timer);
+			return {action: 'schedule_next'};
+		}
+
+		if (reason === 'ok' && count >= max) {
+			clearReengageSchedule(chat, 'max_reached');
+			return {action: 'stop', reason: 'max_reached'};
+		}
+
+		return {action: 'stop', reason};
+	};
+
 	const handleReengage = async (chat, max) => {
 		const state = getReengageState(chat);
 		if (!state) return;
+		if (state.terminalReason) return;
 		if (state.count >= max) return;
 		if (reengageInFlight.get(chat)) return;
 
@@ -814,6 +909,8 @@
 			intro.textContent = '\u2026';
 			intro.hidden = false;
 		}
+
+		let result = {action: 'none'};
 
 		try {
 			ensureConversationFresh(chat);
@@ -849,9 +946,7 @@
 						intro.textContent = preview.slice(0, 120);
 					}
 					if (Array.isArray(quickReplies) && quickReplies.length >= 2) {
-						try {
-							window.sessionStorage.setItem('wpdsacReengageQuickReplies', JSON.stringify(quickReplies));
-						} catch (e) {}
+						storeContextReplies(chat, quickReplies);
 					}
 				} else if (intro) {
 					intro.textContent = previousIntroText || '';
@@ -859,46 +954,16 @@
 			}
 
 			if (followUp && reengage.count !== undefined) {
-				saveReengageState(chat, 0, reengage.count);
+				saveReengageState(chat, 0, reengage.count, '');
 			}
-			if (reengage && reengage.reason) {
-				handleReengageState(chat, reengage);
-			}
+			result = handleReengageState(chat, reengage);
 		} catch (error) {
 			if (intro && !wasExpanded) {
 				intro.textContent = previousIntroText || '';
 			}
-			handleReengageState(chat, {reason: 'provider_error'});
+			result = handleReengageState(chat, {reason: 'provider_error'});
 		} finally {
 			reengageInFlight.set(chat, false);
-			const updated = getReengageState(chat);
-			if (updated && updated.count < max) {
-				scheduleReengage(chat);
-			}
-		}
-	};
-
-	const handleReengageState = (chat, reengage) => {
-		if (!reengage) return;
-		const max = Math.max(0, Math.min(5, Number.parseInt(chat.dataset.wpdsacReengageMax || '1', 10)));
-		const reason = reengage.reason || '';
-		const fatalReasons = ['disabled', 'no_conversation', 'lead_exists', 'max_reached', 'provider_error'];
-
-		if (fatalReasons.includes(reason)) {
-			cancelReengage(chat);
-			return;
-		}
-
-		if (reason === 'cooldown' && reengage.retry_after > 0) {
-			cancelReengage(chat);
-			const dueAt = Date.now() + reengage.retry_after * 1000;
-			const count = reengage.count || 0;
-			if (count < max) {
-				saveReengageState(chat, dueAt, count);
-				const timer = window.setTimeout(() => handleReengage(chat, max), reengage.retry_after * 1000);
-				reengageTimers.set(chat, timer);
-			}
-			return;
 		}
 	};
 
@@ -917,16 +982,11 @@
 			revealConversation(chat, getVisitorName());
 			scrollToLatest(chat);
 			chat.querySelector('[data-wpdsac-form] input')?.focus();
-			try {
-				const stored = window.sessionStorage.getItem('wpdsacReengageQuickReplies');
-				if (stored) {
-					const quickReplies = JSON.parse(stored);
-					window.sessionStorage.removeItem('wpdsacReengageQuickReplies');
-					if (Array.isArray(quickReplies) && quickReplies.length >= 2) {
-						renderContextActions(chat, quickReplies);
-					}
-				}
-			} catch (e) {}
+			const stored = getStoredContextReplies(chat);
+			if (stored && Array.isArray(stored) && stored.length >= 2) {
+				clearStoredContextReplies(chat);
+				renderContextActions(chat, stored);
+			}
 		}
 	};
 
@@ -968,6 +1028,7 @@
 			form.elements.request.value = details.request;
 		}
 		window.requestAnimationFrame(() => lead.querySelector('input:not([type="hidden"])')?.focus());
+		clearStoredContextReplies(chat);
 	};
 
 	const closeLeadForm = (lead) => {
@@ -1212,6 +1273,11 @@
 						if (leadWrap) leadWrap.hidden = true;
 						const quickLead = chat.querySelector('[data-wpdsac-quick-action="lead"]');
 						if (quickLead) quickLead.hidden = true;
+						clearStoredContextReplies(chat);
+						const state = getReengageState(chat);
+						if (state && state.terminalReason === 'provider_error') {
+							resetReengageActivity(chat);
+						}
 					} catch (error) {
 						status.textContent = error.message || strings.leadError || 'Не удалось сохранить заявку.';
 					} finally {
@@ -1260,6 +1326,11 @@
 					if (leadWrap2) leadWrap2.hidden = true;
 					const quickLead2 = chat.querySelector('[data-wpdsac-quick-action="lead"]');
 					if (quickLead2) quickLead2.hidden = true;
+					clearStoredContextReplies(chat);
+					const reState = getReengageState(chat);
+					if (reState && reState.terminalReason === 'provider_error') {
+						resetReengageActivity(chat);
+					}
 				} catch (error) {
 					status.textContent = error.message || strings.leadError || 'Не удалось сохранить заявку.';
 				} finally {
@@ -1311,7 +1382,13 @@
 			playReplySound(chat.dataset.wpdsacReplySound || 'off');
 			input.value = '';
 			status.textContent = '';
-			scheduleReengage(chat);
+
+			const reState = getReengageState(chat);
+			if (reState && reState.terminalReason === 'provider_error') {
+				resetReengageActivity(chat);
+			} else {
+				scheduleReengage(chat);
+			}
 
 			const count = (userMessageCounters.get(chat) || 0) + 1;
 			userMessageCounters.set(chat, count);
@@ -1393,6 +1470,11 @@
 			playReplySound(chat.dataset.wpdsacReplySound || 'off');
 			form.reset();
 			status.textContent = '';
+			clearStoredContextReplies(chat);
+			const reState = getReengageState(chat);
+			if (reState && reState.terminalReason === 'provider_error') {
+				resetReengageActivity(chat);
+			}
 			if (response.notified === false) {
 				console.warn('[WP DS AI Chatbot] Lead saved, but WordPress could not send the notification email. Configure SMTP and verify the notification address.');
 			}
@@ -1420,6 +1502,7 @@
 				if (chat.dataset.wpdsacReengageEnabled !== '1') return;
 				const state = getReengageState(chat);
 				if (!state) return;
+				if (state.terminalReason) return;
 				const max = Math.max(0, Math.min(5, Number.parseInt(chat.dataset.wpdsacReengageMax || '1', 10)));
 				if (state.dueAt && state.dueAt < Date.now() && state.count < max) {
 					handleReengage(chat, max);
