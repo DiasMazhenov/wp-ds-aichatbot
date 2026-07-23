@@ -128,7 +128,25 @@
 
 	// ── Streaming Reply ───────────────────────────────
 
-	const streamReply = async (chat, payload, typing, input, status, button) => {
+	const quickReplyMarker = '[[WPDSAC_QA|';
+
+	const visibleStreamContent = (content) => {
+		const markerIndex = content.indexOf(quickReplyMarker);
+		if (markerIndex >= 0) {
+			return content.slice(0, markerIndex).trimEnd();
+		}
+
+		for (let length = quickReplyMarker.length - 1; length > 1; length -= 1) {
+			const partial = quickReplyMarker.slice(0, length);
+			if (content.endsWith(partial)) {
+				return content.slice(0, -length).trimEnd();
+			}
+		}
+
+		return content;
+	};
+
+	const streamReply = async (chat, payload, typing, status) => {
 		const headers = { 'Content-Type': 'application/json' };
 		if (config.restNonce) headers['X-WP-Nonce'] = config.restNonce;
 
@@ -146,10 +164,17 @@
 			error.code = data.code || 'wpdsac_stream_error';
 			throw error;
 		}
+		if (!response.body) {
+			throw Object.assign(
+				new Error(strings.error || 'Streaming is not supported by this browser.'),
+				{code: 'wpdsac_stream_unsupported', status: 500}
+			);
+		}
 
 		const messages = chat.querySelector('.wpdsac-chat__messages');
 		const row = document.createElement('div');
 		row.className = 'wpdsac-chat__message-row wpdsac-chat__message-row--bot';
+		row.dataset.wpdsacStreaming = 'true';
 		const avatarUrl = chat.dataset.wpdsacAvatarUrl || '';
 		if (avatarUrl) {
 			const avatarFrame = document.createElement('span');
@@ -183,62 +208,84 @@
 		typing.remove();
 		scrollToLatest(chat);
 
-		appendMessage(chat, payload.message, 'user');
-		input.value = '';
-
 		const reader = response.body.getReader();
 		const decoder = new TextDecoder();
 		let buffer = '';
 		let accumulated = '';
 		let replyData = null;
 
+		const consumeFrame = (frame) => {
+			let eventType = 'message';
+			const dataLines = [];
+
+			frame.split(/\r?\n/).forEach((line) => {
+				if (line.startsWith('event:')) {
+					eventType = line.slice(6).trim();
+				} else if (line.startsWith('data:')) {
+					dataLines.push(line.slice(5).trimStart());
+				}
+			});
+
+			const data = dataLines.join('\n');
+			if (!data || data === '[DONE]') {
+				return;
+			}
+
+			let parsed;
+			try {
+				parsed = JSON.parse(data);
+			} catch {
+				return;
+			}
+
+			if (eventType === 'delta' && typeof parsed.content === 'string') {
+				accumulated += parsed.content;
+				item.textContent = visibleStreamContent(accumulated);
+				scrollToLatest(chat);
+			} else if (eventType === 'done') {
+				replyData = parsed;
+			} else if (eventType === 'error') {
+				const isRateLimit = String(parsed.code || '').includes('rate_limit')
+					|| parsed.code === 'wpdsac_daily_budget_exhausted';
+				throw Object.assign(
+					new Error(parsed.message || strings.error),
+					{code: parsed.code, status: isRateLimit ? 429 : 500}
+				);
+			} else if (eventType === 'rate_limit') {
+				throw Object.assign(
+					new Error(parsed.message || strings.error || 'Rate limited'),
+					{code: parsed.code || 'wpdsac_rate_limited', status: 429}
+				);
+			}
+		};
+
 		while (true) {
 			const { done, value } = await reader.read();
 			if (done) break;
 
 			buffer += decoder.decode(value, { stream: true });
-			const lines = buffer.split('\n');
-			buffer = lines.pop() || '';
-
-			let eventType = '';
-			for (const line of lines) {
-				if (line.startsWith('event: ')) {
-					eventType = line.slice(7).trim();
-					continue;
-				}
-				if (!line.startsWith('data: ')) continue;
-				const data = line.slice(6);
-				if (data === '[DONE]') continue;
-
-				let parsed;
-				try {
-					parsed = JSON.parse(data);
-				} catch {
-					continue;
-				}
-
-				if (eventType === 'delta' && typeof parsed.content === 'string') {
-					accumulated += parsed.content;
-					item.textContent = accumulated;
-					scrollToLatest(chat);
-				} else if (eventType === 'done') {
-					replyData = parsed;
-				} else if (eventType === 'error') {
-					throw Object.assign(new Error(parsed.message || strings.error), { code: parsed.code, status: 500 });
-				} else if (eventType === 'rate_limit') {
-					throw Object.assign(new Error(strings.error || 'Rate limited'), { code: 'wpdsac_rate_limited', status: 429 });
-				}
-			}
+			const frames = buffer.split(/\r?\n\r?\n/);
+			buffer = frames.pop() || '';
+			frames.forEach(consumeFrame);
 		}
 
-		persistConversationHistory(chat);
+		buffer += decoder.decode();
+		if (buffer.trim()) {
+			consumeFrame(buffer);
+		}
 
 		if (!replyData || typeof replyData.reply !== 'string' || '' === replyData.reply.trim()) {
-			return;
+			throw Object.assign(
+				new Error(strings.error || 'The streamed reply ended unexpectedly.'),
+				{code: 'wpdsac_incomplete_stream', status: 502}
+			);
 		}
 
 		item.textContent = '';
+		item.dataset.wpdsacMessageContent = replyData.reply;
 		appendAssistantContent(item, replyData.reply);
+		delete row.dataset.wpdsacStreaming;
+		persistConversationHistory(chat);
 
 		if (Array.isArray(replyData.quick_replies) && replyData.quick_replies.length >= 2) {
 			renderContextActions(chat, replyData.quick_replies);
@@ -273,10 +320,9 @@
 
 	// ── Standard Reply ────────────────────────────────
 
-	const standardReply = async (chat, payload, typing, input, status, button) => {
+	const standardReply = async (chat, payload, typing, status) => {
 		const response = await request('/chat', payload);
 
-		appendMessage(chat, payload.message, 'user');
 		typing.remove();
 		const replyAnimation = appendMessage(chat, response.reply, 'bot', true);
 		persistConversationHistory(chat);
@@ -287,7 +333,6 @@
 			clearContextActions(chat);
 		}
 		playReplySound(chat.dataset.wpdsacReplySound || 'off');
-		input.value = '';
 		status.textContent = '';
 
 		const reState = getReengageState(chat);
@@ -1686,6 +1731,11 @@
 			return;
 		}
 
+		ensureConversationFresh(chat);
+		const conversationHistory = getConversationHistory(chat);
+		appendMessage(chat, message, 'user');
+		input.value = '';
+		persistConversationHistory(chat);
 		status.textContent = strings.connecting || '';
 
 		const typing = document.createElement('div');
@@ -1696,7 +1746,6 @@
 		scrollToLatest(chat);
 
 		try {
-			ensureConversationFresh(chat);
 			const session = await getSessionToken();
 			status.textContent = strings.sending || '';
 
@@ -1705,17 +1754,18 @@
 				session,
 				message,
 				visitor_name: getVisitorName(),
-				history: getConversationHistory(chat),
+				history: conversationHistory,
 				navigation_targets: navTargets,
 			};
 
 			if (config.streaming) {
-				await streamReply(chat, payload, typing, input, status, button);
+				await streamReply(chat, payload, typing, status);
 			} else {
-				await standardReply(chat, payload, typing, input, status, button);
+				await standardReply(chat, payload, typing, status);
 			}
 		} catch (error) {
 			typing.remove();
+			chat.querySelectorAll('[data-wpdsac-streaming]').forEach((row) => row.remove());
 			if (error.status === 401) {
 				window.sessionStorage.removeItem(sessionStorageKey);
 			}

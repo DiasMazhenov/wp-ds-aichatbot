@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.108
+Stable tag: 0.5.109
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,16 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.109 =
+
+* Smart contextual answer buttons: AI generates 3-4 relevant choices from the current question, conversation and website knowledge.
+* Prompt guard: short contextual replies and follow-up questions continue the existing on-topic conversation instead of being falsely refused.
+* Conversation style: ambiguous but relevant questions receive a natural clarification, with varied wording and one useful next step.
+* SSE reliability: complete frames are preserved across arbitrary server and browser network chunks.
+* SSE lifecycle: request locks are released before every stream termination, including provider and rate-limit errors.
+* SSE privacy: DeepSeek internal reasoning is never streamed or stored as a visitor-facing answer.
+* Conversation history: internal quick-reply markers are removed before logging, notifications and browser persistence.
 
 = 0.5.108 =
 

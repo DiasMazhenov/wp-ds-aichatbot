@@ -14,9 +14,10 @@ defined( 'ABSPATH' ) || exit;
  */
 final class QuickReplyParser {
 
-	private const MARKER = '/\[\[WPDSAC_QA\|([^|\]]+)\|message\|([^\]]+)\]\]/u';
+	private const MARKER     = '/\[\[WPDSAC_QA\|([^|\]]+)\|message\|([^\]]+)\]\]/u';
+	private const ANY_MARKER = '/\[\[WPDSAC_QA(?:\|[^\]]*)?\]\]/u';
 
-	private const MAX_VARIANTS  = 5;
+	private const MAX_VARIANTS  = 4;
 	private const MIN_VARIANTS  = 2;
 	private const MAX_LABEL_LEN = 80;
 	private const MAX_MSG_LEN   = 500;
@@ -33,20 +34,26 @@ final class QuickReplyParser {
 		$clean_reply   = $reply;
 
 		if ( 0 === preg_match_all( self::MARKER, $reply, $matches, PREG_SET_ORDER ) ) {
+			$clean_reply = $this->remove_markers( $reply );
+
 			return array(
-				'reply'         => $reply,
+				'reply'         => '' !== $clean_reply ? $clean_reply : __( 'Please clarify your request.', 'wp-ds-aichatbot' ),
 				'quick_replies' => array(),
 			);
 		}
 
+		$seen = array();
+
 		foreach ( $matches as $match ) {
 			$label   = $this->sanitize_label( $match[1] );
 			$message = $this->sanitize_message( $match[2] );
+			$key     = $this->comparison_key( $label . "\n" . $message );
 
-			if ( '' === $label || '' === $message ) {
+			if ( '' === $label || '' === $message || isset( $seen[ $key ] ) ) {
 				continue;
 			}
 
+			$seen[ $key ]    = true;
 			$quick_replies[] = array(
 				'label'   => $label,
 				'message' => $message,
@@ -55,8 +62,7 @@ final class QuickReplyParser {
 
 		$quick_replies = $this->validate_bounds( $quick_replies );
 
-		$clean_reply = preg_replace( self::MARKER, '', $reply );
-		$clean_reply = trim( preg_replace( '/\n{3,}/', "\n\n", (string) $clean_reply ) );
+		$clean_reply = $this->remove_markers( $reply );
 
 		if ( '' === $clean_reply ) {
 			$clean_reply = __( 'Choose an option:', 'wp-ds-aichatbot' );
@@ -119,10 +125,35 @@ final class QuickReplyParser {
 	private function validate_bounds( array $replies ): array {
 		$count = count( $replies );
 
-		if ( $count < self::MIN_VARIANTS || $count > self::MAX_VARIANTS ) {
+		if ( $count < self::MIN_VARIANTS ) {
 			return array();
 		}
 
 		return array_slice( $replies, 0, self::MAX_VARIANTS );
+	}
+
+	/**
+	 * Remove valid and malformed internal markers from visitor-facing text.
+	 *
+	 * @param string $reply Provider reply.
+	 * @return string
+	 */
+	private function remove_markers( string $reply ): string {
+		$clean = preg_replace( self::ANY_MARKER, '', $reply );
+		$clean = preg_replace( '/\n{3,}/', "\n\n", (string) $clean );
+
+		return trim( (string) $clean );
+	}
+
+	/**
+	 * Build a case-insensitive deduplication key.
+	 *
+	 * @param string $value Sanitized label and message.
+	 * @return string
+	 */
+	private function comparison_key( string $value ): string {
+		return function_exists( 'mb_strtolower' )
+			? mb_strtolower( $value )
+			: strtolower( $value );
 	}
 }

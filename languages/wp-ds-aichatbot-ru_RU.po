@@ -631,6 +631,12 @@ msgstr "Ответ на заблокированный запрос"
 msgid "I can only help with questions related to this website."
 msgstr "Я могу помочь только с вопросами, относящимися к этому сайту."
 
+msgid "Choose an option:"
+msgstr "Выберите подходящий вариант:"
+
+msgid "Please clarify your request."
+msgstr "Пожалуйста, уточните ваш вопрос."
+
 msgid "Block obvious instruction overrides, hidden-prompt requests, model probing, and configured off-topic requests before contacting the AI provider."
 msgstr "Блокировать попытки подменить инструкции, запросы скрытого промпта, вопросы о модели и настроенные вопросы не по теме до обращения к AI-провайдеру."
 

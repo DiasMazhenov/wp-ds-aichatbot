@@ -163,7 +163,7 @@ abstract class AbstractHttpProvider implements ProviderInterface {
 		}
 
 		$provider_id = $this->provider_id();
-		$api_key      = $this->credentials->get_api_key( $provider_id );
+		$api_key     = $this->credentials->get_api_key( $provider_id );
 
 		if ( '' === $api_key ) {
 			return new \WP_Error(
@@ -202,10 +202,12 @@ abstract class AbstractHttpProvider implements ProviderInterface {
 			return $this->unavailable_error();
 		}
 
-		$full_text = '';
-		$endpoint  = $this->endpoint( $options );
-		$hdr       = $this->curl_headers( $this->request_headers( $api_key ) );
+		$full_text    = '';
+		$endpoint     = $this->endpoint( $options );
+		$headers      = $this->curl_headers( $this->request_headers( $api_key ) );
+		$frame_parser = new SseFrameParser();
 
+		// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_init, WordPress.WP.AlternativeFunctions.curl_curl_setopt, WordPress.WP.AlternativeFunctions.curl_curl_exec, WordPress.WP.AlternativeFunctions.curl_curl_getinfo, WordPress.WP.AlternativeFunctions.curl_curl_error, WordPress.WP.AlternativeFunctions.curl_curl_close -- WordPress HTTP API buffers response bodies and cannot expose incremental SSE chunks.
 		$ch = curl_init( $endpoint );
 
 		if ( false === $ch ) {
@@ -216,7 +218,7 @@ abstract class AbstractHttpProvider implements ProviderInterface {
 
 		curl_setopt( $ch, \CURLOPT_POST, true );
 		curl_setopt( $ch, \CURLOPT_POSTFIELDS, $encoded_body );
-		curl_setopt( $ch, \CURLOPT_HTTPHEADER, $hdr );
+		curl_setopt( $ch, \CURLOPT_HTTPHEADER, $headers );
 		curl_setopt( $ch, \CURLOPT_RETURNTRANSFER, false );
 		curl_setopt( $ch, \CURLOPT_TIMEOUT, 60 );
 		curl_setopt( $ch, \CURLOPT_CONNECTTIMEOUT, 15 );
@@ -226,15 +228,17 @@ abstract class AbstractHttpProvider implements ProviderInterface {
 		curl_setopt(
 			$ch,
 			\CURLOPT_WRITEFUNCTION,
-			static function ( $curl, $data ) use ( &$full_text, $on_delta, $provider_id ) {
+			static function ( $curl, $data ) use ( &$full_text, $on_delta, $frame_parser ) {
 				$length = strlen( $data );
 
 				if ( $length > 0 ) {
-					$delta = static::extract_stream_delta( $data );
+					foreach ( $frame_parser->push( $data ) as $frame ) {
+						$delta = static::extract_stream_delta( $frame );
 
-					if ( '' !== $delta ) {
-						$full_text .= $delta;
-						$on_delta( $delta );
+						if ( '' !== $delta ) {
+							$full_text .= $delta;
+							$on_delta( $delta );
+						}
 					}
 				}
 
@@ -246,6 +250,19 @@ abstract class AbstractHttpProvider implements ProviderInterface {
 		$status      = (int) curl_getinfo( $ch, \CURLINFO_RESPONSE_CODE );
 		$curl_error  = curl_error( $ch );
 		$request_id  = $this->curl_request_id( $ch );
+		if ( PHP_VERSION_ID < 80000 ) {
+			curl_close( $ch ); // phpcs:ignore Generic.PHP.DeprecatedFunctions.Deprecated -- PHP 7.4 resource handles require explicit cleanup; PHP 8 releases them automatically.
+		}
+		// phpcs:enable
+
+		foreach ( $frame_parser->finish() as $frame ) {
+			$delta = static::extract_stream_delta( $frame );
+
+			if ( '' !== $delta ) {
+				$full_text .= $delta;
+				$on_delta( $delta );
+			}
+		}
 
 		if ( false === $exec_result || $status < 200 || $status >= 300 ) {
 			$this->report_error( $status, $request_id, '' !== $curl_error ? 'curl_error' : 'stream_http_error' );

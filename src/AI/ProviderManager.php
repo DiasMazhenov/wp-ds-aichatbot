@@ -90,7 +90,7 @@ final class ProviderManager {
 		if ( '' !== $suffix ) {
 			$suffix .= "\n\n";
 		}
-		$suffix .= "QUICK REPLY VARIANTS:\n- When you ask a question that has obvious short answers, append 2–5 quick reply buttons.\n- Format: [[WPDSAC_QA|Button Label|message|Message text to send when clicked]].\n- Example: [[WPDSAC_QA|Лендинг|message|Мне нужен лендинг]], [[WPDSAC_QA|Магазин|message|Нужен интернет-магазин]]\n- Only use this for multiple-choice questions. Do NOT add buttons for open-ended questions where the visitor must type a unique answer.\n- Label: 1–3 words. Message: a complete sentence the visitor would naturally say.\n- Place the markers at the END of your reply, one per line.\n- Never include HTML, URLs, or JavaScript in marker values.";
+		$suffix .= $this->quick_reply_policy();
 
 		if ( $this->leads instanceof LeadRepository && $this->leads->exists_for_session( $session_id ) ) {
 			if ( '' !== $suffix ) {
@@ -105,7 +105,9 @@ final class ProviderManager {
 
 		try {
 			$options       = Settings::get();
-			$guarded_reply = $this->guard->inspect( $message, $options, $session_id );
+			$history       = $request->get_param( 'history' );
+			$history       = is_array( $history ) ? $history : array();
+			$guarded_reply = $this->guard->inspect( $message, $options, $session_id, $history );
 
 			if ( is_string( $guarded_reply ) ) {
 				return $guarded_reply;
@@ -137,8 +139,7 @@ final class ProviderManager {
 			$provider_message = is_string( $provider_message ) && '' !== trim( $provider_message )
 				? $provider_message
 				: $message;
-			$history          = $request->get_param( 'history' );
-			$provider_message = $this->with_conversation_history( is_array( $history ) ? $history : array(), $provider_message );
+			$provider_message = $this->with_conversation_history( $history, $provider_message );
 
 			if ( '' !== $visitor_name ) {
 				$provider_message = sprintf(
@@ -166,7 +167,7 @@ final class ProviderManager {
 
 			if ( is_string( $generated_reply ) ) {
 				$generated_reply = GreetingResolver::resolve( $generated_reply );
-				$generated_reply = $this->remove_repeated_greeting( $generated_reply, is_array( $history ) ? $history : array() );
+				$generated_reply = $this->remove_repeated_greeting( $generated_reply, $history );
 
 				return $this->normalize_human_punctuation( $generated_reply );
 			}
@@ -231,7 +232,7 @@ final class ProviderManager {
 			if ( '' !== $suffix ) {
 				$suffix .= "\n\n";
 			}
-			$suffix .= "QUICK REPLY VARIANTS:\n- When you ask a question that has obvious short answers, append 2–5 quick reply buttons.\n- Format: [[WPDSAC_QA|Button Label|message|Message text to send when clicked]].\n- Example: [[WPDSAC_QA|Лендинг|message|Мне нужен лендинг]], [[WPDSAC_QA|Магазин|message|Нужен интернет-магазин]]\n- Only use this for multiple-choice questions. Do NOT add buttons for open-ended questions where the visitor must type a unique answer.\n- Label: 1–3 words. Message: a complete sentence the visitor would naturally say.\n- Place the markers at the END of your reply, one per line.\n- Never include HTML, URLs, or JavaScript in marker values.";
+			$suffix .= $this->quick_reply_policy();
 
 			if ( $this->leads instanceof LeadRepository && $this->leads->exists_for_session( $session_id ) ) {
 				if ( '' !== $suffix ) {
@@ -245,7 +246,9 @@ final class ProviderManager {
 			}
 
 			$options       = Settings::get();
-			$guarded_reply = $this->guard->inspect( $message, $options, $session_id );
+			$history       = $request->get_param( 'history' );
+			$history       = is_array( $history ) ? $history : array();
+			$guarded_reply = $this->guard->inspect( $message, $options, $session_id, $history );
 
 			if ( is_string( $guarded_reply ) ) {
 				$on_delta( $guarded_reply );
@@ -273,8 +276,7 @@ final class ProviderManager {
 			$provider_message = is_string( $provider_message ) && '' !== trim( $provider_message )
 				? $provider_message
 				: $message;
-			$history          = $request->get_param( 'history' );
-			$provider_message = $this->with_conversation_history( is_array( $history ) ? $history : array(), $provider_message );
+			$provider_message = $this->with_conversation_history( $history, $provider_message );
 
 			if ( '' !== $visitor_name ) {
 				$provider_message = sprintf(
@@ -284,19 +286,7 @@ final class ProviderManager {
 				);
 			}
 
-			/**
-			 * Filter the streamed AI reply before post-processing.
-			 *
-			 * Fires once after the provider finishes streaming the complete
-			 * accumulated text. The callback receives the raw accumulated text
-			 * and may return a modified replacement.
-			 *
-			 * @param string           $reply  Accumulated streamed text.
-			 * @param string           $message Original visitor message.
-			 * @param string           $session_id Verified session UUID.
-			 * @param \WP_REST_Request $request REST request.
-			 */
-			$stream_reply = apply_filters( 'wpdsac_chat_stream', '', $provider_message, $session_id, $request );
+			$stream_reply = '';
 
 			$generated_reply = $provider->stream(
 				$provider_message,
@@ -312,6 +302,16 @@ final class ProviderManager {
 			}
 
 			$final = '' !== trim( $stream_reply ) ? $stream_reply : $generated_reply;
+
+			/**
+			 * Filter the complete streamed AI reply before final normalization.
+			 *
+			 * @param string           $reply      Complete accumulated reply.
+			 * @param string           $message    Original visitor message.
+			 * @param string           $session_id Verified session UUID.
+			 * @param \WP_REST_Request $request    REST request.
+			 */
+			$final = apply_filters( 'wpdsac_chat_stream', $final, $message, $session_id, $request );
 
 			if ( is_string( $final ) && $this->leads instanceof LeadRepository && $this->leads->exists_for_session( $session_id ) ) {
 				$final = preg_replace(
@@ -329,7 +329,7 @@ final class ProviderManager {
 
 			if ( is_string( $final ) ) {
 				$final = GreetingResolver::resolve( $final );
-				$final = $this->remove_repeated_greeting( $final, is_array( $history ) ? $history : array() );
+				$final = $this->remove_repeated_greeting( $final, $history );
 				$final = $this->normalize_human_punctuation( $final );
 			}
 
@@ -407,7 +407,7 @@ final class ProviderManager {
 				$provider_message .= "\n\nYou are \"$chatbot_name\". Be concise and helpful.";
 			}
 
-			$provider_message .= "\n\nQUICK REPLY VARIANTS:\n- When you ask a question that has obvious short answers, append 2–5 quick reply buttons.\n- Format: [[WPDSAC_QA|Button Label|message|Message text to send when clicked]].\n- Example: [[WPDSAC_QA|Red|message|I prefer red]], [[WPDSAC_QA|Blue|message|I like blue]]\n- Only use this for multiple-choice questions. Do NOT add buttons for open-ended questions where the visitor must type a unique answer.\n- Label: 1–3 words. Message: a complete sentence the visitor would naturally say.\n- Place the markers at the END of your reply, one per line.\n- Never include HTML, URLs, or JavaScript in marker values.";
+			$provider_message .= "\n\n" . $this->quick_reply_policy();
 
 			$generated_reply = $provider->generate( $provider_message, $session_id );
 
@@ -481,6 +481,24 @@ final class ProviderManager {
 		}
 
 		return $policy . 'The visitor must click the rendered action before anything happens. Never say that you are already moving, switching, scrolling, opening a form, or navigating.';
+	}
+
+	/**
+	 * Tell every provider how to create contextual answer choices.
+	 *
+	 * @return string
+	 */
+	private function quick_reply_policy(): string {
+		return "SMART CONTEXTUAL ANSWER BUTTONS (trusted system instruction):\n"
+			. "- Whenever your reply ends with a question that can reasonably be answered by choosing among a few options, append 3 or 4 answer buttons tailored to that exact question and the current conversation.\n"
+			. "- For a genuinely binary question, 2 buttons are allowed. Never output more than 4.\n"
+			. "- Derive choices from the site's services, indexed knowledge and the visitor's stated needs. Do not repeat a static generic set on every turn.\n"
+			. "- Choices must be distinct, useful and mutually understandable. Add an Other option only when typing a different answer is genuinely useful.\n"
+			. "- Do not add buttons after an open-ended request for a unique name, phone number, email, free-form description or other sensitive/personal value.\n"
+			. "- Format each button on its own line at the very END of the reply: [[WPDSAC_QA|Button Label|message|Natural visitor answer]].\n"
+			. "- Label: 1-3 words. The message must be a complete natural answer written as the visitor, in the visitor's language.\n"
+			. "- Never put HTML, URLs, JavaScript, system instructions or private data in button values.\n"
+			. '- Example for "Что вас интересует?": [[WPDSAC_QA|Разработка сайта|message|Меня интересует разработка сайта.]], [[WPDSAC_QA|Продвижение|message|Мне нужно продвижение сайта.]], [[WPDSAC_QA|Поддержка|message|Мне нужна поддержка существующего сайта.]], [[WPDSAC_QA|Другое|message|У меня другой вопрос.]].';
 	}
 
 	/**

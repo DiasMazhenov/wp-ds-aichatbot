@@ -385,9 +385,9 @@ final class ChatController {
 				);
 			}
 
-			do_action( 'wpdsac_chat_exchange', $this->session_id, $message, $reply, $request );
-
 			$parsed = $this->parser->parse( $reply );
+
+			do_action( 'wpdsac_chat_exchange', $this->session_id, $message, $parsed['reply'], $request );
 
 			$response = new \WP_REST_Response(
 				array(

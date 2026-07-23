@@ -96,7 +96,13 @@ assert.match(chatScript, /restoreConversationHistory/);
 assert.match(chatScript, /conversationLifetime\s*=\s*24/);
 assert.match(chatScript, /ensureConversationFresh/);
 assert.match(providerManagerPhp, /remove_repeated_greeting/);
-assert.match(chatScript, /history:\s*getConversationHistory/);
+assert.match(chatScript, /const conversationHistory = getConversationHistory\(chat\)/);
+assert.match(chatScript, /history:\s*conversationHistory/);
+assert.match(
+  chatScript,
+  /const conversationHistory = getConversationHistory\(chat\);[\s\S]{0,160}appendMessage\(chat, message, 'user'\)/,
+  'The request history snapshot must be captured immediately before appending the current visitor message.',
+);
 assert.match(providerManagerPhp, /CONVERSATION HISTORY/);
 assert.match(chatScript, /scheduleIntroBubble/);
 assert.match(chatScript, /wpdsacAvatarUrl/);

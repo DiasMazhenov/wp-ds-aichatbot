@@ -346,9 +346,14 @@ final class StreamController {
 			);
 
 			if ( ! $limit['allowed'] ) {
-				$this->send_sse_error( 'wpdsac_rate_limited', __( 'Too many chat requests. Please try again later.', 'wp-ds-aichatbot' ) );
-				$this->send_sse_event( 'rate_limit', array( 'retry_after' => (int) $limit['retry_after'] ) );
-				$this->finish_sse();
+				$this->send_sse_event(
+					'rate_limit',
+					array(
+						'code'        => 'wpdsac_rate_limited',
+						'message'     => __( 'Too many chat requests. Please try again later.', 'wp-ds-aichatbot' ),
+						'retry_after' => (int) $limit['retry_after'],
+					)
+				);
 
 				return;
 			}
@@ -356,9 +361,14 @@ final class StreamController {
 			$budget = $this->limiter->consume_daily_budget( (int) $options['daily_request_limit'] );
 
 			if ( ! $budget['allowed'] ) {
-				$this->send_sse_error( 'wpdsac_daily_budget_exhausted', __( 'The daily AI request budget has been reached. Please try again later.', 'wp-ds-aichatbot' ) );
-				$this->send_sse_event( 'rate_limit', array( 'retry_after' => (int) $budget['retry_after'] ) );
-				$this->finish_sse();
+				$this->send_sse_event(
+					'rate_limit',
+					array(
+						'code'        => 'wpdsac_daily_budget_exhausted',
+						'message'     => __( 'The daily AI request budget has been reached. Please try again later.', 'wp-ds-aichatbot' ),
+						'retry_after' => (int) $budget['retry_after'],
+					)
+				);
 
 				return;
 			}
@@ -379,21 +389,19 @@ final class StreamController {
 
 			if ( is_wp_error( $reply ) ) {
 				$this->send_sse_error( $reply->get_error_code(), $reply->get_error_message() );
-				$this->finish_sse();
 
 				return;
 			}
 
-			$full_text = '' !== trim( $full_text ) ? $full_text : $reply;
+			$final_reply = is_string( $reply ) && '' !== trim( $reply ) ? $reply : $full_text;
 
-			if ( ! is_string( $full_text ) || '' === trim( $full_text ) ) {
+			if ( ! is_string( $final_reply ) || '' === trim( $final_reply ) ) {
 				$this->send_sse_error( 'wpdsac_provider_unavailable', __( 'The AI provider is not configured yet.', 'wp-ds-aichatbot' ) );
-				$this->finish_sse();
 
 				return;
 			}
 
-			$parsed = ( new \DiasMazhenov\WPDsAiChatbot\AI\QuickReplyParser() )->parse( $full_text );
+			$parsed = ( new QuickReplyParser() )->parse( $final_reply );
 
 			$this->send_sse_event(
 				'done',
@@ -410,10 +418,10 @@ final class StreamController {
 			 *
 			 * @param string           $session_id Verified session UUID.
 			 * @param string           $message    Visitor message.
-			 * @param string           $reply      Full accumulated AI reply.
+			 * @param string           $reply      Clean visitor-facing AI reply.
 			 * @param \WP_REST_Request $request    REST request.
 			 */
-			do_action( 'wpdsac_chat_exchange', $this->session_id, $message, $full_text, $request );
+			do_action( 'wpdsac_chat_exchange', $this->session_id, $message, $parsed['reply'], $request );
 		} catch ( \Throwable $e ) {
 			/** This action is documented in ProviderManager::generate(). */
 			do_action( 'wpdsac_provider_exception', $e );
@@ -421,9 +429,8 @@ final class StreamController {
 			$this->send_sse_error( 'wpdsac_fatal', __( 'The AI service encountered an unexpected error. Please try again later.', 'wp-ds-aichatbot' ) );
 		} finally {
 			$this->request_lock->release( $this->session_id, $lock_token );
+			$this->finish_sse();
 		}
-
-		$this->finish_sse();
 	}
 
 	/**
@@ -455,7 +462,9 @@ final class StreamController {
 			apache_setenv( 'no-gzip', '1' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_apache_setenv -- Required to disable gzip for SSE streaming.
 		}
 
-		@ini_set( 'zlib.output_compression', '0' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_ini_set, WordPress.PHP.NoSilencingErrors.noSilencingErrors -- Required to disable gzip for SSE streaming.
+		if ( function_exists( 'ini_set' ) ) {
+			ini_set( 'zlib.output_compression', '0' ); // phpcs:ignore WordPress.PHP.IniSet.Risky -- Disabling response buffering is required for SSE streaming.
+		}
 
 		if ( function_exists( 'ob_get_level' ) && ob_get_level() > 0 ) {
 			while ( ob_get_level() > 0 ) {

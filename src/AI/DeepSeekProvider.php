@@ -74,8 +74,10 @@ final class DeepSeekProvider extends AbstractHttpProvider {
 	/**
 	 * Extract text from a DeepSeek Chat Completions SSE chunk.
 	 *
-	 * Format: choices[0].delta.content
-	 * Also extracts reasoning_content from thinking blocks.
+	 * Format: choices[0].delta.content.
+	 *
+	 * Internal reasoning_content is intentionally ignored and must never be
+	 * displayed to visitors or persisted as part of the assistant reply.
 	 *
 	 * @param string $raw Raw curl chunk.
 	 * @return string
@@ -113,15 +115,9 @@ final class DeepSeekProvider extends AbstractHttpProvider {
 				continue;
 			}
 
-			// Content chunk.
+			// Only visitor-facing content is safe to emit.
 			if ( isset( $choice_delta['content'] ) && is_string( $choice_delta['content'] ) ) {
 				$delta .= $choice_delta['content'];
-				continue;
-			}
-
-			// Reasoning content (thinking) — emit as inline text.
-			if ( isset( $choice_delta['reasoning_content'] ) && is_string( $choice_delta['reasoning_content'] ) ) {
-				$delta .= $choice_delta['reasoning_content'];
 			}
 		}
 

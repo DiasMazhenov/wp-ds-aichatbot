@@ -54,7 +54,7 @@ final class QaAndReengageTest extends TestCase {
 		$this->assertEmpty( $result['quick_replies'] );
 	}
 
-	public function test_parser_rejects_more_than_5_variants(): void {
+	public function test_parser_caps_generated_variants_at_four(): void {
 		$parser = new QuickReplyParser();
 		$markers = '';
 		for ( $i = 1; $i <= 7; $i++ ) {
@@ -62,7 +62,8 @@ final class QaAndReengageTest extends TestCase {
 		}
 		$result = $parser->parse( "Pick:\n\n{$markers}" );
 
-		$this->assertEmpty( $result['quick_replies'] );
+		$this->assertCount( 4, $result['quick_replies'] );
+		$this->assertSame( 'Opt4', $result['quick_replies'][3]['label'] );
 	}
 
 	public function test_parser_strips_html_from_markers(): void {
@@ -83,6 +84,25 @@ final class QaAndReengageTest extends TestCase {
 		);
 
 		$this->assertCount( 2, $result['quick_replies'] );
+		$this->assertStringNotContainsString( 'WPDSAC_QA', $result['reply'] );
+	}
+
+	public function test_parser_deduplicates_identical_choices(): void {
+		$parser = new QuickReplyParser();
+		$result = $parser->parse(
+			"Choose:\n\n[[WPDSAC_QA|Site|message|I need a website.]]\n[[WPDSAC_QA|Site|message|I need a website.]]\n[[WPDSAC_QA|Support|message|I need support.]]"
+		);
+
+		$this->assertCount( 2, $result['quick_replies'] );
+		$this->assertSame( 'Support', $result['quick_replies'][1]['label'] );
+	}
+
+	public function test_parser_removes_malformed_marker_without_valid_choices(): void {
+		$parser = new QuickReplyParser();
+		$result = $parser->parse( "Please choose.\n[[WPDSAC_QA|Broken]]" );
+
+		$this->assertSame( 'Please choose.', $result['reply'] );
+		$this->assertEmpty( $result['quick_replies'] );
 	}
 
 	public function test_parser_bounds_label_and_message_length(): void {
