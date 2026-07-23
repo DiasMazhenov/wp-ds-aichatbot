@@ -53,6 +53,7 @@
 - **0.5.105**: Ссылка «Настройки» в plugin row actions. Author URI: https://mazhenov.kz/.
 - **0.5.106**: **Критическое исправление безопасности**: утечка административных ссылок через AI-навигацию. Причина: `document.querySelectorAll('a[href]')` собирал ссылки из admin bar, `/wp-admin/`, служебных areas. Исправление: client-side — ссылки только из публичных областей DOM + isPublicUrl() фильтр; server-side — `UrlDenylist` с decode/dot-segment/backslash/case защитой в ChatController и ProviderManager; PromptGuard — правила anti-leak о недоступности админки, БД, плагинов. 13 новых unit-тестов, 9 integration-ассертов.
 - **0.5.107**: Accessibility — focus trap для chat panel (Tab цикл по focusable элементам), Escape закрывает lead modal и сворачивает чат, `aria-label` на секции и панели, `aria-live="polite"` + `role="log"` на контейнере сообщений для screen-reader announcement новых сообщений.
+- **0.5.108**: SSE streaming — Server-Sent Events для побуквенной отдачи ответов AI. StreamController + curl-based streaming в AbstractHttpProvider, парсинг delta для OpenAI/DeepSeek/Anthropic, фронтенд ReadableStream, настройка «Стримить ответы AI» (откл. по умолчанию), фильтр `wpdsac_chat_stream`, fallback на стандартный ответ при отсутствии curl.
 
 ## Обязательная инструкция агенту перед каждым push
 

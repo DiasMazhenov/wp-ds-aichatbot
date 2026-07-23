@@ -204,6 +204,162 @@ final class ProviderManager {
 	}
 
 	/**
+	 * Stream a reply, invoking $on_delta for each text fragment.
+	 *
+	 * Mirrors generate() in guard, provider selection, and post-processing,
+	 * but delegates to ProviderInterface::stream() and passes each delta
+	 * through the $on_delta callback in real time.
+	 *
+	 * @param string           $message    Sanitized visitor message.
+	 * @param string           $session_id Verified session UUID.
+	 * @param \WP_REST_Request $request    REST request.
+	 * @param callable         $on_delta  Callback receiving each text fragment.
+	 * @return string|\WP_Error  Full accumulated text, or WP_Error on failure.
+	 */
+	public function stream( string $message, string $session_id, \WP_REST_Request $request, callable $on_delta ) {
+		try {
+			$visitor_name = sanitize_text_field( (string) $request->get_param( 'visitor_name' ) );
+			Settings::set_runtime_variables( array( 'username' => $visitor_name ) );
+			$navigation_targets = $request->get_param( 'navigation_targets' );
+
+			$suffix = '';
+
+			if ( is_array( $navigation_targets ) && array() !== $navigation_targets ) {
+				$suffix = $this->navigation_policy( $navigation_targets );
+			}
+
+			if ( '' !== $suffix ) {
+				$suffix .= "\n\n";
+			}
+			$suffix .= "QUICK REPLY VARIANTS:\n- When you ask a question that has obvious short answers, append 2–5 quick reply buttons.\n- Format: [[WPDSAC_QA|Button Label|message|Message text to send when clicked]].\n- Example: [[WPDSAC_QA|Лендинг|message|Мне нужен лендинг]], [[WPDSAC_QA|Магазин|message|Нужен интернет-магазин]]\n- Only use this for multiple-choice questions. Do NOT add buttons for open-ended questions where the visitor must type a unique answer.\n- Label: 1–3 words. Message: a complete sentence the visitor would naturally say.\n- Place the markers at the END of your reply, one per line.\n- Never include HTML, URLs, or JavaScript in marker values.";
+
+			if ( $this->leads instanceof LeadRepository && $this->leads->exists_for_session( $session_id ) ) {
+				if ( '' !== $suffix ) {
+					$suffix .= "\n\n";
+				}
+				$suffix .= 'LEAD STATUS (trusted server data): The visitor already submitted their contact details in this chat session. Do not offer the contact form again or ask for contact information. Reassure the visitor that their request has been received and is being processed.';
+			}
+
+			if ( '' !== $suffix ) {
+				Settings::set_runtime_instruction_suffix( $suffix );
+			}
+
+			$options       = Settings::get();
+			$guarded_reply = $this->guard->inspect( $message, $options, $session_id );
+
+			if ( is_string( $guarded_reply ) ) {
+				$on_delta( $guarded_reply );
+
+				return $guarded_reply;
+			}
+
+			$provider_id = (string) apply_filters( 'wpdsac_ai_provider_id', $options['ai_provider'], $request );
+			$providers   = apply_filters( 'wpdsac_ai_providers', $this->providers );
+			$providers   = is_array( $providers ) ? $providers : $this->providers;
+			$provider    = $providers[ $provider_id ] ?? null;
+
+			/** This filter is documented in ProviderManager::generate(). */
+			$provider = apply_filters( 'wpdsac_ai_provider', $provider, $request, $provider_id );
+
+			if ( ! $provider instanceof ProviderInterface ) {
+				return new \WP_Error(
+					'wpdsac_invalid_provider',
+					__( 'The configured AI provider is invalid.', 'wp-ds-aichatbot' ),
+					array( 'status' => 503 )
+				);
+			}
+
+			$provider_message = apply_filters( 'wpdsac_ai_message', $message, $session_id, $request, $provider_id );
+			$provider_message = is_string( $provider_message ) && '' !== trim( $provider_message )
+				? $provider_message
+				: $message;
+			$history          = $request->get_param( 'history' );
+			$provider_message = $this->with_conversation_history( is_array( $history ) ? $history : array(), $provider_message );
+
+			if ( '' !== $visitor_name ) {
+				$provider_message = sprintf(
+					"Visitor name (untrusted profile data): %s\n\nVisitor message:\n%s",
+					$visitor_name,
+					$provider_message
+				);
+			}
+
+			/**
+			 * Filter the streamed AI reply before post-processing.
+			 *
+			 * Fires once after the provider finishes streaming the complete
+			 * accumulated text. The callback receives the raw accumulated text
+			 * and may return a modified replacement.
+			 *
+			 * @param string           $reply  Accumulated streamed text.
+			 * @param string           $message Original visitor message.
+			 * @param string           $session_id Verified session UUID.
+			 * @param \WP_REST_Request $request REST request.
+			 */
+			$stream_reply = apply_filters( 'wpdsac_chat_stream', '', $provider_message, $session_id, $request );
+
+			$generated_reply = $provider->stream(
+				$provider_message,
+				$session_id,
+				function ( string $fragment ) use ( &$stream_reply, $on_delta ) {
+					$stream_reply .= $fragment;
+					$on_delta( $fragment );
+				}
+			);
+
+			if ( is_wp_error( $generated_reply ) ) {
+				return $generated_reply;
+			}
+
+			$final = '' !== trim( $stream_reply ) ? $stream_reply : $generated_reply;
+
+			if ( is_string( $final ) && $this->leads instanceof LeadRepository && $this->leads->exists_for_session( $session_id ) ) {
+				$final = preg_replace(
+					'/\[\[WPDSAC_ACTION\|lead_form\|[^]]*\]\]/',
+					'',
+					$final
+				);
+				$final = preg_replace(
+					'/\[\[WPDSAC_NAV\|[^|]*#wpdsac-contact-form[^|]*\|[^]]*\]\]/',
+					'',
+					$final
+				);
+				$final = trim( preg_replace( '/\n{3,}/', "\n\n", $final ) );
+			}
+
+			if ( is_string( $final ) ) {
+				$final = GreetingResolver::resolve( $final );
+				$final = $this->remove_repeated_greeting( $final, is_array( $history ) ? $history : array() );
+				$final = $this->normalize_human_punctuation( $final );
+			}
+
+			return $final;
+		} catch ( \Throwable $e ) {
+			/** This filter is documented in ProviderManager::generate(). */
+			do_action( 'wpdsac_provider_exception', $e );
+
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+					sprintf(
+						'[WP DS AI Chatbot] Stream provider exception: %s at %s:%d',
+						get_class( $e ),
+						basename( $e->getFile() ),
+						(int) $e->getLine()
+					)
+				);
+			}
+
+			return new \WP_Error(
+				'wpdsac_fatal',
+				__( 'The AI service encountered an unexpected error. Please try again later.', 'wp-ds-aichatbot' ),
+				array( 'status' => 500 )
+			);
+		} finally {
+			Settings::clear_runtime_variables();
+		}
+	}
+
+	/**
 	 * Generate a re-engage follow-up through the configured AI provider.
 	 *
 	 * @param mixed            $reply      Existing reply.

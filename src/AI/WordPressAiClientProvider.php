@@ -67,4 +67,24 @@ final class WordPressAiClientProvider implements ProviderInterface {
 
 		return is_string( $result ) ? $result : '';
 	}
+
+	/**
+	 * Stream via fallback: generate the full reply then emit as one delta.
+	 *
+	 * WordPress AI Client does not support native SSE streaming.
+	 *
+	 * @param string   $message    Sanitized visitor message.
+	 * @param string   $session_id Verified internal session UUID.
+	 * @param callable $on_delta  Callback receiving each text fragment.
+	 * @return string|\WP_Error
+	 */
+	public function stream( string $message, string $session_id, callable $on_delta ) {
+		$result = $this->generate( $message, $session_id );
+
+		if ( is_string( $result ) && '' !== trim( $result ) ) {
+			$on_delta( $result );
+		}
+
+		return $result;
+	}
 }

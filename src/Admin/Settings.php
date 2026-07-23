@@ -183,6 +183,7 @@ final class Settings {
 				'openrouter_model'                 => 'openai/gpt-5.6-luna',
 				'deepseek_model'                   => 'deepseek-v4-flash',
 				'deepseek_thinking'                => false,
+				'streaming_enabled'                => false,
 			),
 			Appearance::defaults()
 		);
@@ -466,6 +467,7 @@ final class Settings {
 		$this->add_field( 'deepseek_api_key', __( 'DeepSeek API key', 'wp-ds-aichatbot' ), 'password', 'wpdsac_ai', 'deepseek' );
 		$this->add_field( 'deepseek_model', __( 'DeepSeek model', 'wp-ds-aichatbot' ), 'text', 'wpdsac_ai', 'deepseek' );
 		$this->add_field( 'deepseek_thinking', __( 'DeepSeek thinking mode', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_ai', 'deepseek' );
+		$this->add_field( 'streaming_enabled', __( 'Stream AI responses', 'wp-ds-aichatbot' ), 'checkbox', 'wpdsac_ai' );
 	}
 
 	/**
@@ -542,6 +544,7 @@ final class Settings {
 			'openrouter_model'                 => $this->sanitize_model_id( $input['openrouter_model'] ?? '', 'openai/gpt-5.6-luna' ),
 			'deepseek_model'                   => $this->sanitize_model_id( $input['deepseek_model'] ?? '', 'deepseek-v4-flash' ),
 			'deepseek_thinking'                => ! empty( $input['deepseek_thinking'] ),
+			'streaming_enabled'                => ! empty( $input['streaming_enabled'] ),
 		);
 
 		$sanitized = array_merge( $settings, Appearance::sanitize( $input ) );
@@ -1010,6 +1013,7 @@ final class Settings {
 				'knowledge_enabled'          => __( 'Add relevant indexed pages, posts, knowledge entries, and administrator text to AI requests.', 'wp-ds-aichatbot' ),
 				'logging_enabled'            => __( 'Store successful conversations for the configured retention period. Disabled by default.', 'wp-ds-aichatbot' ),
 				'deepseek_thinking'          => __( 'Enable deeper reasoning. This can increase response time and token usage.', 'wp-ds-aichatbot' ),
+				'streaming_enabled'          => __( 'Stream AI responses word-by-word. Requires PHP curl extension. Falls back to standard responses when curl is unavailable.', 'wp-ds-aichatbot' ),
 				'prompt_guard_enabled'       => __( 'Block obvious instruction overrides, hidden-prompt requests, model probing, and configured off-topic requests before contacting the AI provider.', 'wp-ds-aichatbot' ),
 				'conversation_email_enabled' => __( 'Send one transcript after the visitor stops writing. If a contact request is submitted first, only the request email is sent.', 'wp-ds-aichatbot' ),
 				'reengage_enabled'           => __( 'If the visitor goes silent, the bot asks a contextual follow-up question. This is an in-browser message, not an email — configure the email notifier separately in the Privacy tab.', 'wp-ds-aichatbot' ),

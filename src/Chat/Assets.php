@@ -75,6 +75,7 @@ final class Assets {
 			array(
 				'restUrl'   => esc_url_raw( rest_url( 'wp-ds-aichatbot/v1' ) ),
 				'restNonce' => is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '',
+				'streaming' => ! empty( \DiasMazhenov\WPDsAiChatbot\Admin\Settings::get()['streaming_enabled'] ),
 				'strings'   => array(
 					'connecting'       => __( 'Connecting…', 'wp-ds-aichatbot' ),
 					'sending'          => __( 'Sending…', 'wp-ds-aichatbot' ),

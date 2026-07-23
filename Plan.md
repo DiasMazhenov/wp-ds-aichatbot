@@ -156,7 +156,7 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.107`: accessibility — focus trap, escape handling, ARIA attributes.
+Версия `0.5.108`: SSE streaming — побуквенная отдача ответов AI через Server-Sent Events.
 
 ### Выполнено в 0.5.94
 
@@ -176,7 +176,7 @@ wp-ds-aichatbot/
 
 #### 1. Стриминг ответов AI
 - [x] Typing indicator (анимированные точки) при ожидании ответа — 0.5.101.
-- [ ] Настоящий SSE-стриминг: WordPress AJAX с `text/event-stream`, raw curl для потоковых эндпоинтов провайдеров, фронтенд с `ReadableStream`.
+- [x] Настоящий SSE-стриминг: StreamController + curl-based streaming, ReadableStream на фронте — 0.5.108.
 - [ ] Пословный рендеринг из стрима сразу при получении чанков.
 
 #### 2. Модульность chat.js
@@ -189,8 +189,8 @@ wp-ds-aichatbot/
 - [ ] CSV-экспорт лидов из админки.
 
 #### 4. Accessibility
-- [ ] Навигация с клавиатуры, focus trap, `role="log"`.
-- [ ] Анонсирование screen-reader'ом.
+- [x] Навигация с клавиатуры, focus trap, `role="log"` — 0.5.107.
+- [x] Анонсирование screen-reader'ом — 0.5.107.
 
 #### 5. Кеширование inline_style
 - [ ] Transient для CSS, инвалидация при сохранении.

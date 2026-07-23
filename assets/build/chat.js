@@ -126,6 +126,192 @@
 		return token;
 	};
 
+	// ── Streaming Reply ───────────────────────────────
+
+	const streamReply = async (chat, payload, typing, input, status, button) => {
+		const headers = { 'Content-Type': 'application/json' };
+		if (config.restNonce) headers['X-WP-Nonce'] = config.restNonce;
+
+		const response = await fetch(`${config.restUrl}/chat/stream`, {
+			method: 'POST',
+			credentials: 'same-origin',
+			headers,
+			body: JSON.stringify(payload),
+		});
+
+		if (!response.ok) {
+			const data = await response.json().catch(() => ({}));
+			const error = new Error(data.message || strings.error || 'Stream request failed.');
+			error.status = response.status;
+			error.code = data.code || 'wpdsac_stream_error';
+			throw error;
+		}
+
+		const messages = chat.querySelector('.wpdsac-chat__messages');
+		const row = document.createElement('div');
+		row.className = 'wpdsac-chat__message-row wpdsac-chat__message-row--bot';
+		const avatarUrl = chat.dataset.wpdsacAvatarUrl || '';
+		if (avatarUrl) {
+			const avatarFrame = document.createElement('span');
+			const avatar = document.createElement('img');
+			avatarFrame.className = 'wpdsac-chat__avatar-frame';
+			avatarFrame.setAttribute('aria-hidden', 'true');
+			avatar.className = 'wpdsac-chat__avatar';
+			avatar.src = avatarUrl;
+			avatar.alt = '';
+			avatar.width = 32;
+			avatar.height = 32;
+			avatar.decoding = 'async';
+			avatar.style.objectPosition = `${chat.dataset.wpdsacAvatarPositionX || 50}% ${chat.dataset.wpdsacAvatarPositionY || 50}%`;
+			avatar.style.transform = `scale(${chat.dataset.wpdsacAvatarScale || 1})`;
+			avatarFrame.appendChild(avatar);
+			row.appendChild(avatarFrame);
+		} else {
+			const avatar = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+			avatar.setAttribute('class', 'wpdsac-chat__avatar');
+			avatar.setAttribute('viewBox', '0 0 24 24');
+			avatar.setAttribute('width', '20');
+			avatar.setAttribute('height', '20');
+			avatar.setAttribute('aria-hidden', 'true');
+			avatar.innerHTML = '<path fill="currentColor" d="M12 2.75c.47 4.88 4.37 8.78 9.25 9.25-4.88.47-8.78 4.37-9.25 9.25C11.53 16.37 7.63 12.47 2.75 12 7.63 11.53 11.53 7.63 12 2.75Z"/>';
+			row.appendChild(avatar);
+		}
+		const item = document.createElement('div');
+		item.className = 'wpdsac-chat__message wpdsac-chat__message--bot';
+		row.appendChild(item);
+		messages.appendChild(row);
+		typing.remove();
+		scrollToLatest(chat);
+
+		appendMessage(chat, payload.message, 'user');
+		input.value = '';
+
+		const reader = response.body.getReader();
+		const decoder = new TextDecoder();
+		let buffer = '';
+		let accumulated = '';
+		let replyData = null;
+
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+
+			buffer += decoder.decode(value, { stream: true });
+			const lines = buffer.split('\n');
+			buffer = lines.pop() || '';
+
+			let eventType = '';
+			for (const line of lines) {
+				if (line.startsWith('event: ')) {
+					eventType = line.slice(7).trim();
+					continue;
+				}
+				if (!line.startsWith('data: ')) continue;
+				const data = line.slice(6);
+				if (data === '[DONE]') continue;
+
+				let parsed;
+				try {
+					parsed = JSON.parse(data);
+				} catch {
+					continue;
+				}
+
+				if (eventType === 'delta' && typeof parsed.content === 'string') {
+					accumulated += parsed.content;
+					item.textContent = accumulated;
+					scrollToLatest(chat);
+				} else if (eventType === 'done') {
+					replyData = parsed;
+				} else if (eventType === 'error') {
+					throw Object.assign(new Error(parsed.message || strings.error), { code: parsed.code, status: 500 });
+				} else if (eventType === 'rate_limit') {
+					throw Object.assign(new Error(strings.error || 'Rate limited'), { code: 'wpdsac_rate_limited', status: 429 });
+				}
+			}
+		}
+
+		persistConversationHistory(chat);
+
+		if (!replyData || typeof replyData.reply !== 'string' || '' === replyData.reply.trim()) {
+			return;
+		}
+
+		item.textContent = '';
+		appendAssistantContent(item, replyData.reply);
+
+		if (Array.isArray(replyData.quick_replies) && replyData.quick_replies.length >= 2) {
+			renderContextActions(chat, replyData.quick_replies);
+		} else {
+			clearContextActions(chat);
+		}
+
+		playReplySound(chat.dataset.wpdsacReplySound || 'off');
+		status.textContent = '';
+
+		const reState = getReengageState(chat);
+		if (reState && reState.terminalReason === 'provider_error') {
+			resetReengageActivity(chat);
+		} else {
+			scheduleReengage(chat);
+		}
+
+		const count = (userMessageCounters.get(chat) || 0) + 1;
+		userMessageCounters.set(chat, count);
+		if (count >= 5 && !leadAutoTriggered.get(chat)) {
+			leadAutoTriggered.set(chat, true);
+			const qb = chat.querySelector('[data-wpdsac-quick-action="lead"]');
+			if (qb) qb.hidden = true;
+			const leadEl = chat.querySelector('[data-wpdsac-lead]');
+			const leadPrompt = leadEl?.dataset?.wpdsacLeadPrompt || '';
+			setTimeout(() => {
+				appendMessage(chat, leadPrompt || 'Пожалуйста, оставьте ваше имя и телефон для связи.', 'bot');
+				leadState.set(chat, { phase: 'waiting_name', name: '' });
+			}, 600);
+		}
+	};
+
+	// ── Standard Reply ────────────────────────────────
+
+	const standardReply = async (chat, payload, typing, input, status, button) => {
+		const response = await request('/chat', payload);
+
+		appendMessage(chat, payload.message, 'user');
+		typing.remove();
+		const replyAnimation = appendMessage(chat, response.reply, 'bot', true);
+		persistConversationHistory(chat);
+		await replyAnimation;
+		if (Array.isArray(response.quick_replies) && response.quick_replies.length >= 2) {
+			renderContextActions(chat, response.quick_replies);
+		} else {
+			clearContextActions(chat);
+		}
+		playReplySound(chat.dataset.wpdsacReplySound || 'off');
+		input.value = '';
+		status.textContent = '';
+
+		const reState = getReengageState(chat);
+		if (reState && reState.terminalReason === 'provider_error') {
+			resetReengageActivity(chat);
+		} else {
+			scheduleReengage(chat);
+		}
+
+		const count = (userMessageCounters.get(chat) || 0) + 1;
+		userMessageCounters.set(chat, count);
+		if (count >= 5 && !leadAutoTriggered.get(chat)) {
+			leadAutoTriggered.set(chat, true);
+			const qb = chat.querySelector('[data-wpdsac-quick-action="lead"]');
+			if (qb) qb.hidden = true;
+			const leadEl = chat.querySelector('[data-wpdsac-lead]');
+			const leadPrompt = leadEl?.dataset?.wpdsacLeadPrompt || '';
+			setTimeout(() => {
+				appendMessage(chat, leadPrompt || 'Пожалуйста, оставьте ваше имя и телефон для связи.', 'bot');
+				leadState.set(chat, { phase: 'waiting_name', name: '' });
+			}, 600);
+		}
+	};
+
 	// ── Message Rendering ─────────────────────────────
 
 	const appendLinkedText = (container, message) => {
@@ -1513,48 +1699,20 @@
 			ensureConversationFresh(chat);
 			const session = await getSessionToken();
 			status.textContent = strings.sending || '';
-				const response = await request('/chat', {
-					session,
-					message,
-					visitor_name: getVisitorName(),
-					history: getConversationHistory(chat),
-					navigation_targets: collectNavigationTargets(),
-				});
 
-			appendMessage(chat, message, 'user');
-			typing.remove();
-			const replyAnimation = appendMessage(chat, response.reply, 'bot', true);
-			persistConversationHistory(chat);
-			await replyAnimation;
-			if (Array.isArray(response.quick_replies) && response.quick_replies.length >= 2) {
-				renderContextActions(chat, response.quick_replies);
+			const navTargets = collectNavigationTargets();
+			const payload = {
+				session,
+				message,
+				visitor_name: getVisitorName(),
+				history: getConversationHistory(chat),
+				navigation_targets: navTargets,
+			};
+
+			if (config.streaming) {
+				await streamReply(chat, payload, typing, input, status, button);
 			} else {
-				clearContextActions(chat);
-			}
-			playReplySound(chat.dataset.wpdsacReplySound || 'off');
-			input.value = '';
-			status.textContent = '';
-
-			const reState = getReengageState(chat);
-			if (reState && reState.terminalReason === 'provider_error') {
-				resetReengageActivity(chat);
-			} else {
-				scheduleReengage(chat);
-			}
-
-			const count = (userMessageCounters.get(chat) || 0) + 1;
-			userMessageCounters.set(chat, count);
-
-			if (count >= 5 && !leadAutoTriggered.get(chat)) {
-				leadAutoTriggered.set(chat, true);
-				const qb = chat.querySelector('[data-wpdsac-quick-action="lead"]');
-				if (qb) qb.hidden = true;
-				const leadEl = chat.querySelector('[data-wpdsac-lead]');
-				const leadPrompt = leadEl?.dataset?.wpdsacLeadPrompt || '';
-				setTimeout(() => {
-					appendMessage(chat, leadPrompt || 'Пожалуйста, оставьте ваше имя и телефон для связи.', 'bot');
-					leadState.set(chat, { phase: 'waiting_name', name: '' });
-				}, 600);
+				await standardReply(chat, payload, typing, input, status, button);
 			}
 		} catch (error) {
 			typing.remove();

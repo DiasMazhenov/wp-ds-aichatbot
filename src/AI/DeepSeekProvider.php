@@ -63,6 +63,72 @@ final class DeepSeekProvider extends AbstractHttpProvider {
 	}
 
 	/**
+	 * Whether this provider implements real SSE streaming.
+	 *
+	 * @return bool
+	 */
+	protected function supports_streaming(): bool {
+		return true;
+	}
+
+	/**
+	 * Extract text from a DeepSeek Chat Completions SSE chunk.
+	 *
+	 * Format: choices[0].delta.content
+	 * Also extracts reasoning_content from thinking blocks.
+	 *
+	 * @param string $raw Raw curl chunk.
+	 * @return string
+	 */
+	protected static function extract_stream_delta( string $raw ): string {
+		$delta = '';
+		$lines = explode( "\n", $raw );
+
+		foreach ( $lines as $line ) {
+			if ( 0 !== strpos( $line, 'data: ' ) ) {
+				continue;
+			}
+
+			$json_str = substr( $line, 6 );
+
+			if ( '' === $json_str || 'null' === $json_str || '[DONE]' === $json_str ) {
+				continue;
+			}
+
+			$json = json_decode( $json_str, true );
+
+			if ( ! is_array( $json ) ) {
+				continue;
+			}
+
+			$choice = $json['choices'][0] ?? null;
+
+			if ( ! is_array( $choice ) ) {
+				continue;
+			}
+
+			$choice_delta = $choice['delta'] ?? null;
+
+			if ( ! is_array( $choice_delta ) ) {
+				continue;
+			}
+
+			// Content chunk.
+			if ( isset( $choice_delta['content'] ) && is_string( $choice_delta['content'] ) ) {
+				$delta .= $choice_delta['content'];
+				continue;
+			}
+
+			// Reasoning content (thinking) — emit as inline text.
+			if ( isset( $choice_delta['reasoning_content'] ) && is_string( $choice_delta['reasoning_content'] ) ) {
+				$delta .= $choice_delta['reasoning_content'];
+			}
+		}
+
+		return $delta;
+	}
+
+	/**
 	 * Extract the final answer without exposing reasoning content.
 	 *
 	 * @param array<string, mixed> $response Decoded response.

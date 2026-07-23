@@ -88,6 +88,63 @@ class ResponsesApiProvider extends AbstractHttpProvider {
 	}
 
 	/**
+	 * Whether this provider implements real SSE streaming.
+	 *
+	 * @return bool
+	 */
+	protected function supports_streaming(): bool {
+		return true;
+	}
+
+	/**
+	 * Extract text from an OpenResponses-compatible SSE chunk.
+	 *
+	 * Event format: response.output_text.delta
+	 * data: {"type":"response.output_text.delta","delta":"..."}
+	 *
+	 * @param string $raw Raw curl chunk.
+	 * @return string
+	 */
+	protected static function extract_stream_delta( string $raw ): string {
+		$delta  = '';
+		$lines  = explode( "\n", $raw );
+		$marker = 'response.output_text.delta';
+
+		foreach ( $lines as $line ) {
+			if ( 0 !== strpos( $line, 'data: ' ) ) {
+				continue;
+			}
+
+			$json_str = substr( $line, 6 );
+
+			if ( '' === $json_str || 'null' === $json_str || '[DONE]' === $json_str ) {
+				continue;
+			}
+
+			$json = json_decode( $json_str, true );
+
+			if ( ! is_array( $json ) ) {
+				continue;
+			}
+
+			// Direct response.output_text.delta event.
+			$type = $json['type'] ?? '';
+
+			if ( $marker === $type && is_string( $json['delta'] ?? '' ) ) {
+				$delta .= $json['delta'];
+				continue;
+			}
+
+			// Chat-completions fallback (OpenAI Chat API).
+			if ( isset( $json['choices'][0]['delta']['content'] ) && is_string( $json['choices'][0]['delta']['content'] ) ) {
+				$delta .= $json['choices'][0]['delta']['content'];
+			}
+		}
+
+		return $delta;
+	}
+
+	/**
 	 * Extract text from an OpenResponses-compatible response.
 	 *
 	 * @param array<string, mixed> $response Decoded response.

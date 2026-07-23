@@ -30,6 +30,7 @@ use DiasMazhenov\WPDsAiChatbot\Api\ReengageController;
 use DiasMazhenov\WPDsAiChatbot\Api\RequestLock;
 use DiasMazhenov\WPDsAiChatbot\Api\SessionController;
 use DiasMazhenov\WPDsAiChatbot\Api\SessionToken;
+use DiasMazhenov\WPDsAiChatbot\Api\StreamController;
 use DiasMazhenov\WPDsAiChatbot\Chat\Assets;
 use DiasMazhenov\WPDsAiChatbot\Chat\Renderer;
 use DiasMazhenov\WPDsAiChatbot\Chat\Shortcode;
@@ -68,6 +69,13 @@ final class Plugin {
 	 * @var self|null
 	 */
 	private static $instance;
+
+	/**
+	 * AI provider manager.
+	 *
+	 * @var ProviderManager|null
+	 */
+	private $manager;
 
 	/**
 	 * Return the single coordinator instance.
@@ -138,6 +146,8 @@ final class Plugin {
 		( new ReengageController( $tokens, $reengage_service, $qa_parser, $request_lock, $rate_limiter ) )->register_hooks();
 		$reengage_service->register_hooks();
 		$providers->register_hooks();
+		( new StreamController( $tokens, $rate_limiter, $request_lock ) )->register_hooks();
+		$this->manager = $providers;
 		$post_indexer->register_hooks();
 		$pdf_indexer->register_hooks();
 		( new ElementorSource() )->register_hooks();
@@ -161,6 +171,19 @@ final class Plugin {
 		add_action( 'init', array( $this, 'load_textdomain' ), 0 );
 		add_action( 'init', array( $this, 'register_image_sizes' ), 10 );
 		add_action( 'wp_footer', array( $renderer, 'render_global' ) );
+	}
+
+	/**
+	 * Return the AI provider manager.
+	 *
+	 * @return ProviderManager
+	 */
+	public function provider_manager(): ProviderManager {
+		if ( ! $this->manager instanceof ProviderManager ) {
+			$this->manager = new ProviderManager( array(), new PromptGuard() );
+		}
+
+		return $this->manager;
 	}
 
 	/**
