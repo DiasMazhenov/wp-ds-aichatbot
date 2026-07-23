@@ -308,7 +308,7 @@ final class AppearanceSettings {
 					</button>
 					<div class="wpdsac-chat__panel" data-wpdsac-preview-panel>
 						<div class="wpdsac-chat__conversation" data-wpdsac-conversation>
-							<div class="wpdsac-chat__messages" aria-live="polite">
+							<div class="wpdsac-chat__messages" aria-live="polite" aria-atomic="false" role="log">
 								<div class="wpdsac-chat__message-row wpdsac-chat__message-row--bot">
 									<?php if ( '' !== $avatar_url && WPDSAC_URL . 'wp-chatbot.svg' !== $avatar_url ) : ?>
 										<span class="wpdsac-chat__avatar-frame" aria-hidden="true">

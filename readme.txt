@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.106
+Stable tag: 0.5.107
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,14 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.107 =
+
+* Accessibility: focus trap keeps keyboard navigation within chat panel when open.
+* Accessibility: Escape key closes lead modal dialog (standard dialog pattern).
+* Accessibility: aria-label on chat section and panel for screen readers.
+* Accessibility: aria-live="polite" and role="log" on messages container for new message announcements.
+* Accessibility: Escape key collapses expanded chat when no modal is open.
 
 = 0.5.106 =
 

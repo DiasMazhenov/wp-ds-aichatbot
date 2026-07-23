@@ -1,6 +1,6 @@
 # WP DS AI Chatbot — рабочий контекст
 
-Последнее обновление: 2026-07-22
+Последнее обновление: 2026-07-23
 
 ## Последние изменения (сессии 2026-07-21 – 2026-07-22, версии 0.5.55 – 0.5.89)
 
@@ -52,6 +52,7 @@
 - **0.5.104**: Фон композера убран полностью — из CSS, inline_style, настроек админки, defaults, color_keys, number_constraints.
 - **0.5.105**: Ссылка «Настройки» в plugin row actions. Author URI: https://mazhenov.kz/.
 - **0.5.106**: **Критическое исправление безопасности**: утечка административных ссылок через AI-навигацию. Причина: `document.querySelectorAll('a[href]')` собирал ссылки из admin bar, `/wp-admin/`, служебных areas. Исправление: client-side — ссылки только из публичных областей DOM + isPublicUrl() фильтр; server-side — `UrlDenylist` с decode/dot-segment/backslash/case защитой в ChatController и ProviderManager; PromptGuard — правила anti-leak о недоступности админки, БД, плагинов. 13 новых unit-тестов, 9 integration-ассертов.
+- **0.5.107**: Accessibility — focus trap для chat panel (Tab цикл по focusable элементам), Escape закрывает lead modal и сворачивает чат, `aria-label` на секции и панели, `aria-live="polite"` + `role="log"` на контейнере сообщений для screen-reader announcement новых сообщений.
 
 ## Обязательная инструкция агенту перед каждым push
 

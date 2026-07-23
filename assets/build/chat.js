@@ -19,6 +19,8 @@
 	const leadState = new WeakMap();
 	const reengageTimers = new WeakMap();
 	const reengageInFlight = new WeakMap();
+	let activeFocusTrap = null;
+	const leadFocusTrapHandlers = new WeakMap();
 
 	// ── Audio ──────────────────────────────────────────
 
@@ -1023,6 +1025,70 @@
 		}
 	};
 
+	// ── Accessibility: Focus Trap ─────────────────────
+
+	const getFocusableElements = (container) =>
+		container.querySelectorAll(
+			'a[href], button:not([disabled]):not([tabindex="-1"]), input:not([disabled]):not([tabindex="-1"]), textarea:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])'
+		);
+
+	const trapFocus = (chat, event) => {
+		if (event.key !== 'Tab') return;
+		const panel = chat.querySelector('.wpdsac-chat__panel');
+		if (!panel || panel.hidden) return;
+
+		const focusable = getFocusableElements(panel);
+		if (!focusable.length) return;
+
+		const first = focusable[0];
+		const last = focusable[focusable.length - 1];
+
+		if (event.shiftKey) {
+			if (document.activeElement === first) {
+				event.preventDefault();
+				last.focus();
+			}
+		} else if (document.activeElement === last) {
+			event.preventDefault();
+			first.focus();
+		}
+	};
+
+	const enableFocusTrap = (chat) => {
+		disableFocusTrap();
+		activeFocusTrap = (event) => trapFocus(chat, event);
+		document.addEventListener('keydown', activeFocusTrap);
+	};
+
+	const disableFocusTrap = () => {
+		if (activeFocusTrap) {
+			document.removeEventListener('keydown', activeFocusTrap);
+			activeFocusTrap = null;
+		}
+	};
+
+	const trapLeadFocus = (lead, event) => {
+		if (event.key !== 'Tab') return;
+		const dialog = lead.querySelector('.wpdsac-chat__lead-dialog');
+		if (!dialog) return;
+
+		const focusable = getFocusableElements(dialog);
+		if (!focusable.length) return;
+
+		const first = focusable[0];
+		const last = focusable[focusable.length - 1];
+
+		if (event.shiftKey) {
+			if (document.activeElement === first) {
+				event.preventDefault();
+				last.focus();
+			}
+		} else if (document.activeElement === last) {
+			event.preventDefault();
+			first.focus();
+		}
+	};
+
 	// ── Modal Management ──────────────────────────────
 
 	const setExpanded = (chat, expanded) => {
@@ -1033,6 +1099,7 @@
 		chat.classList.toggle('is-expanded', expanded);
 
 		if (expanded) {
+			enableFocusTrap(chat);
 			const intro = chat.querySelector('[data-wpdsac-intro-bubble]');
 			if (intro) {
 				intro.hidden = true;
@@ -1045,6 +1112,8 @@
 				clearStoredContextReplies(chat);
 				renderContextActions(chat, stored);
 			}
+		} else {
+			disableFocusTrap();
 		}
 	};
 
@@ -1089,6 +1158,9 @@
 			form.elements.request.value = details.request;
 		}
 		window.requestAnimationFrame(() => lead.querySelector('input:not([type="hidden"])')?.focus());
+		const leadTrap = (event) => trapLeadFocus(lead, event);
+		leadFocusTrapHandlers.set(lead, leadTrap);
+		document.addEventListener('keydown', leadTrap);
 		clearStoredContextReplies(chat);
 	};
 
@@ -1097,6 +1169,11 @@
 			return;
 		}
 
+		const leadTrap = leadFocusTrapHandlers.get(lead);
+		if (leadTrap) {
+			document.removeEventListener('keydown', leadTrap);
+			leadFocusTrapHandlers.delete(lead);
+		}
 		lead.hidden = true;
 		document.body.classList.remove('wpdsac-modal-open');
 		const returnFocus = modalReturnFocus.get(lead);
@@ -1593,5 +1670,21 @@
 				}
 			});
 		}
+	});
+
+	// ── Event: Escape to collapse chat ─────────────────
+
+	document.addEventListener('keydown', (event) => {
+		if (event.key !== 'Escape') return;
+		const lead = document.querySelector('[data-wpdsac-lead]:not([hidden])');
+		if (lead) {
+			event.preventDefault();
+			closeLeadForm(lead);
+			return;
+		}
+		const chat = document.querySelector('[data-wpdsac-chat].is-expanded');
+		if (!chat) return;
+		event.preventDefault();
+		setExpanded(chat, false);
 	});
 })();

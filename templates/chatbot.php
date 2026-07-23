@@ -26,6 +26,7 @@ if ( ! $view['show_toggle_icon'] ) {
 	id="<?php echo esc_attr( $view['id'] ); ?>"
 	class="<?php echo esc_attr( $classes ); ?>"
 	style="<?php echo esc_attr( $view['appearance'] ); ?>"
+	aria-label="<?php echo esc_attr( $view['title'] ); ?>"
 	data-wpdsac-chat
 	data-wpdsac-reply-sound="<?php echo esc_attr( $view['reply_sound'] ); ?>"
 	data-wpdsac-intro-trigger="<?php echo esc_attr( $view['intro_trigger'] ); ?>"
@@ -66,10 +67,12 @@ if ( ! $view['show_toggle_icon'] ) {
 	<div
 		id="<?php echo esc_attr( $panel_id ); ?>"
 		class="wpdsac-chat__panel"
+		role="complementary"
+		aria-label="<?php echo esc_attr( $view['title'] ); ?>"
 		<?php echo $view['expanded'] ? '' : 'hidden'; ?>
 	>
 		<div class="wpdsac-chat__conversation" data-wpdsac-conversation>
-			<div class="wpdsac-chat__messages" aria-live="polite">
+			<div class="wpdsac-chat__messages" aria-live="polite" aria-atomic="false" role="log">
 				<div class="wpdsac-chat__message-row wpdsac-chat__message-row--bot">
 					<?php if ( '' !== $view['avatar_url'] ) : ?>
 						<span class="wpdsac-chat__avatar-frame" aria-hidden="true">
