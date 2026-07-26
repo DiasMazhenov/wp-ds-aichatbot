@@ -156,13 +156,15 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.112`: trusted `agent-safety` защищает рабочий код и критические тесты, не блокируя обязательную синхронизацию patch-версии.
+Версия `0.5.113`: CSV-экспорт лидов с защитой от CSV-инъекции и UTF-8 BOM.
 
-### Выполнено в 0.5.112
+### Выполнено в 0.5.113
 
-- [x] `tests/Unit/bootstrap.php` исключён из immutable-списка и остаётся обязательным version-sync файлом.
-- [x] Self-test подтверждает разрешённое совместное изменение runtime addition и patch-version bootstrap.
-- [x] Задокументирована maintainer-процедура временного изменения самого trusted guard с немедленным восстановлением Ruleset.
+- [x] Кнопка «Export CSV» на странице `Инструменты → DS AI Leads`.
+- [x] Nonce-protected export с capability `manage_options`.
+- [x] UTF-8 BOM для совместимости с Excel.
+- [x] Защита от CSV-инъекции: ячейки с `=`, `+`, `-`, `@` получают префикс `'`.
+- [x] Unit-тесты для `sanitize_csv_cell` в `tests/Unit/CsvExportTest.php`.
 
 ### Выполнено в 0.5.111
 
@@ -230,7 +232,7 @@ wp-ds-aichatbot/
 #### 4. Лиды и интеграции
 - [x] Поле email в lead-форме — 0.5.102.
 - [x] Webhook URL → POST при новом лиде — 0.5.102.
-- [ ] CSV-экспорт лидов из админки.
+- [x] CSV-экспорт лидов из админки — 0.5.113.
 
 #### 5. Accessibility
 - [x] Навигация с клавиатуры, focus trap, `role="log"` — 0.5.107.
