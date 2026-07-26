@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.110
+Stable tag: 0.5.111
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,14 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.111 =
+
+* Agent safety: a trusted `pull_request_target` guard runs from `main` without executing proposed code.
+* Immutable contracts: ordinary pull requests cannot change CI, test runners, packaging, agent rules or critical regression tests.
+* Destructive-change protection: runtime/test deletion, major runtime shrinkage and reduced test signals fail before merge.
+* Guard self-test: safe additions pass while workflow weakening, runtime deletion and regression-test removal are rejected.
+* Agent protocol: OpenCode must trace the real flow, prove the root cause, reuse existing modules, make a minimal DRY fix and review its own diff before reporting success.
 
 = 0.5.110 =
 

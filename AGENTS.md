@@ -16,6 +16,25 @@ These instructions are mandatory for every agent working in this repository.
 - Contextual reply buttons belong only in `[data-wpdsac-context-actions]`, inside `[data-wpdsac-actions]`, above the message form and outside `[data-wpdsac-messages]`.
 - Do not implement trusted server instructions as fake visitor messages.
 
+## Evidence-driven engineering protocol
+
+Follow this order for every non-trivial task:
+
+1. Convert the request into explicit acceptance criteria and identify the real user-visible failure.
+2. Use Graphify only to narrow the search, then verify every important claim in the current source.
+3. Trace the complete data flow and every caller of the shared function before editing it.
+4. Search for an existing module, helper, style or test contract and reuse it instead of duplicating behavior.
+5. State the root cause from evidence. Do not edit code while the cause is still a guess.
+6. Make the smallest DRY change at the shared root cause. Do not rewrite a working module for a local symptom.
+7. Add or preserve a behavioral regression check that would fail before the fix and pass after it.
+8. Review `git diff --stat`, `git diff` and deleted lines before tests; investigate every unexpected file or deletion.
+9. Run the applicable checks once after the implementation stabilizes. Fix product code first; change a stale test only with evidence that its contract changed.
+10. Report exact files, checks, commit, CI result and remaining limitations. Never claim success from source inspection alone.
+
+Stop and ask the owner before destructive changes, ambiguous architecture changes,
+security/privacy relaxation, dependency replacement or any modification protected
+by the agent guard.
+
 ## Frontend CSS isolation
 
 All component styles must be rooted under `.wpdsac-chat` or `[data-wpdsac-chat]`.
@@ -52,6 +71,15 @@ When a test fails:
 4. Never replace behavioral coverage with a simple source-text presence check.
 5. Never use `continue-on-error`, `if: always()`, delete a useful assertion, or broadly relax a selector/security check merely to turn CI green.
 
+## Immutable agent guardrails
+
+- Every agent change goes through a branch and pull request. Never push directly to `main`.
+- `.github/workflows/agent-safety.yml` runs trusted code from `main`; never modify or bypass it in a feature or fix PR.
+- Do not modify protected CI, test-runner, packaging, OpenCode-rule or critical regression files listed in `scripts/agent-change-guard.sh`.
+- Do not delete or rename existing runtime or test files. Add or deprecate code without erasing the working implementation.
+- Do not reduce the number of PHPUnit test methods or JavaScript assertions, shrink a runtime file by more than 40%, or delete more than 500 runtime lines in one PR.
+- If a legitimate task requires a protected or destructive change, stop and ask the repository owner to perform a separate maintainer-controlled policy change. Never weaken the guard to make the PR pass.
+
 ## Version, documentation, and push gate
 
 - Change only the third version number: `0.5.x`.
@@ -60,4 +88,3 @@ When a test fails:
 - Build the ZIP only from the committed `HEAD`, verify it with `unzip -t`, and verify the version and required `assets/build` files inside it.
 - Push only after local checks are green. Then wait for every GitHub Actions job. If CI fails, inspect the first failed job before editing anything.
 - Report the commit hash and commit time in `Asia/Almaty`.
-

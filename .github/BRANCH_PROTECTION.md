@@ -5,13 +5,13 @@ Use a GitHub repository ruleset targeting the `main` branch with:
 - deletion and force pushes blocked;
 - pull requests required;
 - branches required to be up to date before merging;
-- `quality-gate` required as the stable status check;
+- `quality-gate` and `agent-safety` required as stable status checks;
 - stale approvals dismissed after new commits;
 - review conversations resolved before merging.
 
-The safe initial ruleset requires pull requests and `quality-gate`, but keeps
-required approvals at zero while the owner and automation share one GitHub
-identity.
+The safe initial ruleset requires pull requests, `quality-gate` and the trusted
+`agent-safety` check, but keeps required approvals at zero while the owner and
+automation share one GitHub identity.
 
 ## Identity requirement
 
@@ -28,5 +28,5 @@ account, keep `@DiasMazhenov` as the `CODEOWNERS` owner, and then enable:
 - no bypass permission for the bot account.
 
 Until a separate bot identity exists, keep required approvals at zero to avoid
-locking the owner out. The PR and green `quality-gate` remain technically
-required; review the diff manually before merging.
+locking the owner out. The PR, `quality-gate` and `agent-safety` remain
+technically required; review the diff manually before merging.
