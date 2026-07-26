@@ -44,9 +44,17 @@ final class Assets {
 		);
 
 		wp_register_script(
+			'wpdsac-shared',
+			WPDSAC_URL . 'assets/build/wpdsac-shared.js',
+			array(),
+			WPDSAC_VERSION,
+			true
+		);
+
+		wp_register_script(
 			'wpdsac-chat',
 			WPDSAC_URL . 'assets/build/chat.js',
-			array(),
+			array( 'wpdsac-shared' ),
 			WPDSAC_VERSION,
 			true
 		);
@@ -63,6 +71,7 @@ final class Assets {
 		}
 
 		wp_enqueue_style( 'wpdsac-chat' );
+		wp_enqueue_script( 'wpdsac-shared' );
 		wp_enqueue_script( 'wpdsac-chat' );
 
 		if ( $this->localized ) {
@@ -70,7 +79,7 @@ final class Assets {
 		}
 
 		wp_localize_script(
-			'wpdsac-chat',
+			'wpdsac-shared',
 			'wpdsacChatConfig',
 			array(
 				'restUrl'   => esc_url_raw( rest_url( 'wp-ds-aichatbot/v1' ) ),

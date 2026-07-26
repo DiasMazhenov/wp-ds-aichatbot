@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.114
+Stable tag: 0.5.115
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,15 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.115 =
+
+* Architecture: extracted shared JS utilities (request, scrollToLatest, renderMarkdown, appendMessage, etc.) into wpdsac-shared.js loaded before chat.js.
+* Reduced chat.js from 1898 to 1588 lines (16% smaller) by moving reusable rendering and DOM functions to a shared module.
+* wpdsac-shared.js exposes all shared functions on window.wpdsacShared for consumption by chat.js.
+* Chat\Assets registers wpdsac-shared as a dependency to guarantee correct load order.
+* Behavioral tests verify the shared module API, dependency chain, and chat.js no longer defines extracted functions locally.
+* Integration tests updated to validate wpdsac-shared.js content.
 
 = 0.5.114 =
 
