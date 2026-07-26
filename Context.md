@@ -6,7 +6,8 @@
 
 **Коммит:** `af9b42c` (слит в main 2026-07-26 18:44 +05 Asia/Almaty)
 **PR:** https://github.com/DiasMazhenov/wp-ds-aichatbot/pull/7
-**Статус:** Тестирование завершено, все проверки пройдены, PR слит.
+**Дополнение:** https://github.com/DiasMazhenov/wp-ds-aichatbot/pull/8 (слит 2026-07-26 18:48 +05)
+**Статус:** Тестирование завершено, все проверки пройдены, все PR слиты.
 
 ### Что сделано
 - Полный production acceptance test текущей версии 0.5.115 без изменения кода
