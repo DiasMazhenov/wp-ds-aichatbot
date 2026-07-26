@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.115
+Stable tag: 0.5.116
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,13 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.116 =
+
+* Security audit: evidence-driven review of REST/AJAX nonces, capabilities, API key storage, SQL, input sanitization, output escaping, rate limits, request locks, privacy/consent, RAG performance, cron/transients, CSS isolation and production ZIP size.
+* Fixed PromptGuard protected_instructions: chatbot name instruction now uses a real newline separator instead of a visible literal \n escape sequence in the AI prompt.
+* Fixed uninstall.php to clear wpdsac_send_conversation_notification hook, matching deactivator behaviour.
+* Behavioral regression test PromptGuardFormatTest verifies policy blocks are separated by real newlines and contain no visible escape sequences.
 
 = 0.5.115 =
 

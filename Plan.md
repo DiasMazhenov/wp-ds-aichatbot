@@ -156,7 +156,14 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.115`: Рефакторинг JS-модулей — общие функции вынесены в `wpdsac-shared.js`.
+Версия `0.5.116`: Evidence-driven security audit — исправлен битый промпт в PromptGuard, синхронизирован uninstall cron.
+
+### Выполнено в 0.5.116
+
+- [x] Evidence-driven security audit: REST/AJAX, nonce/capabilities, API keys, SQL, sanitization/escaping, rate limits/locks, privacy/consent, RAG, cron/transients, CSS isolation, ZIP size.
+- [x] PromptGuard: исправлен `'\n- Your public chatbot name'` → `"\n- Your public chatbot name"` (реальный перенос строки вместо видимого литерала).
+- [x] Uninstall: добавлен пропущенный `wpdsac_send_conversation_notification` в список очищаемых хуков.
+- [x] `PromptGuardFormatTest.php` — 4 behavioral regression теста: новые строки-разделители, отсутствие escape-последовательностей, порядок блоков политики.
 
 ### Выполнено в 0.5.115
 

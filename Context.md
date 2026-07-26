@@ -2,11 +2,44 @@
 
 Последнее обновление: 2026-07-26
 
+## Сессия 2026-07-27 — Evidence-driven security audit (0.5.116)
+
+**Статус:** Аудит завершен, исправления внесены, тесты проходят.
+
+### Области аудита
+- REST/AJAX: все публичные эндпоинты защищены подписанными сессионными токенами (HMAC-SHA256). AJAX/админка: nonce + `manage_options`.
+- API-ключи: non-autoload options, приоритет constant→env→option, write-only (никогда не в HTML).
+- SQL: `$wpdb->prepare()` с `%i`/`%s`/`%d`, HMAC-хеши сессий, без сырых пользовательских данных.
+- Input/Output: `sanitize_text_field`, `sanitize_textarea_field`, `sanitize_email`, `absint`, `esc_html`, `esc_attr`, `esc_url`.
+- Rate limits: атомарные upsert, IP из `REMOTE_ADDR` (без X-Forwarded-For), daily budget.
+- Privacy: logging OFF по умолчанию, HMAC-хеши, exporter/eraser, retention cron.
+- RAG: keyword search (8 terms, 80 candidates), семантический поиск (до 500 chunks) — приемлемо.
+- Cron: Activator/Deactivator/Uninstall синхронизированы.
+- CSS: полная изоляция под `.wpdsac-chat`, 3 разрешённых исключения.
+
+### Исправлено
+- **PromptGuard**: `'\n- Your public chatbot name'` (одинарные кавычки = литерал `\n`) → `"\n- Your public chatbot name"` (двойные кавычки = реальный перенос строки). Затрагивало все установки с настроенным `title`.
+- **Uninstall**: добавлен пропущенный `wpdsac_send_conversation_notification` (было 4 хука, Deactivator чистит 5).
+
+### Добавлено
+- `tests/Unit/PromptGuardFormatTest.php` — 4 behavioral regression теста: реальный newline перед инструкцией имени, отсутствие видимых escape-последовательностей, порядок блоков политики.
+
+### Не исправлено (оставлено как есть)
+- RAG: `EmbeddingService::search` загружает до 500 chunks для cosine similarity — bounded, приемлемо.
+- `RateLimiter` при пустом `REMOTE_ADDR` использует `'unknown'` как fallback — expected behaviour.
+
+### Результаты проверок
+- `composer lint` — OK
+- `composer test:unit` — 84 tests, 301 assertions (+4 tests, +25 assertions vs 0.5.115)
+- `composer validate --strict` — OK
+- `node --check` all JS files — OK
+- `git diff --check` — OK
+
 ## Сессия 2026-07-26 — Production acceptance test (0.5.115)
 
 **Коммит:** `af9b42c` (слит в main 2026-07-26 18:44 +05 Asia/Almaty)
 **PR:** https://github.com/DiasMazhenov/wp-ds-aichatbot/pull/7
-**Дополнение:** https://github.com/DiasMazhenov/wp-ds-aichatbot/pull/8 (слит 2026-07-26 18:48 +05)
+**Дополнение:** https://github.com/DiasMazhenov/wp-ds-aichatbot/pull/8 + #9 (слит 2026-07-26 18:51 +05)
 **Статус:** Тестирование завершено, все проверки пройдены, все PR слиты.
 
 ### Что сделано
