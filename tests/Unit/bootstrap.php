@@ -10,12 +10,33 @@ define( 'DAY_IN_SECONDS', 86400 );
 define( 'MINUTE_IN_SECONDS', 60 );
 define( 'HOUR_IN_SECONDS', 3600 );
 define( 'WPDSAC_PATH', dirname( __DIR__, 2 ) . '/' );
-define( 'WPDSAC_VERSION', '0.5.113' );
+define( 'WPDSAC_VERSION', '0.5.114' );
 define( 'WPDSAC_FILE', WPDSAC_PATH . 'wp-ds-aichatbot.php' );
 
 $GLOBALS['wpdsac_test_options'] = array();
 $GLOBALS['wpdsac_test_settings_errors'] = array();
 $GLOBALS['wpdsac_test_transients'] = array();
+
+// Minimalwpdb stub for unit tests.
+$GLOBALS['wpdb'] = new class {
+	public $options = 'wp_options';
+
+	public function prepare( string $sql, ...$args ): string {
+		unset( $args );
+
+		return $sql;
+	}
+
+	public function query( string $sql ): bool {
+		unset( $sql );
+
+		return true;
+	}
+
+	public function esc_like( string $text ): string {
+		return '\\' . implode( '', str_split( $text ) );
+	}
+};
 
 final class WP_Error {
 
@@ -141,6 +162,10 @@ function current_time( string $type, $gmt = 0 ): int {
 	unset( $type, $gmt );
 
 	return (int) gmdate( 'G', time() );
+}
+
+function get_current_blog_id(): int {
+	return 1;
 }
 
 require_once WPDSAC_PATH . 'src/Support/Autoloader.php';

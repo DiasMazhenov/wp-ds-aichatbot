@@ -88,7 +88,7 @@ final class Renderer {
 			'avatar_position_y'   => $pos_y,
 			'avatar_scale'        => round( $scale / 100, 2 ),
 			'expanded'            => ! empty( $options['expanded'] ),
-			'appearance'          => Appearance::inline_style( $appearance ),
+			'appearance'          => Appearance::cached_inline_style( $appearance ),
 			'launcher_animation'  => $appearance['launcher_animation'],
 			'message_animation'   => ! empty( $appearance['message_animation_enabled'] ),
 			'message_word_delay'  => absint( $appearance['message_word_delay'] ),
