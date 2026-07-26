@@ -175,7 +175,7 @@ final class EmbeddingService {
 			return array();
 		}
 
-		$chunks = $this->repository->fetch_chunks_with_embeddings( 500 );
+		$chunks = $this->repository->fetch_chunks_with_embeddings( 500, $query );
 		$scored = array();
 
 		foreach ( $chunks as $chunk ) {
