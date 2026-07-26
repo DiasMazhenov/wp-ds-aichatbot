@@ -76,6 +76,7 @@ When a test fails:
 - Every agent change goes through a branch and pull request. Never push directly to `main`.
 - `.github/workflows/agent-safety.yml` runs trusted code from `main`; never modify or bypass it in a feature or fix PR.
 - Do not modify protected CI, test-runner, packaging, OpenCode-rule or critical regression files listed in `scripts/agent-change-guard.sh`.
+- Version synchronization files, including `tests/Unit/bootstrap.php`, are intentionally editable and must remain synchronized exactly as required below.
 - Do not delete or rename existing runtime or test files. Add or deprecate code without erasing the working implementation.
 - Do not reduce the number of PHPUnit test methods or JavaScript assertions, shrink a runtime file by more than 40%, or delete more than 500 runtime lines in one PR.
 - If a legitimate task requires a protected or destructive change, stop and ask the repository owner to perform a separate maintainer-controlled policy change. Never weaken the guard to make the PR pass.

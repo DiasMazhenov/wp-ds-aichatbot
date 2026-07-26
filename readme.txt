@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.111
+Stable tag: 0.5.112
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,12 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.112 =
+
+* Guard conflict fix: the mandatory unit-test bootstrap can be updated together with every patch version.
+* Guard self-test now proves that synchronized version changes pass while protected regression contracts remain immutable.
+* Documented the short maintainer-controlled procedure for changing the trusted guard without leaving branch protection disabled.
 
 = 0.5.111 =
 
