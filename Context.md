@@ -4,7 +4,9 @@
 
 ## Сессия 2026-07-27 — RAG keyword pre-filter optimisation (0.5.117)
 
-**Статус:** Оптимизация завершена, тесты проходят.
+**Коммит:** `47ad1f7` (слит в main 2026-07-27 01:55 +05 Asia/Almaty)
+**PR:** https://github.com/DiasMazhenov/wp-ds-aichatbot/pull/12
+**Статус:** Оптимизация завершена, CI green, PR слит.
 
 ### Проблема
 `EmbeddingService::search()` загружал все 500 embedding-строк в память через `fetch_chunks_with_embeddings(500)`, затем вычислял cosine similarity для каждой. Каждая строка содержала JSON-вектор (1536 floats) + content — до нескольких MB в PHP-памяти.
