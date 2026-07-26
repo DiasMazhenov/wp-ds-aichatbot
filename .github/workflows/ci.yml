@@ -35,6 +35,8 @@ jobs:
           else
             git diff --check "$BASE_SHA" "$HEAD_SHA"
           fi
+      - name: Agent guard self-test
+        run: bash tests/Scripts/agent-change-guard-test.sh
 
   php-lint:
     runs-on: ubuntu-latest

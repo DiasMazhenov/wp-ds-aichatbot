@@ -156,7 +156,16 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.110`: надёжный SSE и контекстные ответы 0.5.109 защищены единым CI quality gate и CODEOWNERS.
+Версия `0.5.111`: рабочий код и критические тесты дополнительно защищены trusted `agent-safety`, который нельзя ослабить из обычного PR.
+
+### Выполнено в 0.5.111
+
+- [x] `pull_request_target` guard исполняется из доверенного `main` и не запускает код PR.
+- [x] Защитные workflow, test runners, packaging, agent rules и критические regression-тесты неизменяемы в обычном PR.
+- [x] Удаление/rename runtime и тестов, резкое сокращение runtime и уменьшение тестовых сигналов блокируют merge.
+- [x] Self-test проверяет разрешённое добавление и три запрещённых сценария.
+- [x] OpenCode автоматически получает evidence-driven протокол: trace, root cause, reuse, minimal DRY diff, behavioral regression и self-review.
+- [x] Ruleset требует одновременно `quality-gate` и `agent-safety`.
 
 ### Выполнено в 0.5.110
 
@@ -205,6 +214,7 @@ wp-ds-aichatbot/
 - [x] Добавить `.github/CODEOWNERS` и безопасный PR-only ruleset с обязательным `quality-gate`, но без самоодобрения общего аккаунта — 0.5.110.
 - [x] Закрепить критические исправления SSE, PromptGuard, QA-кнопок и CSS regression-контрактами — покрытие подтверждено в 0.5.110.
 - [x] Включить базовый PR-only ruleset с нулём обязательных approvals и обязательным `quality-gate` — 0.5.110.
+- [x] Добавить неизменяемый из PR trusted `agent-safety` для защиты кода, CI и regression-тестов — 0.5.111.
 - [ ] После выделения OpenCode отдельной GitHub-идентичности потребовать одно человеческое CODEOWNER-одобрение.
 
 #### 3. Модульность chat.js
