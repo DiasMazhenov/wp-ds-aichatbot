@@ -156,7 +156,15 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.109`: надёжный SSE, умные контекстные варианты ответа и продолжение on-topic диалога без ложных отказов.
+Версия `0.5.110`: надёжный SSE и контекстные ответы 0.5.109 защищены единым CI quality gate и CODEOWNERS.
+
+### Выполнено в 0.5.110
+
+- [x] `preflight`: Composer validate, JavaScript syntax и whitespace по диапазону закоммиченных изменений.
+- [x] Стабильный `quality-gate` требует успешного завершения preflight, PHP lint, WPCS, PHPUnit и WordPress/Elementor integration.
+- [x] `.github/CODEOWNERS` назначает `@DiasMazhenov` владельцем всего репозитория.
+- [x] Существующие regression-контракты подтверждены для SSE chunks, DeepSeek reasoning privacy, PromptGuard, QA-маркеров/кнопок и CSS-изоляции.
+- [x] `.github/BRANCH_PROTECTION.md` описывает безопасный ruleset с учётом общей GitHub-идентичности владельца и OpenCode.
 
 ### Выполнено в 0.5.109
 
@@ -193,9 +201,11 @@ wp-ds-aichatbot/
 - [ ] Проверить CSS-изоляцию и Elementor editor iframe на целевом сайте.
 
 #### 2. Защита основной ветки
-- [ ] Добавить единый обязательный CI job `quality-gate`.
-- [ ] Добавить `.github/CODEOWNERS` и включить PR-only ruleset для `main`.
-- [ ] Закрепить критические исправления SSE, PromptGuard, QA-кнопок и CSS отдельными regression-контрактами.
+- [x] Добавить единый обязательный CI job `quality-gate` — 0.5.110.
+- [x] Добавить `.github/CODEOWNERS` и безопасный PR-only ruleset с обязательным `quality-gate`, но без самоодобрения общего аккаунта — 0.5.110.
+- [x] Закрепить критические исправления SSE, PromptGuard, QA-кнопок и CSS regression-контрактами — покрытие подтверждено в 0.5.110.
+- [x] Включить базовый PR-only ruleset с нулём обязательных approvals и обязательным `quality-gate` — 0.5.110.
+- [ ] После выделения OpenCode отдельной GitHub-идентичности потребовать одно человеческое CODEOWNER-одобрение.
 
 #### 3. Модульность chat.js
 - [ ] Разбить на модули: `session.js`, `reengage.js`, `lead.js`, `messages.js`.

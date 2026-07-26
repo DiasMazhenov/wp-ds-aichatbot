@@ -5,6 +5,37 @@ on:
   pull_request:
 
 jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Composer validate
+        run: composer validate --strict
+      - name: JS syntax check
+        run: |
+          node --check assets/build/chat.js
+          node --check assets/build/admin.js
+          node --check tests/Integration/playground-smoke.mjs
+      - name: Git diff whitespace check
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ] || [ -z "$BASE_SHA" ]; then
+            git show --check --format= "$HEAD_SHA"
+          else
+            git diff --check "$BASE_SHA" "$HEAD_SHA"
+          fi
+
   php-lint:
     runs-on: ubuntu-latest
     strategy:
@@ -69,12 +100,33 @@ jobs:
       - name: PHPUnit
         run: composer test:unit
 
-  package:
+  quality-gate:
+    if: ${{ !cancelled() }}
     needs:
+      - preflight
       - php-lint
       - integration
       - coding-standards
       - unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every verification job to pass
+        env:
+          PREFLIGHT_RESULT: ${{ needs.preflight.result }}
+          PHP_LINT_RESULT: ${{ needs.php-lint.result }}
+          INTEGRATION_RESULT: ${{ needs.integration.result }}
+          CODING_STANDARDS_RESULT: ${{ needs.coding-standards.result }}
+          UNIT_TESTS_RESULT: ${{ needs.unit-tests.result }}
+        run: |
+          test "$PREFLIGHT_RESULT" = "success"
+          test "$PHP_LINT_RESULT" = "success"
+          test "$INTEGRATION_RESULT" = "success"
+          test "$CODING_STANDARDS_RESULT" = "success"
+          test "$UNIT_TESTS_RESULT" = "success"
+
+  package:
+    needs:
+      - quality-gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.109
+Stable tag: 0.5.110
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,14 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.110 =
+
+* Repository protection: stable `quality-gate` aggregates preflight, PHP compatibility, WPCS, PHPUnit and WordPress/Elementor integration results.
+* CI preflight: Composer validation, JavaScript syntax and committed-range whitespace checks run before packaging.
+* Ownership: CODEOWNERS assigns repository review responsibility to @DiasMazhenov.
+* Main protection: pull requests and the green `quality-gate` are required; force pushes and branch deletion are blocked.
+* Regression contracts: existing SSE chunking, DeepSeek reasoning privacy, PromptGuard ordering, contextual actions and CSS isolation coverage is required by the aggregate gate.
 
 = 0.5.109 =
 
