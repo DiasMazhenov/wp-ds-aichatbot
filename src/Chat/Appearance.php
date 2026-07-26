@@ -243,6 +243,72 @@ final class Appearance {
 	}
 
 	/**
+	 * Return cached inline CSS, generating and storing it on first call per request.
+	 *
+	 * Cache key accounts for normalized settings, plugin version and blog ID
+	 * to prevent stale styles and multisite cross-contamination.
+	 *
+	 * @param array<string, mixed> $settings Normalized plugin settings.
+	 * @return string
+	 */
+	public static function cached_inline_style( array $settings ): string {
+		$values = self::sanitize( $settings );
+		$key    = self::cache_key( $values );
+
+		$cached = get_transient( $key );
+		if ( false !== $cached ) {
+			return (string) $cached;
+		}
+
+		$style = self::inline_style( $settings );
+		set_transient( $key, $style, 12 * HOUR_IN_SECONDS );
+
+		return $style;
+	}
+
+	/**
+	 * Build a deterministic cache key from normalized settings, plugin version and blog ID.
+	 *
+	 * @param array<string, mixed> $values Sanitized appearance values.
+	 * @return string
+	 */
+	private static function cache_key( array $values ): string {
+		$blog_id = get_current_blog_id();
+
+		return 'wpdsac_inline_css_' . md5( WPDSAC_VERSION . '|' . $blog_id . '|' . wp_json_encode( $values ) );
+	}
+
+	/**
+	 * Remove all cached inline CSS transients for the current blog.
+	 *
+	 * @return void
+	 */
+	public static function invalidate_cache(): void {
+		global $wpdb;
+
+		$blog_id = get_current_blog_id();
+		$prefix  = '_transient_wpdsac_inline_css_' . md5( WPDSAC_VERSION . '|' . $blog_id . '|' );
+
+		// Delete all transients matching the prefix for this blog.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Cache invalidation on settings save.
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
+				$wpdb->esc_like( $prefix ) . '%'
+			)
+		);
+
+		// Also clean up the transient timeout entries.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Cache invalidation on settings save.
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
+				$wpdb->esc_like( '_transient_timeout_wpdsac_inline_css_' . md5( WPDSAC_VERSION . '|' . $blog_id . '|' ) ) . '%'
+			)
+		);
+	}
+
+	/**
 	 * Return the safe global-position class.
 	 *
 	 * @param array<string, mixed> $settings Normalized plugin settings.

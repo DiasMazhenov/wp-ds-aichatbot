@@ -689,6 +689,9 @@ final class Settings {
 
 		update_option( self::OPTION_NAME, $settings, false );
 
+		// Invalidate cached inline CSS so the next render picks up new appearance.
+		Appearance::invalidate_cache();
+
 		$credential_store = get_option( CredentialResolver::CREDENTIALS_OPTION, array() );
 		$credential_store = is_array( $credential_store ) ? $credential_store : array();
 

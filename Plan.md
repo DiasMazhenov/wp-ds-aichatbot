@@ -156,15 +156,15 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.113`: CSV-экспорт лидов с защитой от CSV-инъекции и UTF-8 BOM.
+Версия `0.5.114`: Кеширование inline CSS с учётом настроек, версии плагина и blog ID.
 
-### Выполнено в 0.5.113
+### Выполнено в 0.5.114
 
-- [x] Кнопка «Export CSV» на странице `Инструменты → DS AI Leads`.
-- [x] Nonce-protected export с capability `manage_options`.
-- [x] UTF-8 BOM для совместимости с Excel.
-- [x] Защита от CSV-инъекции: ячейки с `=`, `+`, `-`, `@` получают префикс `'`.
-- [x] Unit-тесты для `sanitize_csv_cell` в `tests/Unit/CsvExportTest.php`.
+- [x] `Appearance::cached_inline_style()` — кеширование CSS custom properties в transient (12h TTL).
+- [x] Ключ кеша: `md5(WPDSAC_VERSION . '|' . get_current_blog_id() . '|' . json_encode(normalized_values))`.
+- [x] Инвалидация кеша в `Settings::save_ajax()` после `update_option`.
+- [x] Защита от межсайтового смешивания: `get_current_blog_id()` в ключе кеша.
+- [x] Unit-тесты для cache hit, miss, different keys и invalidation в `InlineStyleCacheTest.php`.
 
 ### Выполнено в 0.5.111
 
@@ -239,7 +239,7 @@ wp-ds-aichatbot/
 - [x] Анонсирование screen-reader'ом — 0.5.107.
 
 #### 6. Кеширование inline_style
-- [ ] Transient для CSS, инвалидация при сохранении.
+- [x] Transient для CSS, инвалидация при сохранении — 0.5.114.
 
 #### 7. Visual regression tests
 - [ ] Playwright скриншоты в CI, блокировка регресса.
