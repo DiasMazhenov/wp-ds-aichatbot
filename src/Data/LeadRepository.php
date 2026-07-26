@@ -101,6 +101,25 @@ final class LeadRepository {
 	}
 
 	/**
+	 * Return all leads ordered by id ascending for CSV export.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function all(): array {
+		global $wpdb;
+
+		$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- CSV export for administrators.
+			$wpdb->prepare(
+				'SELECT id, name, email, phone, request_text, consent_text, created_at, expires_at FROM %i ORDER BY id ASC',
+				Migrator::leads_table()
+			),
+			ARRAY_A
+		);
+
+		return is_array( $rows ) ? $rows : array();
+	}
+
+	/**
 	 * Export leads matching an email address.
 	 *
 	 * @param string $email Email address.
