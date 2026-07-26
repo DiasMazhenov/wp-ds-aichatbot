@@ -204,19 +204,50 @@ final class Repository {
 	}
 
 	/**
-	 * Fetch chunks that have stored embeddings, bounded.
+	 * Fetch chunks that have stored embeddings, optionally pre-filtered
+	 * by keyword relevance to reduce memory and CPU during cosine ranking.
 	 *
-	 * @param int $limit Maximum rows.
+	 * @param int         $limit Maximum rows after filtering.
+	 * @param string|null $query Optional visitor query for keyword pre-filtering.
 	 * @return array<int, array{id: int, title: string, source_url: string, content: string, embedding: string}>
 	 */
-	public function fetch_chunks_with_embeddings( int $limit = 20 ): array {
+	public function fetch_chunks_with_embeddings( int $limit = 20, ?string $query = null ): array {
 		global $wpdb;
+
+		$limit = min( 500, max( 1, $limit ) );
+
+		if ( null !== $query && '' !== trim( $query ) ) {
+			$terms      = $this->terms( $query );
+			$conditions = array();
+			$arguments  = array( Migrator::knowledge_table() );
+
+			foreach ( $terms as $term ) {
+				$like         = '%' . $wpdb->esc_like( $term ) . '%';
+				$conditions[] = '(content LIKE %s OR title LIKE %s)';
+				$arguments[]  = $like;
+				$arguments[]  = $like;
+			}
+
+			if ( array() !== $conditions ) {
+				// Pre-filter by keyword overlap, then cosine-rank only
+				// the surviving candidates — typically 5–50 rows instead of 500.
+				$arguments[] = min( 200, $limit );
+				$sql         = 'SELECT id, title, source_url, content, embedding FROM %i'
+					. ' WHERE embedding IS NOT NULL'
+					. ' AND (' . implode( ' OR ', $conditions ) . ')'
+					. ' ORDER BY updated_at DESC LIMIT %d';
+				$sql         = $wpdb->prepare( $sql, $arguments ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Built from internal placeholders and clauses.
+				$rows        = $wpdb->get_results( $sql, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Semantic retrieval with keyword pre-filter.
+
+				return is_array( $rows ) ? $rows : array();
+			}
+		}
 
 		$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Semantic retrieval.
 			$wpdb->prepare(
 				'SELECT id, title, source_url, content, embedding FROM %i WHERE embedding IS NOT NULL ORDER BY updated_at DESC LIMIT %d',
 				Migrator::knowledge_table(),
-				min( 500, max( 1, $limit ) )
+				$limit
 			),
 			ARRAY_A
 		);

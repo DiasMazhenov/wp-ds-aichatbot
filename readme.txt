@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.116
+Stable tag: 0.5.117
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,12 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.117 =
+
+* Performance: semantic search now uses SQL keyword pre-filtering (LIKE on content and title) before cosine similarity ranking, reducing memory from 500 full-embedding rows to typically 5-50 candidates.
+* fetch_chunks_with_embeddings() accepts optional query parameter for keyword pre-filtering.
+* Behavioral regression: RagPerformanceTest validates pre-filter path and keyword extraction.
 
 = 0.5.116 =
 

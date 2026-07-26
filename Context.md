@@ -2,6 +2,25 @@
 
 Последнее обновление: 2026-07-26
 
+## Сессия 2026-07-27 — RAG keyword pre-filter optimisation (0.5.117)
+
+**Статус:** Оптимизация завершена, тесты проходят.
+
+### Проблема
+`EmbeddingService::search()` загружал все 500 embedding-строк в память через `fetch_chunks_with_embeddings(500)`, затем вычислял cosine similarity для каждой. Каждая строка содержала JSON-вектор (1536 floats) + content — до нескольких MB в PHP-памяти.
+
+### Решение
+Keyword pre-filter на уровне SQL: `fetch_chunks_with_embeddings(500, $query)` использует `Repository::terms($query)` для построения LIKE-условий, которые отсекают нерелевантные chunks ещё до загрузки в память. Cosine вычисляется только для оставшихся 5–50 строк вместо 500.
+
+- DRY: переиспользована существующая логика `terms()`, `esc_like()`, LIKE-шаблоны из `Repository::search()`.
+- Обратная совместимость: `fetch_chunks_with_embeddings($limit)` без query работает как прежде.
+- `$wpdb`-stub в bootstrap расширен: `get_results`, `get_var`, `prefix`, `ARRAY_A`.
+
+### Результаты
+- `composer test:unit` — 87 tests, 305 assertions (+3/+4 vs 0.5.116)
+- `composer lint` — OK
+- `composer validate --strict` — OK
+
 ## Сессия 2026-07-27 — Evidence-driven security audit (0.5.116)
 
 **Коммит:** `2d3b889` (слит в main 2026-07-27 01:41 +05 Asia/Almaty)

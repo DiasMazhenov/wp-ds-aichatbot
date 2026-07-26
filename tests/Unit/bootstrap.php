@@ -9,8 +9,9 @@ define( 'ABSPATH', __DIR__ . '/' );
 define( 'DAY_IN_SECONDS', 86400 );
 define( 'MINUTE_IN_SECONDS', 60 );
 define( 'HOUR_IN_SECONDS', 3600 );
+define( 'ARRAY_A', 'ARRAY_A' );
 define( 'WPDSAC_PATH', dirname( __DIR__, 2 ) . '/' );
-define( 'WPDSAC_VERSION', '0.5.116' );
+define( 'WPDSAC_VERSION', '0.5.117' );
 define( 'WPDSAC_FILE', WPDSAC_PATH . 'wp-ds-aichatbot.php' );
 
 $GLOBALS['wpdsac_test_options'] = array();
@@ -20,6 +21,7 @@ $GLOBALS['wpdsac_test_transients'] = array();
 // Minimalwpdb stub for unit tests.
 $GLOBALS['wpdb'] = new class {
 	public $options = 'wp_options';
+	public $prefix  = 'wp_';
 
 	public function prepare( string $sql, ...$args ): string {
 		unset( $args );
@@ -31,6 +33,18 @@ $GLOBALS['wpdb'] = new class {
 		unset( $sql );
 
 		return true;
+	}
+
+	public function get_results( string $sql, string $output = OBJECT ) {
+		unset( $sql, $output );
+
+		return array();
+	}
+
+	public function get_var( string $sql, int $x = 0, int $y = 0 ) {
+		unset( $sql, $x, $y );
+
+		return null;
 	}
 
 	public function esc_like( string $text ): string {

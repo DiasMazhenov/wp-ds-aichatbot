@@ -156,7 +156,7 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.116`: Evidence-driven security audit — исправлен битый промпт в PromptGuard, синхронизирован uninstall cron.
+Версия `0.5.117`: RAG keyword pre-filter — семантический поиск фильтрует chunks через SQL LIKE перед cosine ranking, снижая память в 10x.
 
 ### Выполнено в 0.5.116
 
