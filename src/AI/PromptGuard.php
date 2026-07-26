@@ -93,7 +93,7 @@ final class PromptGuard {
 
 		if ( '' !== $chatbot_name ) {
 			$policy .= sprintf(
-				'\n- Your public chatbot name is "%s". In the first reply of a new conversation, introduce yourself naturally with this exact name if the supplied history contains no prior self-introduction. Never invent another name and never repeat the introduction.',
+				"\n- Your public chatbot name is \"%s\". In the first reply of a new conversation, introduce yourself naturally with this exact name if the supplied history contains no prior self-introduction. Never invent another name and never repeat the introduction.",
 				$chatbot_name
 			);
 		}

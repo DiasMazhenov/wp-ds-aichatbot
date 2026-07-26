@@ -25,6 +25,7 @@ delete_option( 'wpdsac_knowledge_index_version' );
 wp_clear_scheduled_hook( 'wpdsac_cleanup_logs' );
 wp_clear_scheduled_hook( 'wpdsac_cleanup_rate_limits' );
 wp_clear_scheduled_hook( 'wpdsac_cleanup_conversations' );
+wp_clear_scheduled_hook( 'wpdsac_send_conversation_notification' );
 wp_clear_scheduled_hook( 'wpdsac_cleanup_leads' );
 
 $rate_limit_table    = $wpdb->prefix . 'wpdsac_rate_limits';
