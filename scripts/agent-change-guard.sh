@@ -32,8 +32,7 @@ is_protected_file() {
 		tests/Unit/CoreSecurityTest.php|\
 		tests/Unit/QaAndReengageTest.php|\
 		tests/Unit/SseFrameParserTest.php|\
-		tests/Unit/UrlSecurityTest.php|\
-		tests/Unit/bootstrap.php)
+		tests/Unit/UrlSecurityTest.php)
 			return 0
 			;;
 	esac

@@ -30,3 +30,11 @@ account, keep `@DiasMazhenov` as the `CODEOWNERS` owner, and then enable:
 Until a separate bot identity exists, keep required approvals at zero to avoid
 locking the owner out. The PR, `quality-gate` and `agent-safety` remain
 technically required; review the diff manually before merging.
+
+## Maintainer-controlled guard changes
+
+If the guard itself has a verified conflict, prepare and test a dedicated
+maintainer PR first. Keep `quality-gate` required, temporarily remove only
+`agent-safety` from the Ruleset immediately before merging that reviewed PR,
+then restore both required checks and verify `agent-safety` with a disposable
+empty PR. Never leave the maintainer window open between tasks.

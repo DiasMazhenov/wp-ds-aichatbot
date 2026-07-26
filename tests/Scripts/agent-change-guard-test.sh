@@ -25,13 +25,15 @@ printf '<?php\nfunction test_contract() {}\n' > tests/Unit/CoreSecurityTest.php
 printf '<?php\nfunction test_qa() {}\n' > tests/Unit/QaAndReengageTest.php
 printf '<?php\nfunction test_sse() {}\n' > tests/Unit/SseFrameParserTest.php
 printf 'assert.equal(true, true);\n' > tests/Integration/playground-smoke.mjs
+printf '<?php\ndefine( "WPDSAC_VERSION", "0.5.111" );\n' > tests/Unit/bootstrap.php
 git add .
 git commit -qm "baseline"
 base_sha="$(git rev-parse HEAD)"
 
 printf '<?php\n' > src/NewModule.php
-git add src/NewModule.php
-git commit -qm "safe addition"
+printf '<?php\ndefine( "WPDSAC_VERSION", "0.5.112" );\n' > tests/Unit/bootstrap.php
+git add src/NewModule.php tests/Unit/bootstrap.php
+git commit -qm "safe addition and version synchronization"
 bash guard.sh "${base_sha}" HEAD
 
 git reset -q --hard "${base_sha}"
