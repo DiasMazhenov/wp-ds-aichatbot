@@ -1,6 +1,6 @@
 # WP DS AI Chatbot — план разработки
 
-Последнее обновление: 2026-07-23
+Последнее обновление: 2026-07-26
 
 ## Цель
 
@@ -63,7 +63,7 @@
 - [x] Атомарная защита от параллельных запросов одной сессии с TTL и ownership token.
 - [x] Глобальный rolling request budget на 24 часа и максимальный output token limit.
 - [x] Документация без hardcoded-looking credentials; примеры используют только имена server-side environment variables/constants.
-- [ ] Streaming — опциональное улучшение; текущий безопасный non-streaming режим является релизным.
+- [x] Streaming — опциональное улучшение; текущий безопасный non-streaming режим является релизным. **Реализован в 0.5.108–0.5.109**: StreamController, curl-based streaming, ReadableStream, динамические QA-кнопки.
 
 ### 5. AI provider
 
@@ -188,7 +188,7 @@ wp-ds-aichatbot/
 #### 1. Стриминг ответов AI
 - [x] Typing indicator (анимированные точки) при ожидании ответа — 0.5.101.
 - [x] Настоящий SSE-стриминг: StreamController + curl-based streaming, ReadableStream на фронте — 0.5.108.
-- [ ] Пословный рендеринг из стрима сразу при получении чанков.
+- [x] Пословный рендеринг из стрима сразу при получении чанков — 0.5.108.
 
 #### 2. Модульность chat.js
 - [ ] Разбить на модули: `session.js`, `reengage.js`, `lead.js`, `messages.js`.
@@ -208,6 +208,25 @@ wp-ds-aichatbot/
 
 #### 6. Visual regression tests
 - [ ] Playwright скриншоты в CI, блокировка регресса.
+
+### Выполнено в 0.5.109
+
+- [x] Динамические QA-кнопки: AI формирует 3–4 релевантные кнопки на основании последнего вопроса, истории и знаний сайта.
+- [x] PromptGuard: пропускает короткие ответы и уточнения в on-topic диалоге, блокирует injection/probing.
+- [x] Исправлены критические ошибки SSE: буферизация network chunks (PHP + JS), request lock до exit, нормализация и `wpdsac_chat_stream`, QA-маркеры, `reasoning_content`.
+- [x] Очищенный текст без маркеров в логировании и email.
+
+### Выполнено в 0.5.108
+
+- [x] SSE streaming: StreamController, curl-based streaming в AbstractHttpProvider, ReadableStream на фронте.
+- [x] Парсинг delta для OpenAI/DeepSeek/Anthropic, fallback через `generate()`.
+- [x] Настройка «Стримить ответы AI» (откл. по умолчанию), фильтр `wpdsac_chat_stream`.
+
+### Graphify knowledge graph (2026-07-26)
+
+- [x] Пересобран через `graphify extract --backend gemini`, commit `6cb6062`.
+- [x] Architecture: 606 nodes, 1029 links. Frontend: 80 nodes, 52 links. Tests: 118 nodes, 137 links.
+- [x] `graphify-out/` — локальный артефакт, не в Git.
 
 ### Выполнено в 0.5.107
 

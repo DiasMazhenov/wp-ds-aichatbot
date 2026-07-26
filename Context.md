@@ -1,6 +1,6 @@
 # WP DS AI Chatbot — рабочий контекст
 
-Последнее обновление: 2026-07-23
+Последнее обновление: 2026-07-26
 
 ## Последние изменения (сессии 2026-07-21 – 2026-07-22, версии 0.5.55 – 0.5.89)
 
@@ -313,3 +313,17 @@
 - Версия `0.5.37`: `LeadRepository::exists_for_session()` проверяет HMAC-хеш сессии. `ProviderManager` получает `LeadRepository` зависимостью: если лид существует, в AI-инструкции добавляется «уже оставил контакты — не предлагать», а post-processing удаляет маркеры `[[WPDSAC_ACTION|lead_form|...]]` и `[[WPDSAC_NAV|...#wpdsac-contact-form...]]`.
 - Версия `0.5.39`: ошибка сохранения лида всегда возвращает `db_message`, `table_exists` и `db_version` в REST-ответе (без привязки к `WP_DEBUG`). Frontend выводит `db_message` в консоль.
 - Версия `0.5.45`: premium quick bar с иконками (телефон, письмо, ссылка), градиентный разделитель между сообщениями и действиями, pill-контейнер ввода с кнопкой отправки внутри — **откачено**. Semantic embeddings инфраструктура: `EmbeddingsProviderInterface`, `OpenAIEmbeddingsProvider` (text-embedding-3-small), `EmbeddingService` с cosine similarity, гибридный `Retriever` (semantic → keyword fallback), схема БД v8 с колонкой `embedding`. Настройки `knowledge_semantic_enabled` и `embeddings_model`.
+
+## Graphify knowledge graph
+
+Пересобран 2026-07-26 через `graphify extract --backend gemini`, commit `6cb6062` (HEAD):
+
+| Слой | Nodes | Links | Self-loops |
+|------|-------|-------|------------|
+| architecture | 606 | 1029 | 0 |
+| frontend | 80 | 52 | 0 |
+| tests | 118 | 137 | 0 |
+
+- `graphify-out/` — локальный артефакт, не в Git (AGENTS.md).
+- Gemini семантика: architecture (71 файл, $0.008), frontend (7 файлов, $0.008). Tests — AST-only.
+- `EXTRACTED` = доказательства, `INFERRED`/`AMBIGUOUS` = гипотезы.
