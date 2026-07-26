@@ -152,7 +152,7 @@ wp-ds-aichatbot/
 └── .github/workflows/ci.yml
 ```
 
-Последнее обновление: 2026-07-23
+Последнее обновление: 2026-07-26
 
 ## Текущий статус
 
@@ -185,47 +185,42 @@ wp-ds-aichatbot/
 
 ### Следующие этапы
 
-#### 1. Стриминг ответов AI
-- [x] Typing indicator (анимированные точки) при ожидании ответа — 0.5.101.
-- [x] Настоящий SSE-стриминг: StreamController + curl-based streaming, ReadableStream на фронте — 0.5.108.
-- [x] Пословный рендеринг из стрима сразу при получении чанков — 0.5.108.
+#### 1. Production acceptance для 0.5.109
+- [ ] Обновить установленный плагин до `0.5.109` и подтвердить версию в WordPress.
+- [ ] Проверить DeepSeek в обычном и SSE-режиме без служебных маркеров и `reasoning_content`.
+- [ ] Проверить продолжение on-topic диалога без ложных отказов и динамические QA-кнопки.
+- [ ] Проверить RAG/FAQ, ссылки, лиды, email, webhook и письмо с историей диалога.
+- [ ] Проверить CSS-изоляцию и Elementor editor iframe на целевом сайте.
 
-#### 2. Модульность chat.js
+#### 2. Защита основной ветки
+- [ ] Добавить единый обязательный CI job `quality-gate`.
+- [ ] Добавить `.github/CODEOWNERS` и включить PR-only ruleset для `main`.
+- [ ] Закрепить критические исправления SSE, PromptGuard, QA-кнопок и CSS отдельными regression-контрактами.
+
+#### 3. Модульность chat.js
 - [ ] Разбить на модули: `session.js`, `reengage.js`, `lead.js`, `messages.js`.
 - [ ] Общий `chat-core.js` с `scrollToLatest`, `appendMessage`, `request()`.
 
-#### 3. Email/webhook для лидов
-- [ ] Поле email в lead-форме.
-- [ ] Webhook URL → POST при новом лиде.
+#### 4. Лиды и интеграции
+- [x] Поле email в lead-форме — 0.5.102.
+- [x] Webhook URL → POST при новом лиде — 0.5.102.
 - [ ] CSV-экспорт лидов из админки.
 
-#### 4. Accessibility
+#### 5. Accessibility
 - [x] Навигация с клавиатуры, focus trap, `role="log"` — 0.5.107.
 - [x] Анонсирование screen-reader'ом — 0.5.107.
 
-#### 5. Кеширование inline_style
+#### 6. Кеширование inline_style
 - [ ] Transient для CSS, инвалидация при сохранении.
 
-#### 6. Visual regression tests
+#### 7. Visual regression tests
 - [ ] Playwright скриншоты в CI, блокировка регресса.
-
-### Выполнено в 0.5.109
-
-- [x] Динамические QA-кнопки: AI формирует 3–4 релевантные кнопки на основании последнего вопроса, истории и знаний сайта.
-- [x] PromptGuard: пропускает короткие ответы и уточнения в on-topic диалоге, блокирует injection/probing.
-- [x] Исправлены критические ошибки SSE: буферизация network chunks (PHP + JS), request lock до exit, нормализация и `wpdsac_chat_stream`, QA-маркеры, `reasoning_content`.
-- [x] Очищенный текст без маркеров в логировании и email.
-
-### Выполнено в 0.5.108
-
-- [x] SSE streaming: StreamController, curl-based streaming в AbstractHttpProvider, ReadableStream на фронте.
-- [x] Парсинг delta для OpenAI/DeepSeek/Anthropic, fallback через `generate()`.
-- [x] Настройка «Стримить ответы AI» (откл. по умолчанию), фильтр `wpdsac_chat_stream`.
 
 ### Graphify knowledge graph (2026-07-26)
 
-- [x] Пересобран через `graphify extract --backend gemini`, commit `6cb6062`.
+- [x] Пересобран через `graphify extract --backend gemini` по code snapshot `6cb6062`.
 - [x] Architecture: 606 nodes, 1029 links. Frontend: 80 nodes, 52 links. Tests: 118 nodes, 137 links.
+- [x] JSON, `graph.html`, `GRAPH_REPORT.md` и `GRAPH_TREE.html` синхронизированы послойно.
 - [x] `graphify-out/` — локальный артефакт, не в Git.
 
 ### Выполнено в 0.5.107
@@ -275,10 +270,6 @@ wp-ds-aichatbot/
 
 - [x] Preview: `<form>` заменён на `<div>` — исправлена кнопка сохранения настроек.
 
-### Следующий обязательный этап
-
-- [ ] Production-деплой после прохождения всех CI.
-
 ### Выполнено в 0.5.92
 
 - [x] DOM: композер вынесен из `__conversation`, стал прямым потомком `__panel`.
@@ -292,10 +283,6 @@ wp-ds-aichatbot/
 - [x] 15 настроек: фон, opacity, blur, radius, padding, gap, border, shadow, spacing, scrollable кнопки, прозрачная история.
 - [x] Live preview: композер с кнопками и полем ввода, мгновенное обновление.
 - [x] Безопасность: sanitize_hex_color, числовые range, существующие defaults.
-
-### Следующий обязательный этап
-
-- [ ] Production-деплой после прохождения всех CI.
 
 ### Выполнено в 0.5.87
 

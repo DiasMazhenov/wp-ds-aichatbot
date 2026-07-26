@@ -316,7 +316,7 @@
 
 ## Graphify knowledge graph
 
-Пересобран 2026-07-26 через `graphify extract --backend gemini`, commit `6cb6062` (HEAD):
+Пересобран 2026-07-26 через `graphify extract --backend gemini` по code snapshot `6cb6062`; последующие изменения до текущего HEAD относятся только к документации:
 
 | Слой | Nodes | Links | Self-loops |
 |------|-------|-------|------------|
@@ -326,4 +326,5 @@
 
 - `graphify-out/` — локальный артефакт, не в Git (AGENTS.md).
 - Gemini семантика: architecture (71 файл, $0.008), frontend (7 файлов, $0.008). Tests — AST-only.
+- JSON, `graph.html`, `GRAPH_REPORT.md` и `GRAPH_TREE.html` синхронизированы отдельно для каждого слоя; генерация одного слоя не пишет через корневые симлинки в другой.
 - `EXTRACTED` = доказательства, `INFERRED`/`AMBIGUOUS` = гипотезы.
