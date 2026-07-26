@@ -156,7 +156,15 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.114`: Кеширование inline CSS с учётом настроек, версии плагина и blog ID.
+Версия `0.5.115`: Рефакторинг JS-модулей — общие функции вынесены в `wpdsac-shared.js`.
+
+### Выполнено в 0.5.115
+
+- [x] `wpdsac-shared.js` — общий модуль с функциями `request`, `scrollToLatest`, `renderMarkdown`, `appendMessage`, `safeNavigationUrl`, `appendAssistantContent`, `animateAssistantContent`, `assistantPreviewText`, `leadNavigationHash`.
+- [x] `chat.js` уменьшен с 1898 до 1588 строк (–16%) — локальные определения заменены деструктурой из `window.wpdsacShared`.
+- [x] `Chat\Assets` регистрирует `wpdsac-shared` как зависимость `wpdsac-chat` и локализует конфиг на `wpdsac-shared`.
+- [x] Behavioral-тесты `SharedModuleTest.php` (11 тестов): API модуля, отсутствие локальных констант, деструктуризация в chat.js, размер файла.
+- [x] Интеграционные тесты обновлены: проверка `wpdsac-shared.js` на наличие `REST request failed`, `wpdsac-contact-form`, `wpdsacShared`, `scrollToLatest`, `renderMarkdown`, `appendMessage`.
 
 ### Выполнено в 0.5.114
 
