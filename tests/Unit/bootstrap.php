@@ -11,7 +11,7 @@ define( 'MINUTE_IN_SECONDS', 60 );
 define( 'HOUR_IN_SECONDS', 3600 );
 define( 'ARRAY_A', 'ARRAY_A' );
 define( 'WPDSAC_PATH', dirname( __DIR__, 2 ) . '/' );
-define( 'WPDSAC_VERSION', '0.5.117' );
+define( 'WPDSAC_VERSION', '0.5.119' );
 define( 'WPDSAC_FILE', WPDSAC_PATH . 'wp-ds-aichatbot.php' );
 
 $GLOBALS['wpdsac_test_options'] = array();
@@ -132,6 +132,10 @@ function add_settings_error( string $setting, string $code, string $message ): v
 
 function sanitize_key( $value ): string {
 	return strtolower( (string) preg_replace( '/[^a-z0-9_\-]/i', '', (string) $value ) );
+}
+
+function wp_unslash( $value ) {
+	return $value;
 }
 
 function sanitize_text_field( $value ): string {

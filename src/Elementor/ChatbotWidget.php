@@ -129,7 +129,7 @@ final class ChatbotWidget extends \Elementor\Widget_Base {
 	 * @return void
 	 */
 	protected function render(): void {
-		if ( ! self::$chatbot_renderer instanceof Renderer ) {
+		if ( Renderer::is_elementor_editor_context() || ! self::$chatbot_renderer instanceof Renderer ) {
 			return;
 		}
 

@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.117
+Stable tag: 0.5.119
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,15 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.119 =
+
+* Elementor: also suppress the chatbot when Elementor reports edit mode through its editor API, including preview/AJAX requests without editor URL parameters.
+
+= 0.5.118 =
+
+* Elementor: the chatbot is suppressed in the Elementor editor shell and preview iframe, while remaining available on the public frontend.
+* Added regression coverage for editor URL detection.
 
 = 0.5.117 =
 

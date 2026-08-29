@@ -156,7 +156,7 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.117`: RAG keyword pre-filter — семантический поиск фильтрует chunks через SQL LIKE перед cosine ranking, снижая память в 10x.
+Версия `0.5.119`: к URL-проверке Elementor Editor добавлена нативная проверка `editor->is_edit_mode()` для preview/AJAX-запросов без editor-параметров.
 
 ### Выполнено в 0.5.116
 

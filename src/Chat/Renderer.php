@@ -115,11 +115,39 @@ final class Renderer {
 	}
 
 	/**
+	 * Determine whether the current request is an Elementor editor request.
+	 *
+	 * @return bool
+	 */
+	public static function is_elementor_editor_context(): bool {
+		if ( class_exists( '\\Elementor\\Plugin' ) && isset( \Elementor\Plugin::$instance->editor ) ) {
+			$editor = \Elementor\Plugin::$instance->editor;
+			if ( is_object( $editor ) && method_exists( $editor, 'is_edit_mode' ) && $editor->is_edit_mode() ) {
+				return true;
+			}
+		}
+
+		$action_value = isset( $_GET['action'] ) ? wp_unslash( $_GET['action'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended -- Read-only editor context, sanitized immediately below.
+		$action       = sanitize_key( $action_value );
+		$post_id      = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only editor context; capability checks remain in WordPress.
+
+		if ( 'elementor' === $action && $post_id > 0 ) {
+			return ! function_exists( 'is_admin' ) || is_admin();
+		}
+
+		return isset( $_GET['elementor-preview'] ) && absint( $_GET['elementor-preview'] ) > 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only editor context.
+	}
+
+	/**
 	 * Render the optional global chatbot.
 	 *
 	 * @return void
 	 */
 	public function render_global(): void {
+		if ( self::is_elementor_editor_context() ) {
+			return;
+		}
+
 		$options = Settings::get();
 
 		if ( empty( $options['global_enabled'] ) ) {
