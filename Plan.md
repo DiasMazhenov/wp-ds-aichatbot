@@ -156,7 +156,7 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.117`: RAG keyword pre-filter — семантический поиск фильтрует chunks через SQL LIKE перед cosine ranking, снижая память в 10x.
+Версия `0.5.118`: чатбот не выводится в Elementor Editor (`post.php?action=elementor&post=ID` и `elementor-preview=ID`), но работает на публичном frontend; добавлены unit-регрессии определения контекста.
 
 ### Выполнено в 0.5.116
 

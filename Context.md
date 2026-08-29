@@ -1,6 +1,10 @@
 # WP DS AI Chatbot — рабочий контекст
 
-Последнее обновление: 2026-07-26
+Последнее обновление: 2026-08-29
+
+## Сессия 2026-08-29 — скрытие чатбота в Elementor Editor (0.5.118)
+
+Добавлена единая проверка Elementor editor-контекста по `post.php?action=elementor&post=ID` и `elementor-preview=ID`. Глобальный renderer и Elementor widget не выводят чат внутри редактора; публичный frontend, shortcode и обычные страницы не изменены. Добавлены 3 unit-регрессии.
 
 ## Сессия 2026-07-27 — RAG keyword pre-filter optimisation (0.5.117)
 
