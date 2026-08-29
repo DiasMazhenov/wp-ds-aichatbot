@@ -156,7 +156,7 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия `0.5.118`: чатбот не выводится в Elementor Editor (`post.php?action=elementor&post=ID` и `elementor-preview=ID`), но работает на публичном frontend; добавлены unit-регрессии определения контекста.
+Версия `0.5.119`: к URL-проверке Elementor Editor добавлена нативная проверка `editor->is_edit_mode()` для preview/AJAX-запросов без editor-параметров.
 
 ### Выполнено в 0.5.116
 

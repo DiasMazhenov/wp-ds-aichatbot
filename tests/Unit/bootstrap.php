@@ -11,7 +11,7 @@ define( 'MINUTE_IN_SECONDS', 60 );
 define( 'HOUR_IN_SECONDS', 3600 );
 define( 'ARRAY_A', 'ARRAY_A' );
 define( 'WPDSAC_PATH', dirname( __DIR__, 2 ) . '/' );
-define( 'WPDSAC_VERSION', '0.5.118' );
+define( 'WPDSAC_VERSION', '0.5.119' );
 define( 'WPDSAC_FILE', WPDSAC_PATH . 'wp-ds-aichatbot.php' );
 
 $GLOBALS['wpdsac_test_options'] = array();

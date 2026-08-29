@@ -120,6 +120,13 @@ final class Renderer {
 	 * @return bool
 	 */
 	public static function is_elementor_editor_context(): bool {
+		if ( class_exists( '\\Elementor\\Plugin' ) && isset( \Elementor\Plugin::$instance->editor ) ) {
+			$editor = \Elementor\Plugin::$instance->editor;
+			if ( is_object( $editor ) && method_exists( $editor, 'is_edit_mode' ) && $editor->is_edit_mode() ) {
+				return true;
+			}
+		}
+
 		$action_value = isset( $_GET['action'] ) ? wp_unslash( $_GET['action'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended -- Read-only editor context, sanitized immediately below.
 		$action       = sanitize_key( $action_value );
 		$post_id      = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only editor context; capability checks remain in WordPress.
