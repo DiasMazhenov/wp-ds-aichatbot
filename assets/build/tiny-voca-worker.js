@@ -229,12 +229,14 @@ function fit(sentence) {
 
 async function synthesize(phones, voice, speed) {
   const count = phones.ids.length;
+  const voiceId = Array.isArray(config.voices) ? config.voices.indexOf(voice) : -1;
+  if (voiceId < 0) throw new Error("Unsupported Tiny Voca voice.");
   const integers = (values) => new ort.Tensor("int64", BigInt64Array.from(values.map(BigInt)), [1, count]);
   const scalar = (value) => new ort.Tensor("float32", Float32Array.from([value]), [1]);
   const output = await session.run({
     tokens: integers(phones.ids),
     stress: integers(phones.stress),
-    voice: new ort.Tensor("int64", BigInt64Array.from([BigInt(voice)]), [1]),
+    voice: new ort.Tensor("int64", BigInt64Array.from([BigInt(voiceId)]), [1]),
     speed: scalar(speed),
     pitch_shift: scalar(0),
     pitch_range: scalar(1),

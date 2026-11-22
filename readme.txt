@@ -39,7 +39,7 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 = 0.5.121 =
 
 * Fix Tiny Voca RU startup by bundling the pinned browser worker locally; the upstream Hugging Face worker is served as text/plain, which browsers reject in importScripts().
-* Keep the female F voice, lazy model download, and browser-only speech; include upstream Apache-2.0 notices.
+* Map the female F voice code to the model's numeric speaker ID before inference; keep model downloads lazy and speech browser-only, with upstream Apache-2.0 notices.
 
 = 0.5.120 =
 
