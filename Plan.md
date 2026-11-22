@@ -156,7 +156,7 @@ wp-ds-aichatbot/
 
 ## Текущий статус
 
-Версия 0.5.121: исправлен старт Tiny Voca RU: worker с неверным MIME text/plain теперь включён в ZIP локально по закреплённой upstream-ревизии; женский код F преобразуется в числовой ID диктора из config.voices до ONNX inference. Модельные веса и фонетизатор остаются вне ZIP и загружаются лениво; browser runtime идёт с jsDelivr. Behavioral-тест проверяет MIME, pinned asset URL и реальную передачу F как speaker ID 0. Локальные тесты и исходный CI прошли; повторный CI, merge, WP Pusher deploy и live-проверка ожидают review-фикса.
+Версия 0.5.121: исправлен старт Tiny Voca RU: worker с неверным MIME text/plain включён в ZIP локально по закреплённой upstream-ревизии; женский код F преобразуется в числовой ID диктора из config.voices до ONNX inference. Модельные веса и фонетизатор остаются вне ZIP и загружаются лениво; browser runtime идёт с jsDelivr. Behavioral-тест проверяет MIME, pinned asset URL и реальную передачу F как speaker ID 0. Локальные проверки, WordPress Playground, CI run 220 и ZIP прошли. PR #16 смержен (a3daf24), WP Pusher deployment подтверждён HTTP 200; публичная страница и worker отдают версию 0.5.121, worker — с JavaScript MIME. Реальное звучание после выкладки интерактивно не проверено.
 
 Версия `0.5.119`: к URL-проверке Elementor Editor добавлена нативная проверка `editor->is_edit_mode()` для preview/AJAX-запросов без editor-параметров.
 
