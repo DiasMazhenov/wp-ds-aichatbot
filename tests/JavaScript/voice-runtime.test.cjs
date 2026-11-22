@@ -167,6 +167,34 @@ test('mute stops audio, persists preference, and unmute starts the model again',
 	assert.equal(harness.workers[1].messages.at(-1).text, 'A new reply.');
 });
 
+test('collapsing the chat stops current speech and discards queued speech', () => {
+	const harness = createHarness();
+	harness.click();
+	const worker = harness.workers[0];
+	worker.emit({ type: 'ready' });
+	const message = worker.messages.find((entry) => entry.type === 'speak');
+	worker.emit({
+		type: 'sentence',
+		id: message.id,
+		audio: new Float32Array([0.1, 0.2]),
+		sampleRate: 22050,
+	});
+	harness.controller.speak('This queued message must not be played.');
+
+	harness.controller.collapse();
+	assert.equal(harness.audioSources[0].stopped, true);
+	worker.emit({
+		type: 'sentence',
+		id: message.id,
+		audio: new Float32Array([0.3, 0.4]),
+		sampleRate: 22050,
+	});
+	worker.emit({ type: 'done', id: message.id });
+
+	assert.equal(harness.audioSources.length, 1);
+	assert.equal(worker.messages.filter((entry) => entry.type === 'speak').length, 1);
+});
+
 test('a previously saved mute preference is applied before the visitor interacts', () => {
 	const harness = createHarness({ wpdsacVoiceMuted: '1' });
 	assert.equal(harness.button.attributes['aria-pressed'], 'false');

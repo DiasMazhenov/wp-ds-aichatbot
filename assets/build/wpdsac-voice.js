@@ -27,7 +27,7 @@
 		const sources = new Set();
 
 		if (!documentRef) {
-			return { activate: () => {}, interrupt: () => {}, speak: () => {} };
+			return { activate: () => {}, collapse: () => {}, interrupt: () => {}, speak: () => {} };
 		}
 
 		if (!storage) {
@@ -289,6 +289,10 @@
 			}
 		};
 
+		const collapse = () => {
+			interrupt();
+		};
+
 		const onClick = (event) => {
 			const target = event.target;
 			if (!target || 'function' !== typeof target.closest) {
@@ -302,7 +306,6 @@
 
 			const header = target.closest('.wpdsac-chat__toggle');
 			if (header && chat.querySelector('.wpdsac-chat__toggle')?.getAttribute('aria-expanded') === 'true') {
-				interrupt();
 				return;
 			}
 
@@ -319,7 +322,7 @@
 		updateControls();
 		documentRef.addEventListener('click', onClick);
 
-		return { activate, interrupt, speak, setMuted };
+		return { activate, collapse, interrupt, speak, setMuted };
 	};
 
 	const api = { createVoiceController };

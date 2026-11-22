@@ -1038,6 +1038,10 @@
 	// ── Modal Management ──────────────────────────────
 
 	const setExpanded = (chat, expanded) => {
+		if (!expanded && chat.classList.contains('is-expanded') && voice) {
+			voice.collapse();
+		}
+
 		const toggle = chat.querySelector('.wpdsac-chat__toggle');
 		const panel = chat.querySelector('.wpdsac-chat__panel');
 		toggle.setAttribute('aria-expanded', String(expanded));
