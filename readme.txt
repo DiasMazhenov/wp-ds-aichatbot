@@ -4,7 +4,7 @@ Tags: ai, chatbot, elementor, openai, anthropic, gemini
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.5.120
+Stable tag: 0.5.121
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,7 +20,7 @@ Each request includes a sanitized, bounded copy of the current browser chat hist
 
 The Design tab includes separate colors for the header, panel, assistant and visitor messages, input and send button; layout, typography, radii, spacing, shadow and launcher size controls; and open/collapsed live preview. New AI replies can appear word by word while their message bubble grows naturally; speed and replay preview controls are included, and reduced-motion preferences bypass the effect. The same appearance applies to global, shortcode, and Elementor chatbots. The collapsed chatbot is a compact circular launcher.
 
-Assistant messages can be read aloud automatically with [Tiny Voca RU](https://github.com/yilbegan/tiny-voca-ru). A control in the chat turns speech off or back on, and the choice is remembered in that browser. The voice worker and model files are loaded from the pinned upstream release only after the visitor interacts with the chat; they are not bundled in the plugin ZIP. The first load downloads roughly 34 MB of model assets plus browser runtime files, depending on cache and browser. Text-to-speech runs in the visitor's browser; chat text is not sent to Tiny Voca or a separate speech service. Browser autoplay rules require an initial visitor interaction before audio can play. Tiny Voca RU is distributed under Apache-2.0; see the upstream project for license details.
+Assistant messages are read aloud in the browser with the female Tiny Voca RU voice F after the visitor's first interaction. The chat control turns speech off or back on and remembers the choice in that browser. The pinned worker is included in the plugin ZIP; model assets are fetched lazily from Hugging Face and Pyodide/ONNX runtime files from jsDelivr. The first load downloads roughly 34 MB of model assets plus browser runtime files, depending on cache and browser. Chat text stays in the visitor's browser and is not sent to Tiny Voca or a separate speech service. Tiny Voca RU is distributed under Apache-2.0; the bundled worker's attribution and license are included in THIRD_PARTY_NOTICES.md.
 
 Contact collection appears only after the visitor explicitly requests contact or presses the request action. The assistant asks for a required name and phone number, while consent, bounded retention, scheduled cleanup, rate limits, administrator email notifications, and a bounded transcript remain enforced. Optionally, one separately titled transcript email is sent after an unfinished conversation becomes inactive; its timer is postponed after every reply and cancelled when that session submits a contact request.
 
@@ -35,6 +35,11 @@ An optional knowledge layer indexes published WordPress pages, posts, administra
 5. Add the [ds_ai_chatbot] shortcode, enable global display, or use the Elementor widget.
 
 == Changelog ==
+
+= 0.5.121 =
+
+* Fix Tiny Voca RU startup by bundling the pinned browser worker locally; the upstream Hugging Face worker is served as text/plain, which browsers reject in importScripts().
+* Map the female F voice code to the model's numeric speaker ID before inference; keep model downloads lazy and speech browser-only, with upstream Apache-2.0 notices.
 
 = 0.5.120 =
 
