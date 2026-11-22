@@ -1127,3 +1127,21 @@ msgstr "Инструкции для повторного вовлечения"
 
 msgid "Optional. Extra guidance for the AI when generating follow-up messages. For example: \"Ask about specific services the visitor viewed.\" Leave empty to use the main assistant instructions."
 msgstr "Дополнительные указания для AI при генерации follow-up сообщений. Например: «Спросите о конкретных услугах, которые посетитель просматривал». Оставьте пустым для использования основных инструкций ассистента."
+
+msgid "Speech is on"
+msgstr "Озвучка включена"
+
+msgid "Speech is off"
+msgstr "Озвучка выключена"
+
+msgid "Turn on speech"
+msgstr "Включить озвучку"
+
+msgid "Turn off speech"
+msgstr "Выключить озвучку"
+
+msgid "Loading the voice model. The first load may take a little while."
+msgstr "Загрузка голосовой модели. При первом запуске это может занять некоторое время."
+
+msgid "Voice playback is unavailable right now."
+msgstr "Озвучивание сейчас недоступно."

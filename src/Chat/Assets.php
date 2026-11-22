@@ -52,9 +52,17 @@ final class Assets {
 		);
 
 		wp_register_script(
+			'wpdsac-voice',
+			WPDSAC_URL . 'assets/build/wpdsac-voice.js',
+			array( 'wpdsac-shared' ),
+			WPDSAC_VERSION,
+			true
+		);
+
+		wp_register_script(
 			'wpdsac-chat',
 			WPDSAC_URL . 'assets/build/chat.js',
-			array( 'wpdsac-shared' ),
+			array( 'wpdsac-shared', 'wpdsac-voice' ),
 			WPDSAC_VERSION,
 			true
 		);
@@ -72,6 +80,7 @@ final class Assets {
 
 		wp_enqueue_style( 'wpdsac-chat' );
 		wp_enqueue_script( 'wpdsac-shared' );
+		wp_enqueue_script( 'wpdsac-voice' );
 		wp_enqueue_script( 'wpdsac-chat' );
 
 		if ( $this->localized ) {
@@ -82,10 +91,11 @@ final class Assets {
 			'wpdsac-shared',
 			'wpdsacChatConfig',
 			array(
-				'restUrl'   => esc_url_raw( rest_url( 'wp-ds-aichatbot/v1' ) ),
-				'restNonce' => is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '',
-				'streaming' => ! empty( \DiasMazhenov\WPDsAiChatbot\Admin\Settings::get()['streaming_enabled'] ),
-				'strings'   => array(
+				'restUrl'        => esc_url_raw( rest_url( 'wp-ds-aichatbot/v1' ) ),
+				'voiceWorkerUrl' => esc_url_raw( WPDSAC_URL . 'assets/build/tiny-voca-worker.js?ver=' . WPDSAC_VERSION ),
+				'restNonce'      => is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '',
+				'streaming'      => ! empty( \DiasMazhenov\WPDsAiChatbot\Admin\Settings::get()['streaming_enabled'] ),
+				'strings'        => array(
 					'connecting'       => __( 'Connecting…', 'wp-ds-aichatbot' ),
 					'sending'          => __( 'Sending…', 'wp-ds-aichatbot' ),
 					'error'            => __( 'The chat request failed. Please try again.', 'wp-ds-aichatbot' ),
@@ -96,6 +106,12 @@ final class Assets {
 					'leadPhoneInvalid' => __( 'Invalid number. Enter your phone, e.g.: 8 900 123-45-67', 'wp-ds-aichatbot' ),
 					'leadSaved'        => __( 'Thank you! We will contact you shortly.', 'wp-ds-aichatbot' ),
 					'navigate'         => __( 'Go to', 'wp-ds-aichatbot' ),
+					'voiceEnabled'     => __( 'Speech is on', 'wp-ds-aichatbot' ),
+					'voiceDisabled'    => __( 'Speech is off', 'wp-ds-aichatbot' ),
+					'voiceEnable'      => __( 'Turn on speech', 'wp-ds-aichatbot' ),
+					'voiceDisable'     => __( 'Turn off speech', 'wp-ds-aichatbot' ),
+					'voiceLoading'     => __( 'Loading the voice model. The first load may take a little while.', 'wp-ds-aichatbot' ),
+					'voiceError'       => __( 'Voice playback is unavailable right now.', 'wp-ds-aichatbot' ),
 				),
 			)
 		);
