@@ -89,6 +89,13 @@ if ( ! $view['show_toggle_icon'] ) {
 		</div>
 
 		<div class="wpdsac-chat__composer" data-wpdsac-composer>
+			<div class="wpdsac-chat__voice-controls">
+				<span class="wpdsac-chat__voice-status" data-wpdsac-voice-status role="status" aria-live="polite" hidden></span>
+				<button type="button" class="wpdsac-chat__voice-toggle" data-wpdsac-voice aria-pressed="true" aria-label="<?php esc_attr_e( 'Turn off speech', 'wp-ds-aichatbot' ); ?>">
+					<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3 9v6h4l5 4V5L7 9H3Zm12.5 3a3.5 3.5 0 0 0-2-3.16v6.31a3.5 3.5 0 0 0 2-3.15Zm-2-8.91v2.06a7 7 0 0 1 0 13.7v2.06a9 9 0 0 0 0-17.82Z"/></svg>
+					<span data-wpdsac-voice-label><?php esc_html_e( 'Speech is on', 'wp-ds-aichatbot' ); ?></span>
+				</button>
+			</div>
 			<div class="wpdsac-chat__actions" data-wpdsac-actions>
 				<div class="wpdsac-chat__quick-actions" aria-label="<?php esc_attr_e( 'Quick actions', 'wp-ds-aichatbot' ); ?>" data-wpdsac-quick-actions>
 					<?php if ( '' !== $view['call_url'] ) : ?>

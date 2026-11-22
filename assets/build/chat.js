@@ -55,6 +55,26 @@
 		return audioContext;
 	};
 
+	const voice = window.wpdsacVoice
+		? window.wpdsacVoice.createVoiceController({
+			config,
+			strings,
+			cleanText: assistantPreviewText,
+			getAudioContext: ensureAudioContext,
+		})
+		: null;
+
+	const appendBotMessage = (chat, message, animate = false) => {
+		const animation = appendMessage(chat, message, 'bot', animate);
+		Promise.resolve(animation).then(() => {
+			if (voice) {
+				voice.speak(message);
+			}
+		});
+
+		return animation;
+	};
+
 	const playTone = (context, frequency, delay, duration, volume, wave = 'sine', endFrequency = frequency) => {
 		const start = context.currentTime + delay;
 		const end = start + duration;
@@ -275,6 +295,9 @@
 			clearContextActions(chat);
 		}
 
+		if (voice) {
+			voice.speak(replyData.reply);
+		}
 		playReplySound(chat.dataset.wpdsacReplySound || 'off');
 		status.textContent = '';
 
@@ -294,7 +317,7 @@
 			const leadEl = chat.querySelector('[data-wpdsac-lead]');
 			const leadPrompt = leadEl?.dataset?.wpdsacLeadPrompt || '';
 			setTimeout(() => {
-				appendMessage(chat, leadPrompt || 'Пожалуйста, оставьте ваше имя и телефон для связи.', 'bot');
+				appendBotMessage(chat, leadPrompt || 'Пожалуйста, оставьте ваше имя и телефон для связи.');
 				leadState.set(chat, { phase: 'waiting_name', name: '' });
 			}, 600);
 		}
@@ -306,7 +329,7 @@
 		const response = await request('/chat', payload);
 
 		typing.remove();
-		const replyAnimation = appendMessage(chat, response.reply, 'bot', true);
+		const replyAnimation = appendBotMessage(chat, response.reply, true);
 		persistConversationHistory(chat);
 		await replyAnimation;
 		if (Array.isArray(response.quick_replies) && response.quick_replies.length >= 2) {
@@ -333,7 +356,7 @@
 			const leadEl = chat.querySelector('[data-wpdsac-lead]');
 			const leadPrompt = leadEl?.dataset?.wpdsacLeadPrompt || '';
 			setTimeout(() => {
-				appendMessage(chat, leadPrompt || 'Пожалуйста, оставьте ваше имя и телефон для связи.', 'bot');
+				appendBotMessage(chat, leadPrompt || 'Пожалуйста, оставьте ваше имя и телефон для связи.');
 				leadState.set(chat, { phase: 'waiting_name', name: '' });
 			}, 600);
 		}
@@ -684,7 +707,7 @@
 		const messages = chat.querySelector('.wpdsac-chat__messages');
 		window.sessionStorage.removeItem(sessionStorageKey);
 		messages.textContent = '';
-		appendMessage(chat, welcome, 'bot');
+		appendBotMessage(chat, welcome);
 	};
 
 	// ── Chat UI State ──────────────────────────────────
@@ -911,7 +934,7 @@
 
 			if (currentlyExpanded) {
 				if (followUp) {
-					appendMessage(chat, followUp, 'bot');
+					appendBotMessage(chat, followUp);
 					persistConversationHistory(chat);
 					playReplySound(chat.dataset.wpdsacReplySound || 'off');
 					if (Array.isArray(quickReplies) && quickReplies.length >= 2) {
@@ -920,7 +943,7 @@
 				}
 			} else {
 				if (followUp) {
-					appendMessage(chat, followUp, 'bot');
+					appendBotMessage(chat, followUp);
 					persistConversationHistory(chat);
 					if (intro) {
 						const preview = assistantPreviewText(followUp);
@@ -1059,7 +1082,7 @@
 		}
 
 		if (lead.hidden) {
-			appendMessage(chat, lead.dataset.wpdsacLeadPrompt || '', 'bot');
+			appendBotMessage(chat, lead.dataset.wpdsacLeadPrompt || '');
 			persistConversationHistory(chat);
 		}
 
@@ -1295,6 +1318,10 @@
 			return;
 		}
 
+		if (voice) {
+			voice.interrupt();
+			voice.activate(chat);
+		}
 		ensureAudioContext();
 
 		button.disabled = true;
@@ -1311,7 +1338,7 @@
 				const phone = details.phone || '';
 
 				if (!name || name.length < 2) {
-					appendMessage(chat, strings.leadNameInvalid || 'Пожалуйста, укажите ваше имя.', 'bot');
+					appendBotMessage(chat, strings.leadNameInvalid || 'Пожалуйста, укажите ваше имя.');
 					button.disabled = false;
 					persistConversationHistory(chat);
 					return;
@@ -1332,7 +1359,7 @@
 							request: '',
 							transcript: getConversationHistory(chat).map((e) => `${e.role === 'assistant' ? 'Bot' : 'User'}: ${e.content}`).join('\n'),
 						});
-						appendMessage(chat, strings.leadSaved || 'Спасибо! Мы свяжемся с вами в ближайшее время.', 'bot');
+						appendBotMessage(chat, strings.leadSaved || 'Спасибо! Мы свяжемся с вами в ближайшее время.');
 						playReplySound(chat.dataset.wpdsacReplySound || 'off');
 						status.textContent = '';
 						const leadWrap = chat.querySelector('[data-wpdsac-lead]');
@@ -1356,7 +1383,7 @@
 				ls.name = name;
 				ls.phase = 'waiting_phone';
 				window.sessionStorage.setItem(visitorNameStorageKey, name.slice(0, 100));
-				appendMessage(chat, strings.leadAskPhone || 'Отлично! Теперь укажите номер телефона для связи.', 'bot');
+				appendBotMessage(chat, strings.leadAskPhone || 'Отлично! Теперь укажите номер телефона для связи.');
 				playReplySound(chat.dataset.wpdsacReplySound || 'off');
 				button.disabled = false;
 				persistConversationHistory(chat);
@@ -1366,7 +1393,7 @@
 			if (ls.phase === 'waiting_phone') {
 				const phone = extractLeadDetails(message).phone || message.replace(/[^0-9+().\/\-\s]/g, '').trim();
 				if (!phone || phone.replace(/\D/g, '').length < 7) {
-					appendMessage(chat, strings.leadPhoneInvalid || 'Некорректный номер. Укажите телефон, например: 8 900 123-45-67', 'bot');
+					appendBotMessage(chat, strings.leadPhoneInvalid || 'Некорректный номер. Укажите телефон, например: 8 900 123-45-67');
 					button.disabled = false;
 					persistConversationHistory(chat);
 					return;
@@ -1386,7 +1413,7 @@
 						request: '',
 						transcript: getConversationHistory(chat).map((e) => `${e.role === 'assistant' ? 'Bot' : 'User'}: ${e.content}`).join('\n'),
 					});
-					appendMessage(chat, strings.leadSaved || 'Спасибо! Мы свяжемся с вами в ближайшее время.', 'bot');
+					appendBotMessage(chat, strings.leadSaved || 'Спасибо! Мы свяжемся с вами в ближайшее время.');
 					playReplySound(chat.dataset.wpdsacReplySound || 'off');
 					status.textContent = '';
 					const leadWrap2 = chat.querySelector('[data-wpdsac-lead]');
@@ -1522,7 +1549,7 @@
 
 			closeLeadForm(lead);
 			window.sessionStorage.setItem(visitorNameStorageKey, name.slice(0, 100));
-			appendMessage(chat, response.message || '', 'bot');
+			appendBotMessage(chat, response.message || '');
 			persistConversationHistory(chat);
 			playReplySound(chat.dataset.wpdsacReplySound || 'off');
 			form.reset();
